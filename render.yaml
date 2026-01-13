@@ -14,10 +14,7 @@ services:
       - key: REDIS_URL
         sync: false # Usuário deve configurar no painel
       - key: AGNO_API_URL
-        fromService:
-          type: web
-          name: matias-agno
-          property: url
+        value: http://matias-agno:7777
 
   # MATIAS AGNO SERVICE
   - type: web
