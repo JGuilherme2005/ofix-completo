@@ -3,6 +3,7 @@ services:
   - type: web
     name: ofix-backend
     env: node
+    plan: free
     rootDir: ofix_new/ofix-backend
     buildCommand: npm install && npm run prisma:migrate
     startCommand: npm start
@@ -20,6 +21,7 @@ services:
   - type: web
     name: matias-agno
     env: docker
+    plan: free
     rootDir: matias_agnoV1
     dockerfilePath: Dockerfile
     envVars:
