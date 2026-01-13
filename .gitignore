@@ -1,0 +1,41 @@
+# Dependências
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Ambiente e Segredos
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Logs e Dados
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lancedb/
+*_lancedb/
+
+# Build
+dist/
+build/
+.next/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Ofix Backend Uploads
+ofix_new/ofix-backend/uploads/*
+!ofix_new/ofix-backend/uploads/.gitkeep
+
+# Matias Dados Locais (se houver)
+matias_agnoV1/storage/

@@ -1,0 +1,23 @@
+# render.yaml - Configuração para Render
+services:
+  - type: web
+    name: matias-agno-assistant
+    runtime: python
+    buildCommand: cd matias_agno && pip install -r requirements.txt
+    startCommand: cd matias_agno && python main_hf.py
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: HF_TOKEN
+        sync: false  # Será configurado no painel
+      - key: LANCEDB_API_KEY
+        sync: false
+      - key: LANCEDB_URI
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000

@@ -1,0 +1,13 @@
+# Tabela de Torques de Aperto (Exemplos)
+
+## Rodas
+- Volkswagen Fusca 1600: 130 Nm
+- Chevrolet Onix: 125 Nm
+- Fiat Palio: 120 Nm
+
+## Componentes do Motor
+- Velas de ignição: 25-30 Nm
+- Parafuso do cárter (dreno de óleo): 35 Nm
+
+## Suspensão
+- Parafusos do amortecedor: 80-100 Nm

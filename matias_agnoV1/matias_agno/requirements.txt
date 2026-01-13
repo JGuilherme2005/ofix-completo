@@ -1,0 +1,31 @@
+# Core Framework - Versões estáveis e testadas
+agno==2.0.11
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# Database - Versões compatíveis com agno 2.0+
+sqlalchemy>=2.0.0,<3.0.0
+psycopg2-binary==2.9.9
+
+# VectorDB - Versões atualizadas e compatíveis
+lancedb>=0.8.0
+pyarrow>=14.0.0
+
+# Document Processing
+pypdf==3.17.0
+markdown==3.5.1
+pandas>=2.0.0,<3.0.0
+
+# LLM & Embeddings - Versões estáveis
+groq==0.11.0
+fastembed==0.7.3
+
+# Web & HTTP - Versões compatíveis
+httpx==0.25.2
+requests>=2.31.0
+aiohttp>=3.9.0  # Requerido pelo HuggingFace AsyncInferenceClient
+
+# Utilities - Versões estáveis
+python-dotenv==1.0.0
+pydantic>=2.4.0,<3.0.0
+python-multipart==0.0.6

@@ -1,0 +1,815 @@
+
+================================================================================
+Query: preço troca de óleo
+================================================================================
+✅ Encontrados 10 resultados:
+
+
+1. Arquivo: N/A
+   Fonte: 1_tecnico\manual_transmissao_embreagem.md.md
+   Conteúdo: ontagem da carcaça e das tampas deve seguir
+
+os torques especiﬁcados para garantir o alinhamento e a vedação.
+
+6. Troca de Óleo (Tipo e Quantidade): Utilizar o óleo com a especiﬁcação (API GL-4 ou GL-
+
+5) e viscosidade (SAE) correta, conforme o manual do fabricante. A quantidade é crítica.
+
+7. Teste em Bancada e Veículo: Antes da instalação, testar o engate das marchas em
+
+bancada. Após a instalação, realizar teste de rodagem para veriﬁcar ruídos, engates e
+vazamentos.
+
+7. TRANSMISSÃO AUTOMÁTICA - TIPOS
+
+As transmissões automáticas evoluíram signiﬁcativamente, apresentando diferentes
+tecnologias para gerenciar a troca de marchas.
+
+Tipo de Transmissão
+
+Princípio de Funcionamento
+
+Características Principais
+
+Convencional (AT)
+
+Conjunto de engrenagens
+planetárias e conversor de
+torque.
+
+Trocas suaves, utiliza ﬂuido
+ATF, diagnóstico complexo
+(hidráulico e eletrônico).
+
+CVT (Continuously Variable
+Transmission)
+
+Duas polias de diâmetro
+variável interligadas por
+correia ou corrente metálica.
+
+DSG/DCT (Dupla Embreagem)
+
+Automatizada (AMT)
+
+Duas caixas de câmbio
+manuais uniﬁcadas, com
+duas embreagens (seca ou
+úmida).
+
+Câmbio manual com
+atuadores eletro-hidráulicos
+para embreagem e trocas.
+
+Relação de marcha "inﬁnita",
+foco em economia e conforto.
+Requer ﬂuido especíﬁco (CVT-
+F).
+
+Trocas ultrarrápidas,
+sensação esportiva. Possui
+módulo mecatrônico.
+
+Mais simples e barata, mas
+com trocas mais lentas e
+trancos perceptíveis (ex: I-
+Motion, Dualogic).
+
+8. SINTOMAS E DIAGNÓSTICOS - CÂMBIO AUTOMÁTICO
+
+O diagnóstico de transmissões automáticas é altamente dependente da análise eletrônica
+e da qualidade do ﬂuido.
+
+Sintoma
+
+Causa Provável
+
+Diagnóstico e Ação
+
+Trancos ao Trocar Marchas
+
+Demora para Engatar (D ou
+R)
+
+Patinação (RPM sobe, carro
+não acelera)
+
+Solenoides de pressão com
+falha, corpo de válvulas
+sujo/desgastado, ﬂuido ATF
+degradado, falha no módulo
+de controle (TCM).
+
+Baixa pressão de linha
+(bomba, corpo de válvulas),
+conversor de torque com
+falha, nível baixo de ﬂuido.
+--------------------------------------------------------------------------------
+
+2. Arquivo: N/A
+   Fonte: 4_servicos\tabela_tempos_valores.md
+   Conteúdo: eito junto com a troca de amortecedores. |
+| Troca de buchas de bandeja (par) | Suspensão | 120 | 240 | Difícil | 400 | 700 | Média | Requer prensa hidráulica. |
+| Troca de pivôs de suspensão (par) | Suspensão | 60 | 100 | Média | 180 | 300 | Média | Alinhamento obrigatório após. |
+| Troca de bandejas de suspensão (par) | Suspensão | 80 | 140 | Média | 300 | 550 | Média | Alternativa à troca de buchas e pivô separadamente. |
+| Troca de barra estabilizadora | Suspensão | 60 | 90 | Média | 150 | 250 | Baixa | Troca das buchas e bieletas geralmente resolve. |
+| Troca de bieletas (par) | Suspensão | 30 | 50 | Fácil | 100 | 160 | Média | Componente de fácil acesso. |
+| Troca de coxins do motor (unidade) | Suspensão | 60 | 120 | Média | 200 | 400 | Média | Valor pode variar muito com a localização do coxim. |
+| Troca de coxins do amortecedor (par) | Suspensão | 90 | 180 | Média | 350 | 600 | Média | Feito junto com a troca de amortecedores. |
+| Troca de correia dentada | Motor | 120 | 300 | Difícil | 500 | 1200 | Média | Serviço crítico. Valor varia com a complexidade do motor. |
+| Troca de tensor da correia dentada | Motor | 120 | 300 | Difícil | 500 | 1200 | Média | Sempre trocar junto com a correia dentada (kit). |
+| Troca de bomba d'água | Motor | 150 | 360 | Difícil | 600 | 1500 | Baixa | Recomendado trocar junto com a correia dentada. |
+| Troca de válvula termostática | Motor | 60 | 120 | Média | 200 | 400 | Média | Acesso pode ser complexo em alguns motores. |
+| Troca de junta do cabeçote | Motor | 480 | 960 | Difícil | 1500 | 3500 | Baixa | Serviço complexo |
+| Troca de retentores de válvulas | Motor | 360 | 720 | Difícil | 1200 | 2500 | Baixa | Pode exigir remoção do cabeçote. |
+| Troca de retentor do virabrequim | Motor | 180 | 420 | Difícil | 700 | 1800 | Baixa | Exige remoção da polia do virabrequim ou do câmbio. |
+| Troca de velas e cabos de ignição | Motor | 40 | 70 | Fácil | 150 | 250 | Média | Serviço preventivo comum. |
+| Diagnóstico com scanner | Motor |
+--------------------------------------------------------------------------------
+
+3. Arquivo: N/A
+   Fonte: 1_tecnico\MANUAL_DE_DIAGNÓSTICO_AUTOMOTIVO_PARA_OFICINAS.md
+   Conteúdo: o de Pressão de Óleo: Usado para conﬁrmar se a bomba de óleo está
+
+gerando a pressão correta. Essencial quando a luz de óleo acende, para diferenciar um
+problema de sensor de uma falha mecânica grave.
+
+• Manômetro de Pressão de Combustível: Conectado à linha de combustível para
+veriﬁcar se a bomba está entregando a pressão especiﬁcada pelo fabricante.
+
+Fundamental para diagnosticar problemas de perda de potência e falhas na aceleração.
+
+3.4. Inspeção Visual
+
+A ferramenta mais básica, mas muitas vezes a mais eﬁcaz. Um mecânico experiente sabe o
+
+que procurar.
+
+• O que Observar:
+
+• Cor e Nível dos Fluidos: Óleo, líquido de arrefecimento, ﬂuido de freio.
+• Estado das Correias e Mangueiras: Procurar por ressecamento, rachaduras e
+
+vazamentos.
+
+• Conexões Elétricas: Veriﬁcar se há corrosão (zinabre) ou conectores soltos.
+• Desgaste de Componentes: Observar o estado de pneus, pastilhas de freio, coifas
+
+da homocinética, etc.
+
+4. PROCEDIMENTOS PASSO A PASSO
+
+Esta seção descreve sequências lógicas para diagnosticar problemas complexos comuns.
+
+4.1. Como Diagnosticar um Carro que Não Liga
+
+1. Veriﬁcação Inicial: Ao girar a chave, as luzes do painel acendem? O motor de partida
+
+tenta girar (faz um "tec-tec-tec" ou gira lentamente)?
+
+• Nenhuma luz no painel: Problema de bateria totalmente descarregada ou mau
+
+contato nos terminais. Veriﬁque os cabos da bateria.
+
+• Luzes acendem, mas partida não vira: Bateria fraca, motor de partida com defeito
+
+ou problema no comutador de ignição. Teste a tensão da bateria.
+
+• Motor gira, mas não pega: O problema está no sistema de ignição ou de
+
+combustível.
+
+2. Veriﬁcação do Sistema de Combustível: Ao ligar a chave (sem dar partida), é possível
+ouvir o zumbido da bomba de combustível por alguns segundos? Se não, veriﬁque o
+fusível e o relé da bomba. Use um manômetro para conﬁrmar a pressão na linha de
+
+combustível.
+
+3. Veriﬁcação do Sistema de Ignição: Há faísca nas velas? Use um centelhador para
+--------------------------------------------------------------------------------
+
+4. Arquivo: N/A
+   Fonte: 2_gestao\ideia-de-negocio_oficina-mecanica.md
+   Conteúdo: atura mínima que o óleo
+é capaz de suportar sem perder suas propriedades lubrificantes, e o número que
+vem em seguida está relacionado à temperatura máxima em que pode ser usado.
+
+22. Dicas de Negócio
+
+Além dos serviços tradicionais, explore oportunidades de aumentar sua receita, como
+a venda de equipamentos e acessórios. Planeje a infraestrutura da sua oficina,
+mesmo que a implementação de certos itens aconteça gradualmente. Deixe a fiação
+e instalações adequadas para futuras expansões, evitando reformas dispendiosas.
+
+Avalie cuidadosamente o custo-benefício de cada serviço oferecido, garantindo que o
+investimento seja compatível com a demanda e a margem de lucro. A excelência no
+atendimento é fundamental: priorize a qualidade do serviço, um ambiente agradável,
+profissionais atenciosos e respeitosos, e considere oferecer comodidades adicionais,
+como transporte para o cliente. Implemente também ações de pós-venda, como
+envio de cartões de aniversário, comunicação sobre novos serviços e produtos, e
+lembretes de revisões periódicas. O acompanhamento próximo do negócio é
+essencial, mas lembre-se de dedicar tempo ao planejamento estratégico e à
+correção de eventuais problemas.
+
+Entenda as necessidades do seu cliente. A indisponibilidade do veículo causa
+transtornos. Priorize o cumprimento dos prazos acordados para evitar frustração do
+cliente. Atrasos geram insatisfação e perda de clientes. Seja transparente ao
+comparar consertos com a substituição de peças, explicando as vantagens e
+desvantagens de cada opção. Evite a prática de cobrir orçamentos de concorrentes,
+pois isso pode gerar uma guerra de preços, reduzir a sua margem de lucro e
+comprometer a qualidade dos seus serviços. Para alcançar mais clientes, considere
+a abertura aos sábados, dia em que muitos têm mais tempo disponível para resolver
+problemas com seus veículos e solicitar orçamentos.
+
+23. Características Específicas do Empreendedor
+--------------------------------------------------------------------------------
+
+5. Arquivo: N/A
+   Fonte: 5_legislacao\LEGISLAÇÃO_E_NORMAS_PARA_OFICINAS_MECÂNICAS_NO_BRASIL.md
+   Conteúdo: álise de retrabalho.
+
+Referências
+
+• [1] Lei nº 8.078, de 11 de setembro de 1990. Código de Defesa do Consumidor.
+• [2] Resolução CONAMA nº 362, de 23 de junho de 2005. Dispõe sobre o descarte de óleo
+
+lubriﬁcante usado.
+
+• [3] Resolução CONAMA nº 401, de 4 de novembro de 2008. Dispõe sobre o descarte de
+
+pilhas e baterias.
+
+• [4] Consolidação das Leis do Trabalho (CLT).
+• [5] Normas Regulamentadoras (NRs) do Ministério do Trabalho e Emprego.
+• [6] Lei nº 9.503, de 23 de setembro de 1997. Código de Trânsito Brasileiro (CTB).
+--------------------------------------------------------------------------------
+
+6. Arquivo: N/A
+   Fonte: 3_pecas\base_pecas_automotivas.md
+   Conteúdo: | Codigo | Nome_Peca | Categoria | Aplicacao | Marca_Referencia | Preco_Medio | Fornecedores_Principais | Tempo_Reposicao | Giro | Observacoes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 001 | Óleo Lubrificante 5W30 Sintético | Fluidos | Popular/Sedan/SUV | Castrol/Shell/Mobil | 45.00 | Distribuidoras | Pronta entrega | Alto | Essencial. Verificar especificação API/ACEA e norma do fabricante. |
+| 002 | Filtro de Óleo (Modelo Comum) | Filtros | Popular/Sedan | Mann/Tecfil/Mahle | 18.00 | Distribuidoras | Pronta entrega | Alto | Sempre trocar junto com o óleo. |
+| 003 | Filtro de Ar do Motor (Modelo Comum) | Filtros | Popular/Sedan | Mann/Tecfil/Mahle | 25.00 | Distribuidoras | Pronta entrega | Alto | Verificar saturação a cada revisão. |
+| 004 | Filtro de Combustível (Linha Leve) | Filtros | Popular/Sedan | Mann/Tecfil/Mahle | 15.00 | Distribuidoras | Pronta entrega | Alto | Troca a cada 10.000 km ou conforme manual. |
+| 005 | Pastilha de Freio Dianteira (Popular) | Pastilhas | Popular | Fras-le/Cobreq/TRW | 85.00 | Atacadistas | Pronta entrega | Alto | Sempre trocar em par. Verificar discos. |
+| 006 | Vela de Ignição (Cobre/Níquel) | Velas | Popular/Sedan | NGK/Bosch | 20.00 | Atacadistas | Pronta entrega | Alto | Troca a cada 40.000 km. Verificar folga (gap). |
+| 007 | Lâmpada H4 (Farol Principal) | Elétrica | Popular/Sedan | Osram/Philips | 15.00 | Atacadistas | Pronta entrega | Alto | Verificar se o veículo usa H4 ou H7. |
+| 008 | Lâmpada Pingo (Lanterna) | Elétrica | Popular/Sedan | Osram/Philips | 5.00 | Atacadistas | Pronta entrega | Alto | Peça de baixo custo e alta frequência de troca. |
+| 009 | Palheta Limpador de Para-brisa (Par) | Outros | Popular/Sedan | Bosch/Valeo | 60.00 | Atacadistas | Pronta entrega | Alto | Troca anual ou ao apresentar falhas. |
+| 010 | Fluido de Freio DOT 4 (500ml) | Fluidos | Popular/Sedan/SUV | Varga/TRW/Bosch | 25.00 | Distribuidoras | Pronta entrega | Alto | Troca a cada 1 ou 2 anos. Higroscópico. |
+| 011
+--------------------------------------------------------------------------------
+
+7. Arquivo: N/A
+   Fonte: 1_tecnico\MANUAL_COMPLETO_DE_MOTORES_TURBO_-_DIAGNÓSTICO_E_MANUTENÇÃO.md
+   Conteúdo: cedimentos de Aquecimento e Resfriamento
+
+• [ ] Aquecimento: Não acelerar o motor bruscamente logo após a partida. O óleo
+precisa de tempo para atingir a temperatura ideal e lubriﬁcar o eixo do turbo.
+
+• [ ] Resfriamento (Turbo Timer): Após uso em alta rotação (viagens longas, subidas), o
+motor não deve ser desligado imediatamente. O turbo está muito quente e o óleo que o
+lubriﬁca pode carbonizar (coqueiﬁcar) nas galerias, bloqueando a lubriﬁcação.
+
+Recomenda-se deixar o motor em marcha lenta por 1 a 2 minutos.
+
+6. SUBSTITUIÇÃO DO TURBO
+
+A substituição deve ser acompanhada da correção da causa raiz da falha.
+
+6.1. Quando Trocar vs Recondicionar
+
+• [ ] Recondicionamento: Viável se a carcaça estiver intacta e o dano for apenas no
+
+conjunto rotativo (eixo, mancais). Deve ser feito por empresa especializada.
+
+• [ ] Substituição: Necessária se a carcaça estiver trincada, deformada ou se o custo do
+
+recondicionamento for próximo ao de um turbo novo.
+
+6.2. Limpeza do Sistema de Admissão
+
+Antes de instalar o turbo novo, é obrigatório:
+
+• [ ] Limpeza: Limpar o intercooler, mangueiras e tubulações para remover óleo e
+
+fragmentos metálicos do turbo antigo.
+
+• [ ] Troca de Óleo e Filtros: O óleo e o ﬁltro de óleo devem ser trocados
+
+obrigatoriamente.
+
+6.3. Primeiro Acionamento (Procedimento)
+
+O primeiro acionamento é crítico para a lubriﬁcação inicial.
+
+1. Pré-Lubriﬁcação: Antes de conectar a linha de óleo ao turbo, injetar óleo limpo no
+
+orifício de entrada do turbo.
+
+2. Desconectar Ignição/Injeção: Girar o motor no arranque por alguns segundos (sem
+
+deixar pegar) para que a bomba de óleo pressurize o sistema e o turbo seja lubriﬁcado.
+
+3. Conectar e Ligar: Ligar o motor e deixá-lo em marcha lenta por 5 a 10 minutos,
+
+monitorando a pressão de óleo.
+
+7. SISTEMA DE ADMISSÃO E ESCAPAMENTO
+
+O turbo é um componente que interage diretamente com os sistemas de admissão e
+escapamento.
+
+7.1. Filtro de Ar de Alta Vazão
+--------------------------------------------------------------------------------
+
+8. Arquivo: N/A
+   Fonte: 2_gestao\MANUAL_DE_PROCESSOS_OPERACIONAIS_-_OFICINA_MECÂNICA.md
+   Conteúdo: vre de óleo, graxa e ferramentas espalhadas
+
+(prevenção de quedas).
+
+• [ ] Macacos e Cavaletes: Nunca trabalhar sob o veículo sustentado apenas pelo
+
+macaco. Uso obrigatório de cavaletes de segurança.
+
+• [ ] Incêndio: Extintores de incêndio (Tipo ABC) em locais visíveis e acessíveis.
+
+Treinamento anual de combate a incêndio.
+
+7.3. Descarte Correto de Resíduos
+
+A oﬁcina gera resíduos perigosos que exigem descarte especial (Conformidade com a
+Resolução CONAMA 362/2005).
+
+Resíduo
+
+Procedimento de Descarte
+
+Óleo Lubriﬁcante Usado
+
+Filtros de Óleo
+
+Baterias
+
+Pneus
+
+Armazenar em tambores lacrados e entregar a
+um coletor autorizado (Ex: Lwart, Lubrasil).
+
+Drenar o óleo e armazenar em local coberto,
+entregando ao mesmo coletor.
+
+Devolver ao fornecedor ou fabricante (Logística
+Reversa).
+
+Devolver ao fornecedor ou destinar a pontos de
+coleta autorizados (Ex: Reciclanip).
+
+7.4. Normas Ambientais
+
+• [ ] Licença de Operação: Manter a licença ambiental (se exigida pelo município) em dia.
+• [ ] Caixa Separadora: Instalar e manter a caixa separadora de água e óleo para evitar a
+
+contaminação da rede de esgoto.
+
+Fim do Manual.
+--------------------------------------------------------------------------------
+
+9. Arquivo: N/A
+   Fonte: 4_servicos\servicos_geometria_suspensao.md
+   Conteúdo: o de óleo |  instabilidade. | Elevador |  torquímetro |  60 |  120 |  180 |  350 |  Kit batente |  65 |
+| Troca de Kit Suspensão Completo (Dianteiro) | Substituição de amortecedores |  molas |  coxins e batentes dianteiros. | Suspensão "cansada" |  ruídos múltiplos |  120 |  240 |  350 |  700 |  Amortecedores |  molas |  coxins |
+| Troca de Molas (Par) | Substituição das molas helicoidais. | Veículo "caído" |  quebra de mola. | Elevador |  compressor de molas |  90 |  180 |  200 |  400 |  Amortecedores (inspeção) |  65 |  Moderado |
+| Troca de Buchas de Bandeja (Par) | Substituição das buchas de borracha da bandeja de suspensão. | Ruído (rangido) |  folga na roda |  120 |  240 |  300 |  600 |  Buchas |  60 |  Moderado | Requer prensa hidráulica. Apertar com o carro no chão. |  |
+| Troca de Buchas de Barra Estabilizadora (Par) | Substituição das buchas que fixam a barra estabilizadora ao chassi. | Ruído (toc-toc) em pisos irregulares. | Elevador |  30 |  60 |  80 |  150 |  Buchas |  75 |  Comum | Serviço rápido e de alta frequência. |  |
+| Troca de Coxim de Suspensão (Par) | Substituição do coxim superior do amortecedor. | Ruído (estalo) ao esterçar |  90 |  180 |  200 |  400 |  Coxins |  65 |  Comum | Geralmente trocado junto com o amortecedor. |  |  |
+| Troca de Pivô de Suspensão (Par) | Substituição do pivô que liga a bandeja à manga de eixo. | Folga na roda |  ruído |  60 |  120 |  150 |  300 |  Pivôs |  70 |  Comum | Alinhamento obrigatório após. |  |
+| Rebaixamento de Suspensão (Molas Esportivas) | Instalação de molas esportivas para redução da altura do veículo. | Desejo de estética |  120 |  240 |  350 |  700 |  Molas esportivas |  60 |  Raro | Exige laudo de engenharia para legalização (CONTRAN). |  |  |
+| Instalação de Suspensão a Ar | Instalação de sistema pneumático para ajuste de altura via controle remoto. | Desejo de estética e conforto |  360 |  720 |  800 |  1500 |  Kit suspensão a ar |  50 |  Raro | Serviço altamente especializado. Alto valor agrega
+--------------------------------------------------------------------------------
+
+10. Arquivo: N/A
+   Fonte: 1_tecnico\manual_diagnostico_automotivo.md.md
+   Conteúdo: ma de injeção e admissão. O consumo de combustível será alto. |
+
+### 1.4. Vazamentos
+
+Vazamentos indicam falha em selos, juntas ou componentes. A cor e a viscosidade do fluido ajudam na identificação.
+
+| Cor/Textura | Fluido | Localização Comum | Possível Causa |
+| --- | --- | --- | --- |
+| **Vermelho/Marrom, Fino** | Óleo de Transmissão Automática (ATF) | Cárter do câmbio, mangueiras do radiador de óleo do câmbio. | Retentor de eixo, junta do cárter. |
+| **Amarelo/Marrom, Viscoso** | Óleo do Motor | Cárter, tampa de válvulas, retentores (virabrequim, comando). | Junta da tampa de válvulas, retentor dianteiro/traseiro do virabrequim. |
+| **Verde/Rosa/Azul, Aquoso** | Líquido de Arrefecimento | Radiador, mangueiras, bomba d'água, válvula termostática. | Furo no radiador, braçadeira solta, selo da bomba d'água. |
+| **Incolor, Odor Forte** | Combustível (Gasolina/Etanol) | Linha de combustível, bicos injetores, tanque. | Mangueira rachada, anel de vedação do injetor. |
+
+### 1.5. Luzes do Painel
+
+As luzes de alerta são a comunicação direta do veículo com o mecânico. Nunca as ignore.
+--------------------------------------------------------------------------------
+
+================================================================================
+Query: quanto custa troca de óleo
+================================================================================
+✅ Encontrados 10 resultados:
+
+
+1. Arquivo: N/A
+   Fonte: 5_legislacao\LEGISLAÇÃO_E_NORMAS_PARA_OFICINAS_MECÂNICAS_NO_BRASIL.md
+   Conteúdo: álise de retrabalho.
+
+Referências
+
+• [1] Lei nº 8.078, de 11 de setembro de 1990. Código de Defesa do Consumidor.
+• [2] Resolução CONAMA nº 362, de 23 de junho de 2005. Dispõe sobre o descarte de óleo
+
+lubriﬁcante usado.
+
+• [3] Resolução CONAMA nº 401, de 4 de novembro de 2008. Dispõe sobre o descarte de
+
+pilhas e baterias.
+
+• [4] Consolidação das Leis do Trabalho (CLT).
+• [5] Normas Regulamentadoras (NRs) do Ministério do Trabalho e Emprego.
+• [6] Lei nº 9.503, de 23 de setembro de 1997. Código de Trânsito Brasileiro (CTB).
+--------------------------------------------------------------------------------
+
+2. Arquivo: N/A
+   Fonte: 2_gestao\financeiro_diario.md
+   Conteúdo: | Data | Faturamento_Servicos | Faturamento_Pecas | Faturamento_Total | Custos_Fixos | Custos_Variaveis | Lucro_Bruto | Lucro_Liquido | Numero_OS | Ticket_Medio | Margem_Percentual |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2025-08-07 | 0.0 | 0.0 | 0.0 | 483 | 0.0 | 0.0 | -483.0 | 0 | 0.0 | 0.0 |
+| 2025-08-08 | 0.0 | 0.0 | 0.0 | 541 | 0.0 | 0.0 | -541.0 | 0 | 0.0 | 0.0 |
+| 2025-08-09 | 1827.81 | 3134.43 | 4962.24 | 523 | 2154.83 | 2807.41 | 2284.41 | 3 | 1654.08 | 46.04 |
+| 2025-08-10 | 0.0 | 0.0 | 0.0 | 530 | 0.0 | 0.0 | -530.0 | 0 | 0.0 | 0.0 |
+| 2025-08-11 | 48.63 | 289.78 | 338.41 | 459 | 181.16 | 157.25 | -301.75 | 1 | 338.41 | -89.17 |
+| 2025-08-12 | 45.08 | 365.62 | 410.7 | 513 | 226.13 | 184.57 | -328.43 | 1 | 410.7 | -79.97 |
+| 2025-08-13 | 504.23 | 632.29 | 1136.52 | 508 | 455.01 | 681.51 | 173.51 | 2 | 568.26 | 15.27 |
+| 2025-08-14 | 1381.76 | 2481.81 | 3863.57 | 515 | 1696.35 | 2167.22 | 1652.22 | 1 | 3863.57 | 42.76 |
+| 2025-08-15 | 3301.93 | 5257.45 | 8559.38 | 496 | 3649.76 | 4909.62 | 4413.62 | 4 | 2139.84 | 51.56 |
+| 2025-08-16 | 0.0 | 0.0 | 0.0 | 457 | 0.0 | 0.0 | -457.0 | 0 | 0.0 | 0.0 |
+| 2025-08-17 | 0.0 | 0.0 | 0.0 | 513 | 0.0 | 0.0 | -513.0 | 0 | 0.0 | 0.0 |
+| 2025-08-18 | 645.6 | 896.03 | 1541.63 | 522 | 634.46 | 907.17 | 385.17 | 2 | 770.82 | 24.98 |
+| 2025-08-19 | 235.42 | 66.82 | 302.24 | 471 | 75.4 | 226.84 | -244.16 | 2 | 151.12 | -80.78 |
+| 2025-08-20 | 160.26 | 82.5 | 242.76 | 497 | 73.54 | 169.22 | -327.78 | 1 | 242.76 | -135.02 |
+| 2025-08-21 | 45.61 | 342.04 | 387.65 | 470 | 212.07 | 175.58 | -294.42 | 1 | 387.65 | -75.95 |
+| 2025-08-22 | 148.71 | 66.34 | 215.05 | 482 | 62.11 | 152.94 | -329.06 | 1 | 215.05 | -153.02 |
+| 2025-08-23 | 0.0 | 0.0 | 0.0 | 548 | 0.0 | 0.0 | -548.0 | 0 | 0.0 | 0.0 |
+| 2025-08-24 | 0.0 | 0.0 | 0.0 | 463 | 0.0 | 0.0 | -463.0 | 0 | 0.0 | 0.0 |
+| 2025-08-25 | 0.0 | 0.0 | 0.0 | 523 | 0.0 | 0.0 | -523.0 | 0 | 0.0 | 0.0 |
+| 2025-08-26 | 0.0 | 0.0 | 0.0 | 536 | 0.0 | 0.0 | -536.0 | 0
+--------------------------------------------------------------------------------
+
+3. Arquivo: N/A
+   Fonte: 4_servicos\tabela_tempos_valores.md
+   Conteúdo: | Difícil | 700 | 1500 | Baixa | Exige desmontagem do painel do veículo. |
+| Troca de escapamento (silencioso traseiro) | Outros | 30 | 50 | Fácil | 100 | 180 | Média | Corte e solda podem ser necessários. |
+| Troca de catalisador | Outros | 60 | 90 | Média | 250 | 450 | Baixa | Peça de alto valor. |
+| Troca de pneus (unidade) | Outros | 10 | 15 | Fácil | 30 | 50 | Alta | Não inclui balanceamento. |
+| Conserto de pneu (furo) | Outros | 15 | 25 | Fácil | 40 | 70 | Alta | Reparo tipo "macarrão" ou manchão. |
+| Geometria completa | Outros | 40 | 60 | Média | 150 | 250 | Média | Alinhamento + Balanceamento. |
+| Troca de palhetas do limpador (par) | Manutenção Preventiva | 5 | 10 | Fácil | 30 | 50 | Alta | Serviço rápido e de alta frequência. |
+| Diagnóstico de sistema de injeção | Motor | 60 | 180 | Difícil | 250 | 500 | Média | Envolve testes de sensores |
+| Troca de bomba de combustível | Motor | 60 | 120 | Média | 250 | 450 | Média | Pode exigir remoção do tanque de combustível. |
+| Limpeza do sistema de arrefecimento | Motor | 60 | 90 | Média | 180 | 300 | Média | Uso de máquina para limpeza e troca do fluido. |
+| Troca de radiador | Motor | 90 | 180 | Média | 350 | 650 | Baixa | Requer drenagem e reabastecimento do sistema. |
+| Troca de mangueiras do sistema de arrefecimento | Motor | 40 | 80 | Fácil | 120 | 220 | Média | Valor por mangueira principal. |
+| Troca de junta da tampa de válvulas | Motor | 40 | 90 | Fácil | 150 | 280 | Média | Resolve vazamentos de óleo na parte superior do motor. |
+| Troca de correia de acessórios (poly-V) | Motor | 15 | 40 | Fácil | 80 | 150 | Média | Correia que movimenta alternador |
+| Troca de rolamento de roda (unidade) | Suspensão | 60 | 120 | Média | 200 | 380 | Média | Pode exigir prensa para sacar e instalar o rolamento. |
+| Trocha de terminal de direção (unidade) | Suspensão | 20 | 40 | Fácil | 80 | 140 | Média | Alinhamento obrigatório após. |
+| Troca de coifa da caixa de direção | Direção | 90 | 150 | Média | 250 | 450 | Ba
+--------------------------------------------------------------------------------
+
+4. Arquivo: N/A
+   Fonte: 4_servicos\tabela_tempos_valores.md
+   Conteúdo: eito junto com a troca de amortecedores. |
+| Troca de buchas de bandeja (par) | Suspensão | 120 | 240 | Difícil | 400 | 700 | Média | Requer prensa hidráulica. |
+| Troca de pivôs de suspensão (par) | Suspensão | 60 | 100 | Média | 180 | 300 | Média | Alinhamento obrigatório após. |
+| Troca de bandejas de suspensão (par) | Suspensão | 80 | 140 | Média | 300 | 550 | Média | Alternativa à troca de buchas e pivô separadamente. |
+| Troca de barra estabilizadora | Suspensão | 60 | 90 | Média | 150 | 250 | Baixa | Troca das buchas e bieletas geralmente resolve. |
+| Troca de bieletas (par) | Suspensão | 30 | 50 | Fácil | 100 | 160 | Média | Componente de fácil acesso. |
+| Troca de coxins do motor (unidade) | Suspensão | 60 | 120 | Média | 200 | 400 | Média | Valor pode variar muito com a localização do coxim. |
+| Troca de coxins do amortecedor (par) | Suspensão | 90 | 180 | Média | 350 | 600 | Média | Feito junto com a troca de amortecedores. |
+| Troca de correia dentada | Motor | 120 | 300 | Difícil | 500 | 1200 | Média | Serviço crítico. Valor varia com a complexidade do motor. |
+| Troca de tensor da correia dentada | Motor | 120 | 300 | Difícil | 500 | 1200 | Média | Sempre trocar junto com a correia dentada (kit). |
+| Troca de bomba d'água | Motor | 150 | 360 | Difícil | 600 | 1500 | Baixa | Recomendado trocar junto com a correia dentada. |
+| Troca de válvula termostática | Motor | 60 | 120 | Média | 200 | 400 | Média | Acesso pode ser complexo em alguns motores. |
+| Troca de junta do cabeçote | Motor | 480 | 960 | Difícil | 1500 | 3500 | Baixa | Serviço complexo |
+| Troca de retentores de válvulas | Motor | 360 | 720 | Difícil | 1200 | 2500 | Baixa | Pode exigir remoção do cabeçote. |
+| Troca de retentor do virabrequim | Motor | 180 | 420 | Difícil | 700 | 1800 | Baixa | Exige remoção da polia do virabrequim ou do câmbio. |
+| Troca de velas e cabos de ignição | Motor | 40 | 70 | Fácil | 150 | 250 | Média | Serviço preventivo comum. |
+| Diagnóstico com scanner | Motor |
+--------------------------------------------------------------------------------
+
+5. Arquivo: N/A
+   Fonte: 3_pecas\comparativo_pecas_originais_paralelas.md
+   Conteúdo: TRW | RPDI03800 | 220.00 | 51.11 | 90000 km | 80000 km | Sempre | Sim | Sempre trocar em par. |
+| Fluido de Freio DOT 4 (500ml) | Varga | BF4 | 40.00 | Bosch | BF4 | 25.00 | 37.50 | 2 anos | 2 anos | Sempre | Sempre | Fluido é higroscópico. A marca paralela é geralmente a mesma fornecedora da original. |
+| Pastilha de Freio Traseira (GM Onix) | ACDelco | 94750000 | 180.00 | Jurid | HQJ2201 | 75.00 | 58.33 | 40000 km | 30000 km | Sempre | Sim | Verificar se o sistema é a disco ou tambor. |
+| Lona de Freio (Fiat Uno) | Cobreq | N-100 | 120.00 | Fras-le | FI/100 | 60.00 | 50.00 | 50000 km | 40000 km | Sempre | Sim | Verificar tambores. |
+| Cilindro Mestre (VW Fox) | TRW | RCCR0001 | 350.00 | Controil | C-2001 | 180.00 | 48.57 | 100000 km | 80000 km | Sempre | Sim | Peça de segurança crítica. |
+| Cilindro de Roda (GM Celta) | TRW | RCW0001 | 150.00 | Controil | C-3001 | 70.00 | 53.33 | 80000 km | 60000 km | Sempre | Sim | Verificar vazamentos. |
+| Filtro de Óleo (Ford Ranger Diesel) | Ford/Mann | BB3Q6744BA | 80.00 | Tecfil | PEL102 | 45.00 | 43.75 | 10000 km | 10000 km | Sempre | Sempre | Motores diesel exigem filtros de alta qualidade. |
+| Filtro de Combustível Diesel (VW Amarok) | VW/Mahle | 2H0127177B | 150.00 | Mann | WK820/18 | 80.00 | 46.67 | 10000 km | 10000 km | Sempre | Sempre | Essencial para proteger o sistema Common Rail. |
+| Pastilha de Freio Dianteira (SUV Médio) | Original | OEM450 | 400.00 | Bosch | 0986BB0700 | 180.00 | 55.00 | 45000 km | 35000 km | Sempre | Sim | Veículos pesados exigem pastilhas de alta performance. |
+| Disco de Freio Dianteiro (SUV Médio) | Original | OEM800 | 650.00 | Fremax | BD4050 | 320.00 | 50.77 | 90000 km | 80000 km | Sempre | Sim | Verificar se o disco é ventilado ou sólido. |
+| Filtro de Óleo (Renault Kwid) | Renault/Purflux | 152089599R | 40.00 | Fram | PH6811 | 20.00 | 50.00 | 10000 km | 10000 km | Sempre | Sempre | Filtro pequeno |
+| Filtro de Ar (Hyundai HB20) | Hyundai/Mann | 281131S000 | 55.00 | Tecfil | ARL2340 | 28.
+--------------------------------------------------------------------------------
+
+6. Arquivo: N/A
+   Fonte: 4_servicos\servicos_geometria_suspensao.md
+   Conteúdo: o de óleo |  instabilidade. | Elevador |  torquímetro |  60 |  120 |  180 |  350 |  Kit batente |  65 |
+| Troca de Kit Suspensão Completo (Dianteiro) | Substituição de amortecedores |  molas |  coxins e batentes dianteiros. | Suspensão "cansada" |  ruídos múltiplos |  120 |  240 |  350 |  700 |  Amortecedores |  molas |  coxins |
+| Troca de Molas (Par) | Substituição das molas helicoidais. | Veículo "caído" |  quebra de mola. | Elevador |  compressor de molas |  90 |  180 |  200 |  400 |  Amortecedores (inspeção) |  65 |  Moderado |
+| Troca de Buchas de Bandeja (Par) | Substituição das buchas de borracha da bandeja de suspensão. | Ruído (rangido) |  folga na roda |  120 |  240 |  300 |  600 |  Buchas |  60 |  Moderado | Requer prensa hidráulica. Apertar com o carro no chão. |  |
+| Troca de Buchas de Barra Estabilizadora (Par) | Substituição das buchas que fixam a barra estabilizadora ao chassi. | Ruído (toc-toc) em pisos irregulares. | Elevador |  30 |  60 |  80 |  150 |  Buchas |  75 |  Comum | Serviço rápido e de alta frequência. |  |
+| Troca de Coxim de Suspensão (Par) | Substituição do coxim superior do amortecedor. | Ruído (estalo) ao esterçar |  90 |  180 |  200 |  400 |  Coxins |  65 |  Comum | Geralmente trocado junto com o amortecedor. |  |  |
+| Troca de Pivô de Suspensão (Par) | Substituição do pivô que liga a bandeja à manga de eixo. | Folga na roda |  ruído |  60 |  120 |  150 |  300 |  Pivôs |  70 |  Comum | Alinhamento obrigatório após. |  |
+| Rebaixamento de Suspensão (Molas Esportivas) | Instalação de molas esportivas para redução da altura do veículo. | Desejo de estética |  120 |  240 |  350 |  700 |  Molas esportivas |  60 |  Raro | Exige laudo de engenharia para legalização (CONTRAN). |  |  |
+| Instalação de Suspensão a Ar | Instalação de sistema pneumático para ajuste de altura via controle remoto. | Desejo de estética e conforto |  360 |  720 |  800 |  1500 |  Kit suspensão a ar |  50 |  Raro | Serviço altamente especializado. Alto valor agrega
+--------------------------------------------------------------------------------
+
+7. Arquivo: N/A
+   Fonte: 3_pecas\comparativo_pecas_originais_paralelas.md
+   Conteúdo: | Componente | Peca_Original_Marca | Codigo_Original | Preco_Original_R$ | Paralela_Marca_Boa | Codigo_Paralela | Preco_Paralela_R$ | Diferenca_Percentual | Durabilidade_Original | Durabilidade_Paralela | Quando_Usar_Original | Quando_Paralela_OK | Observacoes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Filtro de Óleo (VW Gol 1.0) | VW/Mahle | 030115561AN | 35.00 | Mann | W712/52 | 18.00 | 48.57 | 10000 km | 10000 km | Sempre | Sempre | Peça de baixo risco. Marcas boas mantêm a qualidade. |
+| Filtro de Ar (Fiat Palio 1.0) | Fiat/Mahle | 51857500 | 45.00 | Tecfil | ARL6072 | 22.00 | 51.11 | 10000 km | 10000 km | Sempre | Sempre | Atenção à vedação para evitar entrada de sujeira. |
+| Filtro de Combustível (GM Corsa) | GM/Delphi | 93315605 | 30.00 | Bosch | 0986BF0501 | 15.00 | 50.00 | 10000 km | 10000 km | Sempre | Sempre | Troca rigorosa para proteger a bomba de combustível. |
+| Filtro de Cabine (Ford Ka) | Ford/Mahle | CN1119N619AA | 60.00 | Wega | AKX35338 | 25.00 | 58.33 | 12 meses | 12 meses | Sempre | Sempre | Afeta apenas a qualidade do ar. |
+| Pastilha de Freio Dianteira (VW Gol) | TRW/Varga | JURID250 | 220.00 | Fras-le | PD/59 | 85.00 | 61.36 | 40000 km | 30000 km | Sempre | Sim | Peça de segurança. Usar apenas marcas de primeira linha. |
+| Pastilha de Freio Dianteira (Toyota Corolla) | Akebono | 04465YZZD3 | 350.00 | Cobreq | N-1706 | 130.00 | 62.86 | 50000 km | 40000 km | Sempre | Sim | Corolla exige pastilhas de alta qualidade para evitar ruído. |
+| Disco de Freio Dianteiro (VW Gol) | Fremax | BD4020 | 300.00 | Hipper Freios | HF200 | 150.00 | 50.00 | 80000 km | 70000 km | Sempre | Sim | Verificar espessura mínima (MIN TH) antes da instalação. |
+| Disco de Freio Dianteiro (Honda Civic) | Nissin | 45251SNAA00 | 450.00 | TRW | RPDI03800 | 220.00 | 51.11 | 90000 km | 80000 km | Sempre | Sim | Sempre trocar em par. |
+| Fluido de Freio DOT 4 (500ml) | Varga | BF4 | 40.00 | Bosch | BF4 | 25.00 | 37.50 | 2 anos | 2 anos |
+--------------------------------------------------------------------------------
+
+8. Arquivo: N/A
+   Fonte: 1_tecnico\GUIA_COMPLETO_DE_INJEÇÃO_ELETRÔNICA_-_DIAGNÓSTICO_E_MANUTENÇÃO.md
+   Conteúdo: ltro para
+garantir a pureza do
+combustível.
+
+A cada 10.000 km (gasolina)
+ou 5.000 km (etanol/ﬂex), ou
+conforme manual.
+
+Substituição da bomba
+quando a pressão ou vazão
+estiverem abaixo do
+especiﬁcado.
+
+Conforme falha. A
+manutenção preventiva não é
+comum, mas a qualidade do
+combustível afeta a vida útil.
+
+Troca de sensores que
+apresentem leituras fora da
+faixa ou códigos de falha
+persistentes.
+
+Procedimento via scanner
+para apagar os valores de
+aprendizado da ECU (ex:
+posição da borboleta,
+correção de mistura) após
+manutenção. Essencial após
+limpeza de corpo de
+borboleta ou troca de
+sensores.
+
+Conforme falha.
+
+Após qualquer manutenção
+que altere o comportamento
+do motor.
+
+6. VALORES DE REFERÊNCIA
+
+Os valores exatos variam muito por modelo e fabricante (Bosch, Marelli, Delphi), mas a
+
+tabela abaixo fornece faixas típicas para orientação. Sempre consulte a literatura técnica
+especíﬁca do veículo.
+
+Pressão de Combustível Típica
+
+Sistema
+
+Monoponto (TBI)
+
+Multiponto (MPFI)
+
+Pressão (Bar)
+
+0.8 a 1.2
+
+2.5 a 4.5
+
+Injeção Direta (GDI/FSI)
+
+Baixa: 4 a 6 / Alta: 50 a 200+
+
+Resistência de Bicos Injetores (Típica)
+
+Tipo de Bico
+
+Resistência (Ohms)
+
+Baixa Impedância
+
+Alta Impedância
+
+0.5 a 3.0
+
+10.0 a 16.0
+
+Valores de Sensores em Marcha Lenta (Motor Aquecido)
+
+Sensor
+
+Parâmetro (Scanner)
+
+Valor Típico
+
+Sensor MAP
+
+Pressão Absoluta
+
+Sensor TPS
+
+Posição da Borboleta
+
+300 a 400 mBar (ou 0.3 a 0.4
+bar)
+
+0.45 a 0.55 V (ou 0% a 1% de
+abertura)
+
+Sensor ECT
+
+Temperatura do Motor
+
+85°C a 95°C
+
+Sonda Lambda (Zircônia)
+
+Tensão
+
+Tempo de Injeção
+
+Tempo (ms)
+
+Oscilando rapidamente entre
+0.1 V (pobre) e 0.9 V (rica)
+
+2.0 a 4.0 ms (varia com o
+combustível e carga)
+
+7. ERROS COMUNS E SOLUÇÕES
+
+Evitar erros de diagnóstico economiza tempo e evita a troca desnecessária de peças.
+
+Erro Comum
+
+Descrição e Consequência
+
+Solução Recomendada
+
+Diagnóstico errado de
+sensores
+
+Confundir sintomas
+
+Troca desnecessária de
+peças
+
+Esquecimento de
+adaptações
+--------------------------------------------------------------------------------
+
+9. Arquivo: N/A
+   Fonte: 4_servicos\tabela_tempos_valores.md
+   Conteúdo: xige remoção da polia do virabrequim ou do câmbio. |
+| Troca de velas e cabos de ignição | Motor | 40 | 70 | Fácil | 150 | 250 | Média | Serviço preventivo comum. |
+| Diagnóstico com scanner | Motor | 15 | 30 | Fácil | 80 | 150 | Alta | Leitura de códigos de falha. |
+| Troca de kit de embreagem | Transmissão | 240 | 480 | Difícil | 800 | 2000 | Média | Requer remoção da caixa de câmbio. |
+| Troca de óleo do câmbio manual | Transmissão | 30 | 60 | Fácil | 100 | 180 | Baixa | Verificar especificação do óleo. |
+| Troca de óleo do câmbio automático | Transmissão | 90 | 180 | Média | 350 | 700 | Média | Pode exigir máquina específica para troca completa. |
+| Troca de semieixo (homocinética) | Transmissão | 60 | 100 | Média | 200 | 350 | Média | Geralmente troca-se a junta homocinética. |
+| Troca de coifa da homocinética | Transmissão | 50 | 80 | Média | 150 | 250 | Média | Evita a troca da junta completa se feito a tempo. |
+| Troca de alternador | Elétrica | 60 | 120 | Média | 250 | 500 | Baixa | Acesso pode ser difícil. |
+| Troca de motor de partida | Elétrica | 60 | 180 | Média | 250 | 500 | Baixa | Acesso pode ser difícil. |
+| Carga de bateria | Elétrica | 60 | 120 | Fácil | 50 | 80 | Baixa | Carga lenta. |
+| Troca de lâmpada de farol (unidade) | Elétrica | 5 | 20 | Fácil | 30 | 70 | Alta | Alguns modelos exigem desmontagem do farol. |
+| Troca de lâmpada de lanterna (unidade) | Elétrica | 5 | 15 | Fácil | 20 | 50 | Alta | Fácil acesso na maioria dos casos. |
+| Carga de gás do ar condicionado | Outros | 40 | 60 | Média | 200 | 350 | Média | Inclui verificação de vazamentos com contraste. |
+| Troca de compressor do ar condicionado | Outros | 120 | 240 | Difícil | 500 | 1000 | Baixa | Requer evacuação e recarga do gás. |
+| Troca de radiador de ar quente | Outros | 180 | 360 | Difícil | 700 | 1500 | Baixa | Exige desmontagem do painel do veículo. |
+| Troca de escapamento (silencioso traseiro) | Outros | 30 | 50 | Fácil | 100 | 180 | Média | Corte e solda podem ser necessá
+--------------------------------------------------------------------------------
+
+10. Arquivo: N/A
+   Fonte: 1_tecnico\manual_transmissao_embreagem.md.md
+   Conteúdo: ontagem da carcaça e das tampas deve seguir
+
+os torques especiﬁcados para garantir o alinhamento e a vedação.
+
+6. Troca de Óleo (Tipo e Quantidade): Utilizar o óleo com a especiﬁcação (API GL-4 ou GL-
+
+5) e viscosidade (SAE) correta, conforme o manual do fabricante. A quantidade é crítica.
+
+7. Teste em Bancada e Veículo: Antes da instalação, testar o engate das marchas em
+
+bancada. Após a instalação, realizar teste de rodagem para veriﬁcar ruídos, engates e
+vazamentos.
+
+7. TRANSMISSÃO AUTOMÁTICA - TIPOS
+
+As transmissões automáticas evoluíram signiﬁcativamente, apresentando diferentes
+tecnologias para gerenciar a troca de marchas.
+
+Tipo de Transmissão
+
+Princípio de Funcionamento
+
+Características Principais
+
+Convencional (AT)
+
+Conjunto de engrenagens
+planetárias e conversor de
+torque.
+
+Trocas suaves, utiliza ﬂuido
+ATF, diagnóstico complexo
+(hidráulico e eletrônico).
+
+CVT (Continuously Variable
+Transmission)
+
+Duas polias de diâmetro
+variável interligadas por
+correia ou corrente metálica.
+
+DSG/DCT (Dupla Embreagem)
+
+Automatizada (AMT)
+
+Duas caixas de câmbio
+manuais uniﬁcadas, com
+duas embreagens (seca ou
+úmida).
+
+Câmbio manual com
+atuadores eletro-hidráulicos
+para embreagem e trocas.
+
+Relação de marcha "inﬁnita",
+foco em economia e conforto.
+Requer ﬂuido especíﬁco (CVT-
+F).
+
+Trocas ultrarrápidas,
+sensação esportiva. Possui
+módulo mecatrônico.
+
+Mais simples e barata, mas
+com trocas mais lentas e
+trancos perceptíveis (ex: I-
+Motion, Dualogic).
+
+8. SINTOMAS E DIAGNÓSTICOS - CÂMBIO AUTOMÁTICO
+
+O diagnóstico de transmissões automáticas é altamente dependente da análise eletrônica
+e da qualidade do ﬂuido.
+
+Sintoma
+
+Causa Provável
+
+Diagnóstico e Ação
+
+Trancos ao Trocar Marchas
+
+Demora para Engatar (D ou
+R)
+
+Patinação (RPM sobe, carro
+não acelera)
+
+Solenoides de pressão com
+falha, corpo de válvulas
+sujo/desgastado, ﬂuido ATF
+degradado, falha no módulo
+de controle (TCM).
+
+Baixa pressão de linha
+(bomba, corpo de válvulas),
+conversor de torque com
+falha, nível baixo de ﬂuido.
+--------------------------------------------------------------------------------

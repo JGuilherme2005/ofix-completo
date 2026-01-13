@@ -1,0 +1,33 @@
+[project]
+name = "matias-oficina-ia"
+version = "5.0.0"
+description = "Assistente técnico especializado para oficina automotiva com 624 documentos"
+author = "PedroVictor26"
+agent_file = "agent.py"
+
+[agent]
+name = "Matias"
+role = "Assistente técnico especializado da oficina automotiva"
+model = "Qwen/Qwen2.5-7B-Instruct"
+
+[knowledge]
+name = "Base de Conhecimento da Oficina v5"
+description = "624 chunks de 65 arquivos: manuais técnicos, gestão, peças, serviços e legislação"
+provider = "lancedb"
+table_name = "conhecimento_oficina_v5_completo"
+uri = "db://ofx-rbf7i6"
+embedder = "fastembed"
+num_documents = 3
+
+[models]
+primary = "huggingface-qwen2.5-7b"
+provider = "huggingface"
+
+[vectordb]
+type = "lancedb"
+uri = "db://ofx-rbf7i6"
+region = "us-east-1"
+
+[monitoring]
+enabled = true
+telemetry = true
