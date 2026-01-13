@@ -1,0 +1,38 @@
+services:
+  # BACKEND SERVICE
+  - type: web
+    name: ofix-backend
+    env: node
+    rootDir: ofix_new/ofix-backend
+    buildCommand: npm install && npm run prisma:migrate
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.14.0
+      - key: DATABASE_URL
+        sync: false  # Usuário deve configurar no painel
+      - key: REDIS_URL
+        sync: false # Usuário deve configurar no painel
+      - key: AGNO_API_URL
+        fromService:
+          type: web
+          name: matias-agno
+          envVar: COMPONENT_URL # Render URL interna
+
+  # MATIAS AGNO SERVICE
+  - type: web
+    name: matias-agno
+    env: docker
+    rootDir: matias_agnoV1
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: PORT
+        value: 7777
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OLLAMA_ENABLED
+        value: true
+      - key: OLLAMA_BASE_URL
+        sync: false # Usuário deve colar sua URL do Ngrok aqui
