@@ -17,7 +17,7 @@ services:
         fromService:
           type: web
           name: matias-agno
-          envVar: COMPONENT_URL # Render URL interna
+          property: url
 
   # MATIAS AGNO SERVICE
   - type: web
