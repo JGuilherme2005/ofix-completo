@@ -20,6 +20,7 @@ pandas>=2.0.0,<3.0.0
 groq==0.11.0
 fastembed==0.7.3
 ollama>=0.1.0
+tantivy>=0.20.0
 
 # Web & HTTP - Versões compatíveis
 httpx==0.25.2
