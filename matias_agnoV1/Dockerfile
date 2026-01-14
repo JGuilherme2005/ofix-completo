@@ -22,4 +22,4 @@ COPY . .
 EXPOSE 7777
 
 # Comando de inicialização
-CMD ["python", "serve_agno.py"]
+CMD ["uvicorn", "matias_agno.main:app", "--host", "0.0.0.0", "--port", "7777"]
