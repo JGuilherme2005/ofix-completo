@@ -28,6 +28,8 @@ services:
         sync: false # Usuário deve configurar no painel
       - key: AGNO_API_URL
         value: http://matias-agno:7777
+      - key: JWT_SECRET
+        sync: false # Gere uma senha segura e coloque aqui
 
   # MATIAS AGNO SERVICE
   - type: web
