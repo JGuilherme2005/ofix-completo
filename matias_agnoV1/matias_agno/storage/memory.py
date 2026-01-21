@@ -12,11 +12,14 @@ def get_memory_storage():
         from agno.db.sqlite import SqliteDb
         return SqliteDb(db_file="tmp/matias_memory.db")
         
-    # Fallback para SQLite temporariamente devido a erro de encoding no Windows/Supabase
-    # Para produção, descomente a linha do PostgresDb
+    # Configuração correta para Postgres (Supabase)
+    if DB_URL:
+        # Usamos uma tabela v2 para evitar conflito de schema com versões antigas do Agno
+        return PostgresDb(
+            db_url=DB_URL,
+            table_name="agno_memories_v2"
+        )
+    
+    # Fallback para SQLite local
     from agno.db.sqlite import SqliteDb
     return SqliteDb(db_file="tmp/matias_memory.db")
-    
-    # return PostgresDb(
-    #    db_url=DB_URL,
-    # )
