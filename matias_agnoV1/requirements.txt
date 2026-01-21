@@ -1,7 +1,7 @@
 # Core Framework - Versões estáveis e testadas
-agno==2.0.11
-fastapi==0.104.1
-uvicorn==0.24.0
+agno>=2.0.0
+fastapi>=0.104.0
+uvicorn>=0.24.0
 
 # Database - Versões compatíveis com agno 2.0+
 sqlalchemy>=2.0.0,<3.0.0
