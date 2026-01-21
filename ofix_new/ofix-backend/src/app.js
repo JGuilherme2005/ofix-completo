@@ -30,7 +30,8 @@ class Application {
 
     // 1. Defina quais "origens" (sites) têm permissão para acessar sua API
     const allowedOrigins = [
-      'https://ofix.vercel.app',  // URL de produção do seu frontend
+      'https://ofix.vercel.app',  // URL de produção do seu frontend (antiga)
+      'https://ofix-completo.vercel.app', // URL real do Vercel
       'http://localhost:5173',   // URL para desenvolvimento local com Vite
       'http://localhost:5174',   // URL para desenvolvimento local com Vite (porta alternativa)
       'http://localhost:3000',   // Outra URL comum para desenvolvimento local
