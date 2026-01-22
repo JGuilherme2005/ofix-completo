@@ -65,9 +65,9 @@ def create_matias_ollama_agent():
         debug_mode=False,
         description="Assistente especializado em oficina automotiva rodando via Ollama Remoto",
         
-        # Sistema de Memória (Forçando SQLite para evitar erro de schema de produção)
-        # db=get_memory_storage(), -> Comentado devido a erro persistente de schema
-        storage=None, # Desativando persistencia complexa temporariamente para destravar
+        # Sistema de Memória (Simplificado para v2)
+        # Na v2, a memória é gerenciada internamente ou via memory=...
+        # storage=None causou erro pois o argumento não existe mais na classe Agent base
         add_history_to_context=True,
         num_history_runs=5,
     )
