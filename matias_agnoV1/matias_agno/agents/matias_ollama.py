@@ -65,10 +65,9 @@ def create_matias_ollama_agent():
         debug_mode=False,
         description="Assistente especializado em oficina automotiva rodando via Ollama Remoto",
         
-        # Sistema de Memória
-        db=get_memory_storage(),
-        enable_user_memories=True,
-        enable_session_summaries=True,
+        # Sistema de Memória (Forçando SQLite para evitar erro de schema de produção)
+        # db=get_memory_storage(), -> Comentado devido a erro persistente de schema
+        storage=None, # Desativando persistencia complexa temporariamente para destravar
         add_history_to_context=True,
         num_history_runs=5,
     )
