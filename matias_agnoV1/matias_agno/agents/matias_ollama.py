@@ -38,9 +38,8 @@ ESPECIALIDADES:
 
 Sempre termine perguntando se o cliente precisa de mais informações."""
 
-from ollama import Client as OllamaClient
 
-from agno.memory import AgentMemory
+from ollama import Client as OllamaClient
 
 def create_matias_ollama_agent():
     # Inicializar Knowledge Base Unificada
@@ -50,13 +49,6 @@ def create_matias_ollama_agent():
     ollama_host = os.getenv("OLLAMA_BASE_URL", "https://holly-unlame-nonmetaphorically.ngrok-free.dev")
     ollama_client = OllamaClient(host=ollama_host)
     
-    # Configurar Memória Persistente (v2)
-    matias_memory = AgentMemory(
-        storage=get_memory_storage(),
-        create_user_memories=True,
-        create_session_summary=True,
-    )
-
     return Agent(
         name="Matias (Ollama)",
         role="Assistente Técnico de Oficina Automotiva",
@@ -74,8 +66,10 @@ def create_matias_ollama_agent():
         debug_mode=False,
         description="Assistente especializado em oficina automotiva rodando via Ollama Remoto",
         
-        # Sistema de Memória (Agno v2)
-        memory=matias_memory,
+        # Sistema de Memória (Restaurado com tabela v3)
+        # O argumento correto para essa versão é 'db' (conforme código original)
+        # A tabela v3 no memory.py resolverá o conflito de schema
+        db=get_memory_storage(),
         add_history_to_context=True,
         num_history_runs=5,
     )
