@@ -40,6 +40,8 @@ Sempre termine perguntando se o cliente precisa de mais informações."""
 
 from ollama import Client as OllamaClient
 
+from agno.memory import AgentMemory
+
 def create_matias_ollama_agent():
     # Inicializar Knowledge Base Unificada
     knowledge_base = get_knowledge_base()
@@ -47,6 +49,13 @@ def create_matias_ollama_agent():
     # Configurar cliente com host remoto (via variável de ambiente ou default hardcoded)
     ollama_host = os.getenv("OLLAMA_BASE_URL", "https://holly-unlame-nonmetaphorically.ngrok-free.dev")
     ollama_client = OllamaClient(host=ollama_host)
+    
+    # Configurar Memória Persistente (v2)
+    matias_memory = AgentMemory(
+        storage=get_memory_storage(),
+        create_user_memories=True,
+        create_session_summary=True,
+    )
 
     return Agent(
         name="Matias (Ollama)",
@@ -65,9 +74,8 @@ def create_matias_ollama_agent():
         debug_mode=False,
         description="Assistente especializado em oficina automotiva rodando via Ollama Remoto",
         
-        # Sistema de Memória (Simplificado para v2)
-        # Na v2, a memória é gerenciada internamente ou via memory=...
-        # storage=None causou erro pois o argumento não existe mais na classe Agent base
+        # Sistema de Memória (Agno v2)
+        memory=matias_memory,
         add_history_to_context=True,
         num_history_runs=5,
     )
