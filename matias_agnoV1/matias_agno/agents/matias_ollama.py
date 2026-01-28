@@ -55,7 +55,13 @@ def create_matias_ollama_agent():
         instructions=INSTRUCTIONS,
         model=Ollama(
             id="qwen2.5:7b",
-            client=ollama_client
+            client=ollama_client,
+            options={
+                "temperature": 0.3,      # Mais focado, menos criativo (evita alucinação)
+                "repeat_penalty": 1.1,   # Evita repetição de frases
+                "top_p": 0.9,
+                "stop": ["<|im_end|>", "<|im_start|>", "<|endoftext|>"] # Stop tokens essenciais para Qwen
+            }
         ),
         # Knowledge Base Nativa
         knowledge=knowledge_base,
