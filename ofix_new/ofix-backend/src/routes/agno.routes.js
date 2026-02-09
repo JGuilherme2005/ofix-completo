@@ -26,6 +26,23 @@ const AGNO_API_TOKEN = (process.env.AGNO_API_TOKEN || '').trim();
 const AGNO_DEFAULT_AGENT_ID = (process.env.AGNO_DEFAULT_AGENT_ID || 'matias').trim();
 const AGNO_IS_CONFIGURED = Boolean(AGNO_BASE_URL);
 
+function parsePositiveInt(value, fallback) {
+    const parsed = Number.parseInt(String(value ?? ''), 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+// Timeouts and warmup behavior (env overridable)
+const AGNO_RUN_TIMEOUT_MS = parsePositiveInt(process.env.AGNO_RUN_TIMEOUT_MS, 120000);
+const AGNO_HEALTH_TIMEOUT_MS = parsePositiveInt(process.env.AGNO_HEALTH_TIMEOUT_MS, 10000);
+
+// Optional: perform a lightweight warm run to reduce cold-start latency (Render free tier, etc.)
+const AGNO_WARM_RUN_ENABLED = String(process.env.AGNO_WARM_RUN || '').trim().toLowerCase() === 'true';
+const AGNO_WARM_RUN_TIMEOUT_MS = parsePositiveInt(process.env.AGNO_WARM_RUN_TIMEOUT_MS, 20000);
+const AGNO_WARM_RUN_MESSAGE = (process.env.AGNO_WARM_RUN_MESSAGE || 'ping').trim();
+const AGNO_WARM_RUN_AGENT_ID = (process.env.AGNO_WARM_RUN_AGENT_ID || AGNO_DEFAULT_AGENT_ID || 'matias').trim() || 'matias';
+const AGNO_WARM_RUN_SESSION_ID = (process.env.AGNO_WARM_RUN_SESSION_ID || 'warmup').trim() || 'warmup';
+const AGNO_WARM_RUN_USER_ID = (process.env.AGNO_WARM_RUN_USER_ID || 'warmup').trim() || 'warmup';
+
 function ensureDatabaseConfigured(res) {
     if (process.env.DATABASE_URL) {
         return true;
@@ -95,31 +112,122 @@ const AGNO_CONTEXT = {
     }
 };
 
-async function warmAgnoService() {
-    lastWarmingAttempt = Date.now();
+function getAgnoAuthHeaders() {
+    return AGNO_API_TOKEN ? { 'Authorization': `Bearer ${AGNO_API_TOKEN}` } : {};
+}
 
+async function fetchAgnoHealth({ timeoutMs = AGNO_HEALTH_TIMEOUT_MS } = {}) {
     if (!AGNO_IS_CONFIGURED) {
-        console.warn('[AGNO] Warm solicitado, mas AGNO_API_URL nao esta configurada');
-        return false;
+        return { ok: false, status: null, latency_ms: 0, data: null, error: 'AGNO_NOT_CONFIGURED' };
     }
 
+    const startedAt = Date.now();
     try {
         const response = await fetch(`${AGNO_BASE_URL}/health`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
+                ...getAgnoAuthHeaders()
             },
-            signal: AbortSignal.timeout(10000)
+            signal: AbortSignal.timeout(timeoutMs)
         });
 
-        agnoWarmed = response.ok;
-        return response.ok;
+        const latency_ms = Date.now() - startedAt;
+        let data = null;
+        try {
+            data = await response.json();
+        } catch (_) {
+            // ignore non-JSON health bodies
+        }
+
+        return { ok: response.ok, status: response.status, latency_ms, data, error: null };
     } catch (error) {
-        console.warn('⚠️ [AGNO] Warm falhou:', error.message);
-        agnoWarmed = false;
-        return false;
+        const latency_ms = Date.now() - startedAt;
+        return { ok: false, status: null, latency_ms, data: null, error: error.message };
     }
+}
+
+async function runAgnoWarmRun({ agentId = AGNO_WARM_RUN_AGENT_ID } = {}) {
+    if (!AGNO_IS_CONFIGURED) {
+        return { ok: false, status: null, latency_ms: 0, error: 'AGNO_NOT_CONFIGURED' };
+    }
+
+    const resolvedAgentId = (agentId || AGNO_DEFAULT_AGENT_ID || 'matias').trim() || 'matias';
+    const endpoint = `${AGNO_BASE_URL}/agents/${encodeURIComponent(resolvedAgentId)}/runs`;
+
+    const form = new FormData();
+    form.append('message', AGNO_WARM_RUN_MESSAGE || 'ping');
+    form.append('stream', 'false');
+    form.append('session_id', AGNO_WARM_RUN_SESSION_ID);
+    form.append('user_id', AGNO_WARM_RUN_USER_ID);
+
+    const startedAt = Date.now();
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                ...form.getHeaders(),
+                ...getAgnoAuthHeaders()
+            },
+            body: form,
+            signal: AbortSignal.timeout(AGNO_WARM_RUN_TIMEOUT_MS)
+        });
+
+        const latency_ms = Date.now() - startedAt;
+
+        if (!response.ok) {
+            const errText = await response.text();
+            return {
+                ok: false,
+                status: response.status,
+                latency_ms,
+                error: errText.substring(0, 200)
+            };
+        }
+
+        const data = await response.json();
+        return {
+            ok: true,
+            status: 200,
+            latency_ms,
+            run_id: data.run_id,
+            model: data.model,
+            agent_id: data.agent_id || resolvedAgentId
+        };
+    } catch (error) {
+        const latency_ms = Date.now() - startedAt;
+        return { ok: false, status: null, latency_ms, error: error.message };
+    }
+}
+
+async function warmAgnoService({ reason = 'manual' } = {}) {
+    lastWarmingAttempt = Date.now();
+
+    if (!AGNO_IS_CONFIGURED) {
+        console.warn('[AGNO] Warm solicitado, mas AGNO_API_URL nao esta configurada');
+        agnoWarmed = false;
+        return { ok: false, reason: 'not_configured', health: null, warm_run: null };
+    }
+
+    const health = await fetchAgnoHealth({ timeoutMs: AGNO_HEALTH_TIMEOUT_MS });
+    agnoWarmed = health.ok;
+
+    if (!health.ok) {
+        console.warn('⚠️ [AGNO] Warm falhou no health:', health.error);
+        return { ok: false, reason, health, warm_run: null };
+    }
+
+    let warmRunResult = null;
+    if (AGNO_WARM_RUN_ENABLED) {
+        warmRunResult = await runAgnoWarmRun({ agentId: AGNO_WARM_RUN_AGENT_ID });
+
+        // Don't mark as offline just because the warm-run failed.
+        if (!warmRunResult.ok) {
+            console.warn('⚠️ [AGNO] Warm-run falhou:', warmRunResult.error);
+        }
+    }
+
+    return { ok: true, reason, health, warm_run: warmRunResult };
 }
 
 // Endpoint pÃºblico para verificar configuraÃ§Ã£o do Agno
@@ -135,6 +243,15 @@ router.get('/config', async (req, res) => {
             has_token: !!AGNO_API_TOKEN,
             agent_id: AGNO_DEFAULT_AGENT_ID,
             warmed: agnoWarmed,
+            timeouts: {
+                run_timeout_ms: AGNO_RUN_TIMEOUT_MS,
+                health_timeout_ms: AGNO_HEALTH_TIMEOUT_MS
+            },
+            warm_run: {
+                enabled: AGNO_WARM_RUN_ENABLED,
+                agent_id: AGNO_WARM_RUN_AGENT_ID,
+                timeout_ms: AGNO_WARM_RUN_TIMEOUT_MS
+            },
             memory_enabled: memoryEnabled, // â† NOVO: indica se memÃ³ria estÃ¡ ativa
             last_warming: lastWarmingAttempt ? new Date(lastWarmingAttempt).toISOString() : null,
             timestamp: new Date().toISOString(),
@@ -154,13 +271,15 @@ router.post('/warm', async (req, res) => {
     try {
         console.log('ðŸ”¥ RequisiÃ§Ã£o de warming do Agno...');
 
-        const success = await warmAgnoService();
+        const result = await warmAgnoService({ reason: 'manual' });
 
         res.json({
-            success: success,
+            success: result.ok,
             warmed: agnoWarmed,
             agno_url: AGNO_BASE_URL || null,
-            message: success ? 'ServiÃ§o Agno aquecido com sucesso' : 'Falha ao aquecer serviÃ§o Agno',
+            message: result.ok ? 'ServiÃ§o Agno aquecido com sucesso' : 'Falha ao aquecer serviÃ§o Agno',
+            health: result.health,
+            warm_run: result.warm_run,
             timestamp: new Date().toISOString()
         });
     } catch (error) {
@@ -171,6 +290,49 @@ router.post('/warm', async (req, res) => {
             message: error.message
         });
     }
+});
+
+// Endpoint autenticado para status consolidado (backend + Agno health)
+router.get('/status', verificarAuth, async (req, res) => {
+    const base = {
+        success: true,
+        backend: { ok: true },
+        agno: {
+            configured: AGNO_IS_CONFIGURED,
+            online: false,
+            status: AGNO_IS_CONFIGURED ? 'unknown' : 'not_configured',
+            agno_url: AGNO_BASE_URL || null,
+            agent_id: AGNO_DEFAULT_AGENT_ID,
+            warmed: agnoWarmed,
+            last_warming: lastWarmingAttempt ? new Date(lastWarmingAttempt).toISOString() : null,
+            last_activity: lastActivity ? new Date(lastActivity).toISOString() : null,
+            timeouts: {
+                run_timeout_ms: AGNO_RUN_TIMEOUT_MS,
+                health_timeout_ms: AGNO_HEALTH_TIMEOUT_MS
+            },
+            circuit_breaker: {
+                open: circuitBreakerOpen,
+                open_until: circuitBreakerOpenUntil ? new Date(circuitBreakerOpenUntil).toISOString() : null
+            }
+        },
+        timestamp: new Date().toISOString()
+    };
+
+    if (!AGNO_IS_CONFIGURED) {
+        return res.json(base);
+    }
+
+    const health = await fetchAgnoHealth({ timeoutMs: AGNO_HEALTH_TIMEOUT_MS });
+
+    return res.json({
+        ...base,
+        agno: {
+            ...base.agno,
+            online: health.ok,
+            status: health.ok ? 'online' : 'offline',
+            health
+        }
+    });
 });
 
 // ðŸ”’ RATE LIMITER para endpoints pÃºblicos (previne abuso)
@@ -299,6 +461,9 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
             });
         }
 
+        // Track activity for warmup logic (prevents constant warming due to stale lastActivity).
+        lastActivity = Date.now();
+
         console.log('ðŸ’¬ [CHAT-INTELIGENTE] Nova mensagem:', message.substring(0, 80) + '...');
         console.log('ðŸŽ¯ Usuario ID:', usuario_id);
         console.log('ðŸŽ¯ Contexto ativo:', contexto_ativo);
@@ -338,7 +503,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
             console.log('ðŸ§  [AGNO_AI] Enviando para Agno AI...');
 
             try {
-                responseData = await processarComAgnoAI(message, usuario_id, 'matias', null);
+                responseData = await processarComAgnoAI(message, usuario_id, 'matias', null, { throwOnError: true });
 
                 const duration = Date.now() - startTime;
                 console.log(`âœ… [AGNO_AI] Processado em ${duration}ms`);
@@ -350,9 +515,12 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
                     responseData.metadata.classification = classification;
                 }
             } catch (agnoError) {
-                const isTimeout = agnoError.message.includes('timeout') || agnoError.message.includes('429');
-                const errorType = isTimeout ? 'â±ï¸ Timeout/Rate Limit' : 'âŒ Erro';
-                console.error(`   âš ï¸ Agno falhou (${errorType}), usando fallback:`, agnoError.message);
+                const errorMessage = String(agnoError?.message || '');
+                const isTimeout = Boolean(agnoError?.is_timeout) || /aborted|timeout/i.test(errorMessage);
+                const isRateLimit = agnoError?.status === 429 || errorMessage.includes('429');
+                const isTimeoutOrRateLimit = isTimeout || isRateLimit;
+                const errorType = isTimeoutOrRateLimit ? 'â±ï¸ Timeout/Rate Limit' : 'âŒ Erro';
+                console.error(`   âš ï¸ Agno falhou (${errorType}), usando fallback:`, errorMessage);
 
                 // Fallback para resposta local baseado no subtipo
                 const duration = Date.now() - startTime;
@@ -360,14 +528,15 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
                 if (classification.subtype === 'ORCAMENTO' || classification.subtype === 'CONSULTA_PRECO') {
                     responseData = {
                         success: true,
-                        response: `ðŸ’° **Consulta de PreÃ§o**\n\n${isTimeout ? 'âš ï¸ _O assistente estÃ¡ temporariamente indisponÃ­vel._\n\n' : ''}Para fornecer um orÃ§amento preciso, preciso de algumas informaÃ§Ãµes:\n\nâ€¢ Qual Ã© o modelo do veÃ­culo?\nâ€¢ Qual ano?\n\nOs valores variam dependendo do veÃ­culo. Entre em contato para um orÃ§amento personalizado!\n\nðŸ“ž **Contato:** (11) 1234-5678`,
+                        response: `ðŸ’° **Consulta de PreÃ§o**\n\n${isTimeoutOrRateLimit ? 'âš ï¸ _O assistente estÃ¡ temporariamente indisponÃ­vel._\n\n' : ''}Para fornecer um orÃ§amento preciso, preciso de algumas informaÃ§Ãµes:\n\nâ€¢ Qual Ã© o modelo do veÃ­culo?\nâ€¢ Qual ano?\n\nOs valores variam dependendo do veÃ­culo. Entre em contato para um orÃ§amento personalizado!\n\nðŸ“ž **Contato:** (11) 1234-5678`,
                         tipo: 'consulta_preco',
                         mode: 'fallback',
                         metadata: {
                             processed_by: 'BACKEND_LOCAL_FALLBACK',
                             processing_time_ms: duration,
-                            agno_error: agnoError.message,
+                            agno_error: errorMessage,
                             is_timeout: isTimeout,
+                            is_rate_limit: isRateLimit,
                             classification: classification
                         }
                     };
@@ -375,14 +544,15 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
                     // Fallback genÃ©rico
                     responseData = {
                         success: true,
-                        response: `OlÃ¡! ðŸ‘‹\n\n${isTimeout ? 'âš ï¸ _O assistente avanÃ§ado estÃ¡ temporariamente indisponÃ­vel._\n\n' : ''}Como posso ajudar vocÃª hoje?\n\nâ€¢ Agendar um serviÃ§o\nâ€¢ Consultar ordem de serviÃ§o\nâ€¢ Ver peÃ§as em estoque\nâ€¢ Cadastrar cliente\nâ€¢ Ver estatÃ­sticas\n\nDigite sua solicitaÃ§Ã£o!`,
+                        response: `OlÃ¡! ðŸ‘‹\n\n${isTimeoutOrRateLimit ? 'âš ï¸ _O assistente avanÃ§ado estÃ¡ temporariamente indisponÃ­vel._\n\n' : ''}Como posso ajudar vocÃª hoje?\n\nâ€¢ Agendar um serviÃ§o\nâ€¢ Consultar ordem de serviÃ§o\nâ€¢ Ver peÃ§as em estoque\nâ€¢ Cadastrar cliente\nâ€¢ Ver estatÃ­sticas\n\nDigite sua solicitaÃ§Ã£o!`,
                         tipo: 'ajuda',
                         mode: 'fallback',
                         metadata: {
                             processed_by: 'BACKEND_LOCAL_FALLBACK',
                             processing_time_ms: duration,
-                            agno_error: agnoError.message,
+                            agno_error: errorMessage,
                             is_timeout: isTimeout,
+                            is_rate_limit: isRateLimit,
                             classification: classification
                         }
                     };
@@ -1725,47 +1895,40 @@ function verificarAuth(req, res, next) {
 }
 
 // Health check do agente Agno
-router.get('/health', verificarAuth, async (req, res) => {
-    try {
-        console.log('ðŸ” Verificando status do agente Agno...');
-
-        if (!AGNO_IS_CONFIGURED) {
-            return res.status(503).json({
-                status: 'disabled',
-                message: 'AGNO_API_URL nao configurada',
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        const response = await fetch(`${AGNO_BASE_URL}/health`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
-            },
-            timeout: 10000
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            console.log('âœ… Agente Agno online:', data);
-
-            res.json({
-                status: 'online',
-                agno_status: data,
-                timestamp: new Date().toISOString()
-            });
-        } else {
-            console.log('âš ï¸ Agente Agno retornou erro:', response.status);
-            res.status(response.status).json({
-                status: 'erro',
-                message: 'Agente nÃ£o disponÃ­vel',
-                agno_status: response.status
-            });
-        }
-    } catch (error) {
-        console.error('âŒ Erro ao conectar com agente Agno:', error.message);
-        res.status(503).json({
+  router.get('/health', verificarAuth, async (req, res) => {
+      try {
+          console.log('ðŸ” Verificando status do agente Agno...');
+  
+          if (!AGNO_IS_CONFIGURED) {
+              return res.status(503).json({
+                  status: 'disabled',
+                  message: 'AGNO_API_URL nao configurada',
+                  timestamp: new Date().toISOString()
+              });
+          }
+  
+          const health = await fetchAgnoHealth({ timeoutMs: AGNO_HEALTH_TIMEOUT_MS });
+  
+          if (health.ok) {
+              console.log('âœ… Agente Agno online:', health.data);
+  
+              res.json({
+                  status: 'online',
+                  agno_status: health.data,
+                  health,
+                  timestamp: new Date().toISOString()
+              });
+          } else {
+              console.log('âš ï¸ Agente Agno retornou erro:', health.status);
+              res.status(503).json({
+                  status: 'erro',
+                  message: 'Agente nÃ£o disponÃ­vel',
+                  health
+              });
+          }
+      } catch (error) {
+          console.error('âŒ Erro ao conectar com agente Agno:', error.message);
+          res.status(503).json({
             status: 'erro',
             message: 'ServiÃ§o temporariamente indisponÃ­vel',
             error: error.message
@@ -1785,13 +1948,14 @@ router.get('/agents', verificarAuth, async (req, res) => {
             });
         }
 
-        const response = await fetch(`${AGNO_BASE_URL}/agents`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
-            }
-        });
+          const response = await fetch(`${AGNO_BASE_URL}/agents`, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  ...getAgnoAuthHeaders()
+              },
+              signal: AbortSignal.timeout(AGNO_HEALTH_TIMEOUT_MS)
+          });
 
         if (response.ok) {
             const data = await response.json();
@@ -1827,6 +1991,8 @@ router.post('/chat', verificarAuth, async (req, res) => {
         if (!message) {
             return res.status(400).json({ error: 'Mensagem Ã© obrigatÃ³ria' });
         }
+
+        lastActivity = Date.now();
 
         // Verificar se temos user_id vÃ¡lido
         const userId = req.user?.id || req.user?.userId || 'anonymous';
@@ -2201,17 +2367,14 @@ router.get('/memory-status', async (req, res) => {
             });
         }
 
-        // Testar conexÃ£o com endpoint de memÃ³ria
-        const response = await fetch(`${AGNO_BASE_URL}/health`, {
-            signal: AbortSignal.timeout(10000)
-        });
-
-        const isOnline = response.ok;
+        const health = await fetchAgnoHealth({ timeoutMs: AGNO_HEALTH_TIMEOUT_MS });
+        const isOnline = health.ok;
 
         return res.json({
             enabled: isOnline,
             status: isOnline ? 'active' : 'unavailable',
             agno_url: AGNO_BASE_URL,
+            health,
             message: isOnline
                 ? 'Sistema de memÃ³ria ativo - Matias lembra das suas conversas'
                 : 'Sistema temporariamente indisponÃ­vel',
@@ -2241,15 +2404,13 @@ if (AGNO_IS_CONFIGURED) {
             // Aquecer apenas se inativo por mais de 8 minutos
             if (inactiveTime > 8 * 60 * 1000) {
                 console.log(`ðŸ”¥ [AUTO-WARMUP] Inativo ${inactiveMinutes}min - aquecendo...`);
-                const response = await fetch(`${AGNO_BASE_URL}/health`, {
-                    signal: AbortSignal.timeout(10000)
-                });
+                const result = await warmAgnoService({ reason: 'auto' });
 
-                if (response.ok) {
+                if (result.ok) {
                     console.log('âœ… [AUTO-WARMUP] Agno AI aquecido com sucesso');
                     agnoWarmed = true;
                 } else {
-                    console.warn('âš ï¸ [AUTO-WARMUP] Agno AI nÃ£o respondeu:', response.status);
+                    console.warn('âš ï¸ [AUTO-WARMUP] Agno AI nÃ£o respondeu:', result?.health?.status || result?.health?.error);
                 }
             } else {
                 console.log(`âœ… [AUTO-WARMUP] Ativo (${inactiveMinutes}min) - warm-up desnecessÃ¡rio`);
@@ -2265,9 +2426,16 @@ if (AGNO_IS_CONFIGURED) {
 /**
  * Processa mensagem com Agno AI (com fallback, circuit breaker e CACHE L1)
  */
-async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_ID, session_id = null) {
-    // 0. Verificar Cache L1 (Redis) - 🚀 OTIMIZAÇÃO EXTREMA
-    const cacheKey = `agno:response:${userId}:${CacheService.hash(message)}`;
+async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_ID, session_id = null, options = {}) {
+    const resolvedAgentId = (agentId || AGNO_DEFAULT_AGENT_ID || 'matias').trim() || 'matias';
+    const agnoUserId = `user_${userId}`;
+    const sessionId = session_id || agnoUserId; // Manter consistencia da sessao
+
+    // Track activity for warmup logic.
+    lastActivity = Date.now();
+
+    // 0. Verificar Cache L1 (Redis) - cache deve respeitar sessao e agente
+    const cacheKey = `agno:response:${userId}:${resolvedAgentId}:${CacheService.hash(sessionId)}:${CacheService.hash(message)}`;
     const cachedResponse = await CacheService.get(cacheKey);
 
     if (cachedResponse) {
@@ -2300,8 +2468,8 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
     if (!checkCircuitBreaker()) {
         console.warn('⚠️ [AGNO] Circuit breaker aberto. Usando fallback local.');
         return {
-            response: "Estou com muitas requisições no momento. Tente novamente em alguns instantes.",
-            conteudo: "Estou com muitas requisições no momento. Tente novamente em alguns instantes.",
+            response: "Estou com muitas requisicoes no momento. Tente novamente em alguns instantes.",
+            conteudo: "Estou com muitas requisicoes no momento. Tente novamente em alguns instantes.",
             metadata: {
                 model: "fallback-local",
                 usage: { total_tokens: 0 }
@@ -2309,15 +2477,13 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
         };
     }
 
-    const agnoUserId = `user_${userId}`;
-    const sessionId = session_id || agnoUserId; // Manter consistência da sessão
+    const requestedTimeoutMs = parsePositiveInt(options.timeout_ms ?? options.timeoutMs, AGNO_RUN_TIMEOUT_MS);
+    const throwOnError = Boolean(options.throwOnError);
 
     try {
-        const resolvedAgentId = (agentId || AGNO_DEFAULT_AGENT_ID || 'matias').trim() || 'matias';
-
         // AgentOS: POST /agents/{agent_id}/runs (multipart/form-data)
         const endpoint = `${AGNO_BASE_URL}/agents/${encodeURIComponent(resolvedAgentId)}/runs`;
-        console.log(`🚀 [AGNO] Executando agent=${resolvedAgentId} url=${endpoint}`);
+        console.log(`🚀 [AGNO] Executando agent=${resolvedAgentId} url=${endpoint} timeout_ms=${requestedTimeoutMs}`);
 
         const form = new FormData();
         form.append('message', message);
@@ -2329,10 +2495,10 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
             method: 'POST',
             headers: {
                 ...form.getHeaders(),
-                ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
+                ...getAgnoAuthHeaders()
             },
             body: form,
-            signal: AbortSignal.timeout(60000) // 60s timeout (modelos demoram)
+            signal: AbortSignal.timeout(requestedTimeoutMs)
         });
 
         // 2. Tratamento de Erros HTTP
@@ -2343,14 +2509,22 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
             }
 
             const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+            const httpError = new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+            httpError.status = response.status;
+            throw httpError;
         }
 
         // 3. Processamento da Resposta
         const data = await response.json();
 
-        // Normalizacao da resposta (AgentOS retorna 'content')
-        const respostaTexto = data.content || data.conteudo || data.response || data.message || "Nao entendi.";
+        // Normalizacao da resposta (AgentOS pode retornar content ou result)
+        const respostaTexto =
+            data.content ||
+            data.result ||
+            data.conteudo ||
+            data.response ||
+            data.message ||
+            "Nao entendi.";
 
         const finalResponse = {
             response: respostaTexto,
@@ -2362,7 +2536,8 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
                 agent_id: data.agent_id || resolvedAgentId,
                 usage: { total_tokens: 0 },
                 session_id: data.session_id || sessionId,
-                metrics: data.metrics
+                metrics: data.metrics,
+                timeout_ms: requestedTimeoutMs
             }
         };
 
@@ -2373,15 +2548,27 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
         return finalResponse;
 
     } catch (error) {
-        console.error('❌ [AGNO] Erro na requisição:', error.message);
+        const messageText = String(error?.message || '');
+        const isTimeout = error?.name === 'AbortError' || /aborted|timeout/i.test(messageText);
 
-        // Fallback gracioso
+        // Attach hints for caller fallbacks.
+        error.is_timeout = Boolean(isTimeout);
+
+        console.error('❌ [AGNO] Erro na requisicao:', error.message);
+
+        if (throwOnError) {
+            throw error;
+        }
+
+        // Fallback gracioso (mantem compatibilidade onde o caller nao trata throw)
         return {
-            response: "Desculpe, estou tendo dificuldades para conectar com minha inteligência central. Tente novamente em alguns instantes.",
-            conteudo: "Desculpe, estou tendo dificuldades para conectar com minha inteligência central. Tente novamente em alguns instantes.",
+            response: "Desculpe, estou tendo dificuldades para conectar com minha inteligencia central. Tente novamente em alguns instantes.",
+            conteudo: "Desculpe, estou tendo dificuldades para conectar com minha inteligencia central. Tente novamente em alguns instantes.",
             metadata: {
                 model: "fallback-error",
-                error: error.message
+                error: error.message,
+                is_timeout: Boolean(isTimeout),
+                timeout_ms: requestedTimeoutMs
             }
         };
     }

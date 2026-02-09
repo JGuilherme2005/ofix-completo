@@ -52,7 +52,8 @@ const AIPage = () => {
   const [mensagem, setMensagem] = useState('');
   const [conversas, setConversas] = useState([]);
   const [carregando, setCarregando] = useState(false);
-  const [statusConexao, setStatusConexao] = useState('desconectado'); // conectado, conectando, desconectado, erro
+  const [statusConexao, setStatusConexao] = useState('desconectado'); // conectado, local, conectando, desconectado, erro
+  const podeInteragir = statusConexao === 'conectado' || statusConexao === 'local';
 
   // ✅ NOVOS ESTADOS - Melhorias Críticas para Busca de Clientes
   const [contextoAtivo, setContextoAtivo] = useState(null);
@@ -191,7 +192,7 @@ const AIPage = () => {
   }, [conversas]);
 
   // Verificar status da conexão com Agno
-  const verificarConexao = async () => {
+  const verificarConexao = async ({ warm = false } = {}) => {
     try {
       setStatusConexao('conectando');
 
@@ -200,18 +201,33 @@ const AIPage = () => {
 
       // Testar o endpoint principal do Agno
       const API_BASE = getApiBaseUrl();
-      const response = await fetch(`${API_BASE}/agno/contexto-sistema`, {
+
+      if (warm) {
+        try {
+          await fetch(`${API_BASE}/agno/warm`, {
+            method: 'POST',
+            headers: authHeaders
+          });
+        } catch (warmError) {
+          logger.warn('Falha ao aquecer Agno', { error: warmError.message });
+        }
+      }
+
+      const response = await fetch(`${API_BASE}/agno/status`, {
         method: 'GET',
         headers: authHeaders
       });
 
-      if (response.ok) {
-        setStatusConexao('conectado');
-        return true;
-      } else {
+      if (!response.ok) {
         setStatusConexao('erro');
         return false;
       }
+
+      const data = await response.json();
+      const agnoOnline = Boolean(data?.agno?.online);
+
+      setStatusConexao(agnoOnline ? 'conectado' : 'local');
+      return agnoOnline;
     } catch (error) {
       // ✅ LOGGING ESTRUTURADO
       logger.error('Erro ao verificar conexão', {
@@ -1334,6 +1350,8 @@ const AIPage = () => {
     switch (statusConexao) {
       case 'conectado':
         return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'local':
+        return <AlertCircle className="w-4 h-4 text-amber-500" />;
       case 'conectando':
         return <Loader2 className="w-4 h-4 text-yellow-500 animate-spin" />;
       case 'erro':
@@ -1346,7 +1364,9 @@ const AIPage = () => {
   const getStatusText = () => {
     switch (statusConexao) {
       case 'conectado':
-        return 'Agente Online';
+        return 'Matias Online';
+      case 'local':
+        return 'Modo Local';
       case 'conectando':
         return 'Conectando...';
       case 'erro':
@@ -1385,6 +1405,7 @@ const AIPage = () => {
             {/* Status da Conexão - 🎨 Melhorado para Header com Gradiente */}
             <div className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 bg-white/10 backdrop-blur-sm border ${
               statusConexao === 'conectado' ? 'border-green-300/30' :
+              statusConexao === 'local' ? 'border-amber-300/30' :
               statusConexao === 'conectando' ? 'border-yellow-300/30' :
               statusConexao === 'erro' ? 'border-red-300/30' :
               'border-white/20'
@@ -1393,6 +1414,9 @@ const AIPage = () => {
                 <div className="text-white">{getStatusIcon()}</div>
                 {statusConexao === 'conectado' && (
                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                )}
+                {statusConexao === 'local' && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
                 )}
               </div>
               <span className="text-sm font-medium text-white">
@@ -1449,11 +1473,11 @@ const AIPage = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={verificarConexao}
+              onClick={() => verificarConexao({ warm: true })}
               disabled={statusConexao === 'conectando'}
               className="flex items-center gap-2 bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20 transition-all disabled:opacity-50"
             >
-              <Settings className="w-4 h-4" />
+              <RefreshCw className="w-4 h-4" />
               Reconectar
             </Button>
           </div>
@@ -2066,7 +2090,7 @@ const AIPage = () => {
                    contextoAtivo === 'calcular_orcamento' ? 'Ex: troca de óleo + filtro' :
                    "Digite sua mensagem...") : 
                   "Digite sua pergunta ou solicitação..."}
-                disabled={carregando || statusConexao !== 'conectado' || gravando}
+                disabled={carregando || !podeInteragir || gravando}
                 className="resize-none border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl transition-all duration-200 shadow-sm focus:shadow-md"
               />
               {/* ✅ CONTADOR DE CARACTERES */}
@@ -2101,7 +2125,7 @@ const AIPage = () => {
 
             <Button
               onClick={enviarMensagem}
-              disabled={!mensagem.trim() || carregando || statusConexao !== 'conectado'}
+              disabled={!mensagem.trim() || carregando || !podeInteragir}
               className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-xl px-6"
             >
               {carregando ? (
@@ -2113,9 +2137,13 @@ const AIPage = () => {
           </div>
 
           {statusConexao !== 'conectado' && (
-            <div className="mt-2 text-xs text-amber-600 flex items-center gap-1">
+            <div className={`mt-2 text-xs flex items-center gap-1 ${statusConexao === 'erro' ? 'text-red-600' : 'text-amber-600'}`}>
               <AlertCircle className="w-3 h-3" />
-              Aguardando conexão com o agente...
+              {statusConexao === 'local'
+                ? 'Agno offline: modo local ativo (respostas locais).'
+                : statusConexao === 'conectando'
+                ? 'Conectando ao Matias...'
+                : 'Sem conexao com o agente. Clique em Reconectar.'}
             </div>
           )}
         </div>
