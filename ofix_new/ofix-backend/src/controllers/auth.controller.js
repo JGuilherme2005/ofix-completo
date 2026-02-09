@@ -4,7 +4,12 @@ class AuthController {
   async register(req, res, next) {
     console.log('Chegou no controlador de registro!');
     try {
-      const { nomeUser, emailUser, passwordUser, nomeOficina, cnpjOficina, telefoneOficina, enderecoOficina, userRole } = req.body;
+      const { nomeUser, emailUser, passwordUser, nomeOficina, cnpjOficina, telefoneOficina, enderecoOficina } = req.body;
+
+      // Normaliza campos opcionais (evita violar UNIQUE com string vazia)
+      const normalizedCnpjOficina = typeof cnpjOficina === 'string' && cnpjOficina.trim() ? cnpjOficina.trim() : undefined;
+      const normalizedTelefoneOficina = typeof telefoneOficina === 'string' && telefoneOficina.trim() ? telefoneOficina.trim() : undefined;
+      const normalizedEnderecoOficina = typeof enderecoOficina === 'string' && enderecoOficina.trim() ? enderecoOficina.trim() : undefined;
 
       // Validação básica de entrada
       if (!nomeUser || !emailUser || !passwordUser || !nomeOficina) {
@@ -17,7 +22,14 @@ class AuthController {
       }
 
       const newUser = await authService.registerUserAndOficina({
-        nomeUser, emailUser, passwordUser, nomeOficina, cnpjOficina, telefoneOficina, enderecoOficina, userRole
+        nomeUser,
+        emailUser,
+        passwordUser,
+        nomeOficina,
+        cnpjOficina: normalizedCnpjOficina,
+        telefoneOficina: normalizedTelefoneOficina,
+        enderecoOficina: normalizedEnderecoOficina,
+        userRole: 'GESTOR_OFICINA'
       });
 
       // Não retornar o token no registro, o usuário deve fazer login separadamente
