@@ -1,7 +1,7 @@
 generator client {
   provider = "prisma-client-js"
-  // Otimizações para ambientes em nuvem
-  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
+  // Deixe o Prisma escolher o engine "native" do ambiente de build (Render usa OpenSSL 3).
+  binaryTargets = ["native"]
   previewFeatures = ["relationJoins"]
 }
 
