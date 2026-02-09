@@ -6,9 +6,11 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "npx prisma db seed && node src/server.js",
+    "start": "node src/server.js",
     "prisma:migrate": "prisma migrate deploy",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "seed": "prisma db seed",
+    "start:seed": "prisma db seed && node src/server.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

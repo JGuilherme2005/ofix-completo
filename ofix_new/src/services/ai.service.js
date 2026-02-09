@@ -16,12 +16,22 @@ class AIService {
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
-      const token = localStorage.getItem('token');
+      let token = null;
+      const tokenDataString = localStorage.getItem('authToken');
+      if (tokenDataString) {
+        try {
+          const tokenData = JSON.parse(tokenDataString);
+          token = tokenData?.token || null;
+        } catch (e) {
+          localStorage.removeItem('authToken');
+        }
+      }
+
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...options,
         signal: controller.signal,
         headers: {
-          'Authorization': `Bearer ${token}`,
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           ...options.headers
         }
       });

@@ -54,7 +54,7 @@ global.import = {
   meta: {
     env: {
       DEV: true,
-      VITE_API_BASE_URL: 'http://localhost:1000'
+      VITE_API_BASE_URL: 'http://localhost:10000'
     }
   }
 };

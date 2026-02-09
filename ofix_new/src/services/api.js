@@ -1,12 +1,13 @@
 // src/services/api.js
 
 import axios from "axios";
+import { getApiBaseUrl } from "../utils/api";
 
 // CORREÇÃO: Configuração simplificada e mais robusta
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ofix-backend-prod.onrender.com';
+const API_BASE_URL = getApiBaseUrl();
 
 const apiClient = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: API_BASE_URL ? `${API_BASE_URL}/api` : '/api',
   headers: {
     "Content-Type": "application/json",
   },

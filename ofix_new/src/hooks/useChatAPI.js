@@ -8,6 +8,7 @@ import { useState, useCallback } from 'react';
 import { AI_CONFIG } from '../constants/aiPageConfig';
 import logger from '../utils/logger';
 import { validarMensagem } from '../utils/messageValidator';
+import { getApiBaseUrl } from '../utils/api';
 
 export const useChatAPI = (getAuthHeaders) => {
   const [loading, setLoading] = useState(false);
@@ -40,7 +41,7 @@ export const useChatAPI = (getAuthHeaders) => {
     setError(null);
 
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1000';
+      const API_BASE_URL = getApiBaseUrl();
       const API_BASE = API_BASE_URL.replace('/api', '');
       
       const controller = new AbortController();
@@ -120,7 +121,7 @@ export const useChatAPI = (getAuthHeaders) => {
    */
   const verificarConexao = useCallback(async (tentativas = 1) => {
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1000';
+      const API_BASE_URL = getApiBaseUrl();
       const API_BASE = API_BASE_URL.replace('/api', '');
       
       const controller = new AbortController();
@@ -170,14 +171,14 @@ export const useChatAPI = (getAuthHeaders) => {
     }
 
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1000';
+      const API_BASE_URL = getApiBaseUrl();
       const API_BASE = API_BASE_URL.replace('/api', '');
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
       
       const response = await fetch(
-        `${API_BASE}/agno/historico-conversa?usuario_id=${userId}`,
+        `${API_BASE}/agno/historico-conversa`,
         {
           headers: getAuthHeaders(),
           signal: controller.signal

@@ -14,6 +14,7 @@ import { useToast } from '../components/ui/toast';
 import { useAuthHeaders } from '../hooks/useAuthHeaders';
 import { AI_CONFIG } from '../constants/aiPageConfig';
 import { enrichMessage } from '../utils/nlp/queryParser';
+import { getApiBaseUrl } from '../utils/api';
 
 // ✨ NOVOS IMPORTS - Fase 1: Design System
 import '../styles/matias-design-system.css';
@@ -145,7 +146,7 @@ const AIPage = () => {
   //     if (!user?.id) return;
   //     try {
   //       const authHeaders = getAuthHeaders();
-  //       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1000';
+  //       const API_BASE_URL = getApiBaseUrl();
   //       const API_BASE = API_BASE_URL.replace('/api', '');
   //       const response = await fetch(`${API_BASE}/agno/historico-conversa?usuario_id=${user.id}`, {
   //         headers: authHeaders
@@ -198,7 +199,7 @@ const AIPage = () => {
       const authHeaders = getAuthHeaders();
 
       // Testar o endpoint principal do Agno
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1000';
+      const API_BASE = getApiBaseUrl();
       const response = await fetch(`${API_BASE}/agno/contexto-sistema`, {
         method: 'GET',
         headers: authHeaders
@@ -215,7 +216,7 @@ const AIPage = () => {
       // ✅ LOGGING ESTRUTURADO
       logger.error('Erro ao verificar conexão', {
         error: error.message,
-        apiBase: import.meta.env.VITE_API_BASE_URL,
+        apiBase: getApiBaseUrl(),
         context: 'verificarConexao'
       });
       setStatusConexao('erro');
@@ -619,7 +620,7 @@ const AIPage = () => {
     const verificarMemoria = async () => {
       try {
         const authHeaders = getAuthHeaders();
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1000';
+        const API_BASE_URL = getApiBaseUrl();
         const API_BASE = API_BASE_URL.replace('/api', '');
 
         const response = await fetch(`${API_BASE}/agno/memory-status`, {
@@ -649,7 +650,7 @@ const AIPage = () => {
     setLoadingMemorias(true);
     try {
       const authHeaders = getAuthHeaders();
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1000';
+      const API_BASE_URL = getApiBaseUrl();
       const API_BASE = API_BASE_URL.replace('/api', '');
 
       const response = await fetch(`${API_BASE}/agno/memories/${user.id}`, {
@@ -683,7 +684,7 @@ const AIPage = () => {
 
     try {
       const authHeaders = getAuthHeaders();
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1000';
+      const API_BASE_URL = getApiBaseUrl();
       const API_BASE = API_BASE_URL.replace('/api', '');
 
       const response = await fetch(`${API_BASE}/agno/memories/${user.id}`, {
@@ -782,7 +783,7 @@ const AIPage = () => {
           try {
             const authHeaders = getAuthHeaders();
 
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1000';
+            const API_BASE_URL = getApiBaseUrl();
             const API_BASE = API_BASE_URL.replace('/api', '');
             
             // Preparar body da requisição
@@ -1003,7 +1004,7 @@ const AIPage = () => {
         });
       }
 
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1000';
+      const API_BASE_URL = getApiBaseUrl();
       const API_BASE = API_BASE_URL.replace('/api', '');
       
       // Preparar body da requisição
@@ -1732,6 +1733,40 @@ const AIPage = () => {
                 <div className="whitespace-pre-wrap text-sm leading-relaxed">
                   {conversa.conteudo}
                 </div>
+
+                {/* Fonte da resposta (LOCAL vs AGNO_AI) */}
+                {conversa.tipo !== 'usuario' && conversa.metadata?.processed_by && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600">
+                      Fonte:{' '}
+                      {conversa.metadata.processed_by === 'AGNO_AI'
+                        ? `Matias (Agno AI${conversa.metadata.model ? `: ${conversa.metadata.model}` : ''})`
+                        : conversa.metadata.processed_by === 'BACKEND_LOCAL'
+                          ? 'Backend local'
+                          : conversa.metadata.processed_by === 'BACKEND_LOCAL_FALLBACK'
+                            ? 'Fallback local'
+                            : conversa.metadata.processed_by}
+                    </span>
+
+                    {typeof conversa.metadata.processing_time_ms === 'number' && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600">
+                        {conversa.metadata.processing_time_ms}ms
+                      </span>
+                    )}
+
+                    {conversa.metadata.run_id && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600">
+                        run: {String(conversa.metadata.run_id).slice(0, 8)}
+                      </span>
+                    )}
+
+                    {conversa.metadata.cached && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600">
+                        cache
+                      </span>
+                    )}
+                  </div>
+                )}
                 
                 {/* Botões de ação inline */}
                 {conversa.tipo !== 'usuario' && conversa.metadata?.actions && (
