@@ -16,7 +16,7 @@ os.environ['HF_HUB_DISABLE_PROGRESS_BARS'] = '1'
 print("🔄 Configurando carregamento remoto da base de conhecimento...")
 
 # Configuração LanceDB remoto
-LANCEDB_API_KEY = "sk_5Z3CCATFO5ELBPAQ2CNF5ZFMTZTDN2IHPNYKQLC3YFQ54AXPDOXA===="
+LANCEDB_API_KEY = os.getenv("LANCEDB_API_KEY")
 LANCEDB_URI = "db://ofx-rbf7i6"
 LANCEDB_REGION = "us-east-1"
 

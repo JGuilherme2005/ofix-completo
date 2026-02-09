@@ -5,7 +5,7 @@ from agno.knowledge.embedder.fastembed import FastEmbedEmbedder
 
 load_dotenv()
 
-LANCEDB_API_KEY = os.getenv('LANCEDB_API_KEY', 'sk_5Z3CCATFO5ELBPAQ2CNF5ZFMTZTDN2IHPNYKQLC3YFQ54AXPDOXA====')
+LANCEDB_API_KEY = os.getenv('LANCEDB_API_KEY')
 LANCEDB_URI = os.getenv('LANCEDB_URI', 'db://ofx-rbf7i6')
 
 print('Conectando ao LanceDB...')

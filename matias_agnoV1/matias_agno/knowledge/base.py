@@ -1,34 +1,51 @@
 import os
-from agno.knowledge import Knowledge
-from agno.vectordb.lancedb import LanceDb
-from agno.knowledge.embedder.fastembed import FastEmbedEmbedder
 
-# Configurações
-LANCEDB_API_KEY = os.getenv("LANCEDB_API_KEY", "sk_5Z3CCATFO5ELBPAQ2CNF5ZFMTZTDN2IHPNYKQLC3YFQ54AXPDOXA====")
-LANCEDB_URI = os.getenv("LANCEDB_URI", "db://ofx-rbf7i6")
-TABLE_NAME = "conhecimento_oficina_v5_completo"
+from agno.knowledge import Knowledge
+from agno.knowledge.embedder.fastembed import FastEmbedEmbedder
+from agno.vectordb.lancedb import LanceDb
+
+# Knowledge (LanceDB) config.
+#
+# - LanceDB Cloud uses URIs like: db://<database_id>
+#   It requires LANCEDB_API_KEY at runtime.
+# - Local LanceDB can use a filesystem path/URI and does not require an API key.
+#
+# This project defaults to the OFIX cloud DB URI, but will gracefully disable
+# knowledge if the required credentials are not present.
+LANCEDB_API_KEY = os.getenv("LANCEDB_API_KEY", "").strip()
+LANCEDB_URI = os.getenv("LANCEDB_URI", "db://ofx-rbf7i6").strip()
+LANCEDB_TABLE = os.getenv("LANCEDB_TABLE", "conhecimento_oficina_v5_completo").strip()
+LANCEDB_SEARCH_TYPE = os.getenv("LANCEDB_SEARCH_TYPE", "hybrid").strip() or "hybrid"
+LANCEDB_REQUIRED = os.getenv("LANCEDB_REQUIRED", "false").lower() == "true"
+
 
 def get_knowledge_base():
     """
-    Retorna a Base de Conhecimento Unificada do Agno.
-    Usa LanceDB (Cloud) como VectorDB.
-    """
-    
-    # Configuração do Vector DB (LanceDB Cloud)
-    vector_db = LanceDb(
-        table_name=TABLE_NAME,
-        uri=LANCEDB_URI,
-        api_key=LANCEDB_API_KEY,
-        search_type="hybrid", # Habilita busca híbrida (Vetorial + Texto)
-        embedder=FastEmbedEmbedder(), # Usa FastEmbed (padrão do projeto)
-    )
+    Return a Knowledge instance if LanceDB is configured, otherwise None.
 
-    # Criação do Knowledge Unificado
-    # O Agno gerencia automaticamente a conexão e a busca
-    knowledge = Knowledge(
-        vector_db=vector_db,
-        # Opcional: Se quisermos usar contents_db separado no futuro, adicionamos aqui.
-        # Por enquanto, o LanceDB já guarda o conteúdo no campo 'content' ou 'text'.
-    )
-    
-    return knowledge
+    If you want to hard-fail when not configured, set LANCEDB_REQUIRED=true.
+    """
+
+    if not LANCEDB_URI:
+        if LANCEDB_REQUIRED:
+            raise RuntimeError("LANCEDB_URI not set (LANCEDB_REQUIRED=true).")
+        return None
+
+    is_cloud = LANCEDB_URI.startswith("db://")
+    if is_cloud and not LANCEDB_API_KEY:
+        if LANCEDB_REQUIRED:
+            raise RuntimeError("LANCEDB_API_KEY not set (LANCEDB_REQUIRED=true).")
+        return None
+
+    vector_db_kwargs = {
+        "table_name": LANCEDB_TABLE,
+        "uri": LANCEDB_URI,
+        "search_type": LANCEDB_SEARCH_TYPE,
+        "embedder": FastEmbedEmbedder(),
+    }
+    if LANCEDB_API_KEY:
+        vector_db_kwargs["api_key"] = LANCEDB_API_KEY
+
+    vector_db = LanceDb(**vector_db_kwargs)
+    return Knowledge(vector_db=vector_db)
+

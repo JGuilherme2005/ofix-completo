@@ -1,3 +1,4 @@
+import os
 import lancedb
 from agno.knowledge.embedder.fastembed import FastEmbedEmbedder
 from dotenv import load_dotenv
@@ -6,7 +7,7 @@ import ast
 load_dotenv()
 
 LANCEDB_URI = "db://ofx-rbf7i6"
-LANCEDB_API_KEY = "sk_5Z3CCATFO5ELBPAQ2CNF5ZFMTZTDN2IHPNYKQLC3YFQ54AXPDOXA===="
+LANCEDB_API_KEY = os.getenv("LANCEDB_API_KEY")
 LANCEDB_REGION = "us-east-1"
 TABLE_NAME = "conhecimento_oficina_v5_completo"
 

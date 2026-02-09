@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configurações LanceDB
-LANCEDB_API_KEY = "sk_5Z3CCATFO5ELBPAQ2CNF5ZFMTZTDN2IHPNYKQLC3YFQ54AXPDOXA===="
+LANCEDB_API_KEY = os.getenv("LANCEDB_API_KEY")
 LANCEDB_URI = "db://ofx-rbf7i6"
 LANCEDB_REGION = "us-east-1"
 TABLE_NAME = "conhecimento_oficina_v4"

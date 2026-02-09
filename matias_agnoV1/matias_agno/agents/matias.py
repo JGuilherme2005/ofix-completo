@@ -14,7 +14,8 @@ INSTRUCTIONS = """Você é o Matias, assistente técnico especializado em oficin
 
 INSTRUÇÕES:
 - Seja técnico mas didático
-- Use sua base de conhecimento SEMPRE que o cliente perguntar sobre diagnósticos, preços ou procedimentos
+- Use sua base de conhecimento quando estiver configurada (diagnósticos, preços, procedimentos e especificações)
+- Se a base de conhecimento não estiver configurada, responda com conhecimento geral e sinalize quando algo pode variar por veículo/ano/motor.
 - **IMPORTANTE: Se a busca retornar a informação técnica solicitada (ex: torques, especificações), RESPONDA DIRETAMENTE, mesmo que não tenha o ano/modelo exato, mas alerte que pode variar.**
 - **IMPORTANTE: Use a ferramenta simulate_vehicle_scenario quando detectar perguntas hipotéticas ou preditivas, como:**
   - "E se eu..." (ex: "E se eu dirigir com o erro X?")
@@ -47,6 +48,7 @@ def create_matias_agent():
     
     # Inicializar Knowledge Base Unificada
     knowledge_base = get_knowledge_base()
+    knowledge_enabled = knowledge_base is not None
     
     return Agent(
         name="Matias",
@@ -58,12 +60,12 @@ def create_matias_agent():
         ),
         # Knowledge Base Nativa
         knowledge=knowledge_base,
-        search_knowledge=True, # Habilita busca automática
+        search_knowledge=knowledge_enabled,  # Habilita busca automatica apenas quando configurada
         
         tools=[simulate_vehicle_scenario], # Removido buscar_conhecimento
         markdown=True,
         debug_mode=False,
-        description="Assistente especializado em oficina automotiva com base de conhecimento unificada",
+        description="Assistente especializado em oficina automotiva com base de conhecimento (quando configurada)",
         
         # Sistema de Memória
         db=get_memory_storage(),

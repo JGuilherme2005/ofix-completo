@@ -4,7 +4,7 @@ Copie e cole estas variáveis no Render:
 
 ### Obrigatórias:
 ```
-GROQ_API_KEY=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
+GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ENVIRONMENT=production
 PORT=10000
 ```
@@ -13,8 +13,12 @@ PORT=10000
 ```
 DEBUG=false
 HOST=0.0.0.0
-SUPABASE_DB_URL=postgresql://postgres:SsTrMNRQNOd7LuCI@db.lazgkhqdsvsrdbslzgoh.supabase.co:5432/postgres
-HF_TOKEN=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
+SUPABASE_DB_URL=postgresql://user:password@host:5432/database
+HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+LANCEDB_URI=db://ofx-rbf7i6
+LANCEDB_API_KEY=sk_xxxxxxxxxxxxxxxxxxxxxxxxxx
+LANCEDB_TABLE=conhecimento_oficina_v5_completo
+LANCEDB_SEARCH_TYPE=hybrid
 AGNO_TELEMETRY=false
 ```
 
