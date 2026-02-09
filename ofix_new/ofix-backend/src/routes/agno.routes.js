@@ -34,6 +34,8 @@ function parsePositiveInt(value, fallback) {
 // Timeouts and warmup behavior (env overridable)
 const AGNO_RUN_TIMEOUT_MS = parsePositiveInt(process.env.AGNO_RUN_TIMEOUT_MS, 120000);
 const AGNO_HEALTH_TIMEOUT_MS = parsePositiveInt(process.env.AGNO_HEALTH_TIMEOUT_MS, 10000);
+// Warm-up health checks should tolerate cold starts better than regular status checks.
+const AGNO_WARM_HEALTH_TIMEOUT_MS = parsePositiveInt(process.env.AGNO_WARM_HEALTH_TIMEOUT_MS, 20000);
 
 // Optional: perform a lightweight warm run to reduce cold-start latency (Render free tier, etc.)
 const AGNO_WARM_RUN_ENABLED = String(process.env.AGNO_WARM_RUN || '').trim().toLowerCase() === 'true';
@@ -209,7 +211,7 @@ async function warmAgnoService({ reason = 'manual' } = {}) {
         return { ok: false, reason: 'not_configured', health: null, warm_run: null };
     }
 
-    const health = await fetchAgnoHealth({ timeoutMs: AGNO_HEALTH_TIMEOUT_MS });
+    const health = await fetchAgnoHealth({ timeoutMs: AGNO_WARM_HEALTH_TIMEOUT_MS });
     agnoWarmed = health.ok;
 
     if (!health.ok) {
@@ -245,7 +247,8 @@ router.get('/config', async (req, res) => {
             warmed: agnoWarmed,
             timeouts: {
                 run_timeout_ms: AGNO_RUN_TIMEOUT_MS,
-                health_timeout_ms: AGNO_HEALTH_TIMEOUT_MS
+                health_timeout_ms: AGNO_HEALTH_TIMEOUT_MS,
+                warm_health_timeout_ms: AGNO_WARM_HEALTH_TIMEOUT_MS
             },
             warm_run: {
                 enabled: AGNO_WARM_RUN_ENABLED,
@@ -308,7 +311,8 @@ router.get('/status', verificarAuth, async (req, res) => {
             last_activity: lastActivity ? new Date(lastActivity).toISOString() : null,
             timeouts: {
                 run_timeout_ms: AGNO_RUN_TIMEOUT_MS,
-                health_timeout_ms: AGNO_HEALTH_TIMEOUT_MS
+                health_timeout_ms: AGNO_HEALTH_TIMEOUT_MS,
+                warm_health_timeout_ms: AGNO_WARM_HEALTH_TIMEOUT_MS
             },
             circuit_breaker: {
                 open: circuitBreakerOpen,
