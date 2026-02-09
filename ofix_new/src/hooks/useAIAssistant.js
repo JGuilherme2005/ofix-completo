@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { aiService } from '../services/ai.service';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/AuthContext';
 
 export function useAIAssistant(options = {}) {
     const {

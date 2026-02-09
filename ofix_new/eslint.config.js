@@ -2,6 +2,8 @@ import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import tsParser from '@typescript-eslint/parser';
+import tseslint from '@typescript-eslint/eslint-plugin';
 
 export default [
   {
@@ -49,6 +51,36 @@ export default [
         'varsIgnorePattern': '^_', 
         'argsIgnorePattern': '^_',
         'ignoreRestSiblings': true
+      }],
+      'no-console': 'warn',
+      'prefer-const': 'error',
+      'no-var': 'error',
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    languageOptions: {
+      parser: tsParser,
+      globals: {
+        ...globals.browser,
+      },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    rules: {
+      // Prefer the TS-aware rule to avoid false-positives (types are stripped at runtime).
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', {
+        varsIgnorePattern: '^_',
+        argsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
       }],
       'no-console': 'warn',
       'prefer-const': 'error',
