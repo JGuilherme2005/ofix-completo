@@ -1,7 +1,10 @@
+import 'dotenv/config';
+import dns from 'node:dns';
 import app from './app.js';
-// import 'dotenv/config'; // Carrega variáveis de ambiente do .env
-import dotenv from 'dotenv';
-dotenv.config();
+
+// Prefer IPv4 first. This avoids long hangs in environments with broken/absent IPv6 routing.
+dns.setDefaultResultOrder('ipv4first');
+
 const port = process.env.PORT || 10000;
 
 app.listen(port, () => {

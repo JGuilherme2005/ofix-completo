@@ -1,8 +1,7 @@
 ﻿import express from 'express';
 import fetch from 'node-fetch';
+import FormData from 'form-data';
 import jwt from 'jsonwebtoken';
-import NodeCache from 'node-cache'; // Removido
-
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 // Importar serviÃ§os do Matias
@@ -21,8 +20,11 @@ import CacheService from '../services/cache.service.js';
 const router = express.Router();
 
 // ConfiguraÃ§Ãµes do Agno (pode vir de variÃ¡veis de ambiente)
-const AGNO_API_URL = process.env.AGNO_API_URL || 'http://localhost:7777';
-const AGNO_API_TOKEN = process.env.AGNO_API_TOKEN || '';
+const AGNO_API_URL = (process.env.AGNO_API_URL || '').trim();
+const AGNO_BASE_URL = AGNO_API_URL.replace(/\/$/, '');
+const AGNO_API_TOKEN = (process.env.AGNO_API_TOKEN || '').trim();
+const AGNO_DEFAULT_AGENT_ID = (process.env.AGNO_DEFAULT_AGENT_ID || 'matias').trim();
+const AGNO_IS_CONFIGURED = Boolean(AGNO_BASE_URL);
 
 function ensureDatabaseConfigured(res) {
     if (process.env.DATABASE_URL) {
@@ -93,23 +95,50 @@ const AGNO_CONTEXT = {
     }
 };
 
+async function warmAgnoService() {
+    lastWarmingAttempt = Date.now();
+
+    if (!AGNO_IS_CONFIGURED) {
+        console.warn('[AGNO] Warm solicitado, mas AGNO_API_URL nao esta configurada');
+        return false;
+    }
+
+    try {
+        const response = await fetch(`${AGNO_BASE_URL}/health`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
+            },
+            signal: AbortSignal.timeout(10000)
+        });
+
+        agnoWarmed = response.ok;
+        return response.ok;
+    } catch (error) {
+        console.warn('⚠️ [AGNO] Warm falhou:', error.message);
+        agnoWarmed = false;
+        return false;
+    }
+}
+
 // Endpoint pÃºblico para verificar configuraÃ§Ã£o do Agno
 router.get('/config', async (req, res) => {
     try {
         console.log('ðŸ”§ Verificando configuraÃ§Ã£o do Agno...');
 
-        const memoryEnabled = process.env.AGNO_ENABLE_MEMORY === 'true' && AGNO_API_URL !== 'http://localhost:8000';
+        const memoryEnabled = process.env.AGNO_ENABLE_MEMORY === 'true' && AGNO_IS_CONFIGURED;
 
         res.json({
-            configured: !!AGNO_API_URL && AGNO_API_URL !== 'http://localhost:8000',
-            agno_url: AGNO_API_URL,
+            configured: AGNO_IS_CONFIGURED,
+            agno_url: AGNO_BASE_URL || null,
             has_token: !!AGNO_API_TOKEN,
-            agent_id: process.env.AGNO_DEFAULT_AGENT_ID || 'matias',
+            agent_id: AGNO_DEFAULT_AGENT_ID,
             warmed: agnoWarmed,
             memory_enabled: memoryEnabled, // â† NOVO: indica se memÃ³ria estÃ¡ ativa
             last_warming: lastWarmingAttempt ? new Date(lastWarmingAttempt).toISOString() : null,
             timestamp: new Date().toISOString(),
-            status: AGNO_API_URL === 'http://localhost:8000' ? 'development' : 'production'
+            status: AGNO_IS_CONFIGURED ? 'configured' : 'not_configured'
         });
     } catch (error) {
         console.error('âŒ Erro ao verificar configuraÃ§Ã£o:', error.message);
@@ -130,7 +159,7 @@ router.post('/warm', async (req, res) => {
         res.json({
             success: success,
             warmed: agnoWarmed,
-            agno_url: AGNO_API_URL,
+            agno_url: AGNO_BASE_URL || null,
             message: success ? 'ServiÃ§o Agno aquecido com sucesso' : 'Falha ao aquecer serviÃ§o Agno',
             timestamp: new Date().toISOString()
         });
@@ -179,13 +208,13 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
         const { message } = req.body;
 
         console.log('ðŸ§ª Teste pÃºblico do chat - ConfiguraÃ§Ã£o:', {
-            agno_url: AGNO_API_URL,
-            configured: AGNO_API_URL !== 'http://localhost:8000',
+            agno_url: AGNO_BASE_URL || null,
+            configured: AGNO_IS_CONFIGURED,
             message: message.substring(0, 50) + '...'
         });
 
         // Se nÃ£o estÃ¡ configurado, retornar resposta de demonstraÃ§Ã£o
-        if (AGNO_API_URL === 'http://localhost:8000') {
+        if (!AGNO_IS_CONFIGURED) {
             return res.json({
                 success: true,
                 response: `ðŸ¤– **Modo DemonstraÃ§Ã£o Ativado**\n\nVocÃª disse: "${message}"\n\nðŸ“‹ **Status**: Agente Matias nÃ£o configurado no ambiente de produÃ§Ã£o.\n\nâš™ï¸ **ConfiguraÃ§Ã£o necessÃ¡ria no Render:**\n- AGNO_API_URL=https://matias-agno-assistant.onrender.com\n- AGNO_DEFAULT_AGENT_ID=matias\n\nðŸ’¡ ApÃ³s configurar, o assistente conectarÃ¡ com seu agente real!`,
@@ -198,7 +227,7 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
         console.log('ðŸ”Œ Processando com cache habilitado...');
 
         try {
-            const result = await processarComAgnoAI(message, 'test_user', 'matias', null);
+            const result = await processarComAgnoAI(message, 'test_user', AGNO_DEFAULT_AGENT_ID, null);
 
             const responseText = result.response || result.content || result.message || 'Resposta do agente Matias';
 
@@ -240,7 +269,7 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
         res.status(500).json({
             error: 'Erro interno',
             message: mainError.message,
-            agno_url: AGNO_API_URL
+            agno_url: AGNO_BASE_URL || null
         });
     }
 });
@@ -1252,7 +1281,7 @@ Tente informar nome completo, telefone ou CPF.`,
 
 async function processarConversaGeral(mensagem, usuario_id = null) {
     // ðŸ¤– Se Agno estiver configurado, SEMPRE tentar chamar
-    if (AGNO_API_URL && AGNO_API_URL !== 'http://localhost:8000') {
+    if (AGNO_IS_CONFIGURED) {
         try {
             console.log('   ðŸ¤– Chamando Agno AI para conversa geral');
             const agnoResponse = await chamarAgnoAI(mensagem, usuario_id, 'CONVERSA_GERAL', null);
@@ -1700,13 +1729,21 @@ router.get('/health', verificarAuth, async (req, res) => {
     try {
         console.log('ðŸ” Verificando status do agente Agno...');
 
-        const response = await fetch(`${AGNO_API_URL}/health`, {
+        if (!AGNO_IS_CONFIGURED) {
+            return res.status(503).json({
+                status: 'disabled',
+                message: 'AGNO_API_URL nao configurada',
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        const response = await fetch(`${AGNO_BASE_URL}/health`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
             },
-            timeout: 5000
+            timeout: 10000
         });
 
         if (response.ok) {
@@ -1741,7 +1778,14 @@ router.get('/agents', verificarAuth, async (req, res) => {
     try {
         console.log('ðŸ“‹ Listando agentes disponÃ­veis...');
 
-        const response = await fetch(`${AGNO_API_URL}/agents`, {
+        if (!AGNO_IS_CONFIGURED) {
+            return res.status(503).json({
+                success: false,
+                error: 'AGNO_API_URL nao configurada'
+            });
+        }
+
+        const response = await fetch(`${AGNO_BASE_URL}/agents`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -1999,7 +2043,7 @@ router.get('/memories/:userId', verificarAuth, async (req, res) => {
         console.log(`ðŸ” [MEMÃ“RIA] Buscando memÃ³rias para: ${agnoUserId}`);
 
         // Verificar se Agno AI estÃ¡ configurado
-        if (AGNO_API_URL === 'http://localhost:8000') {
+        if (!AGNO_IS_CONFIGURED) {
             return res.json({
                 success: true,
                 memories: [],
@@ -2009,7 +2053,7 @@ router.get('/memories/:userId', verificarAuth, async (req, res) => {
         }
 
         const response = await fetch(
-            `${AGNO_API_URL}/memories?user_id=${agnoUserId}`,
+            `${AGNO_BASE_URL}/memories?user_id=${agnoUserId}`,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -2067,7 +2111,7 @@ router.delete('/memories/:userId', verificarAuth, async (req, res) => {
         console.log(`ðŸ—‘ï¸ [MEMÃ“RIA] Excluindo memÃ³rias para: ${agnoUserId}`);
 
         // Verificar se Agno AI estÃ¡ configurado
-        if (AGNO_API_URL === 'http://localhost:8000') {
+        if (!AGNO_IS_CONFIGURED) {
             return res.json({
                 success: true,
                 message: 'Sistema de memÃ³ria nÃ£o disponÃ­vel em modo de desenvolvimento'
@@ -2075,7 +2119,7 @@ router.delete('/memories/:userId', verificarAuth, async (req, res) => {
         }
 
         const response = await fetch(
-            `${AGNO_API_URL}/memories?user_id=${agnoUserId}`,
+            `${AGNO_BASE_URL}/memories?user_id=${agnoUserId}`,
             {
                 method: 'DELETE',
                 headers: {
@@ -2115,7 +2159,7 @@ router.delete('/memories/:userId', verificarAuth, async (req, res) => {
 router.get('/memory-status', async (req, res) => {
     try {
         // Verificar se Agno AI estÃ¡ configurado
-        const isConfigured = AGNO_API_URL !== 'http://localhost:8000';
+        const isConfigured = AGNO_IS_CONFIGURED;
 
         if (!isConfigured) {
             return res.json({
@@ -2126,8 +2170,8 @@ router.get('/memory-status', async (req, res) => {
         }
 
         // Testar conexÃ£o com endpoint de memÃ³ria
-        const response = await fetch(`${AGNO_API_URL}/health`, {
-            signal: AbortSignal.timeout(5000)
+        const response = await fetch(`${AGNO_BASE_URL}/health`, {
+            signal: AbortSignal.timeout(10000)
         });
 
         const isOnline = response.ok;
@@ -2135,7 +2179,7 @@ router.get('/memory-status', async (req, res) => {
         return res.json({
             enabled: isOnline,
             status: isOnline ? 'active' : 'unavailable',
-            agno_url: AGNO_API_URL,
+            agno_url: AGNO_BASE_URL,
             message: isOnline
                 ? 'Sistema de memÃ³ria ativo - Matias lembra das suas conversas'
                 : 'Sistema temporariamente indisponÃ­vel',
@@ -2154,7 +2198,7 @@ router.get('/memory-status', async (req, res) => {
 });
 
 // Warm-up INTELIGENTE - apenas se inativo por >8 minutos (economia 50%)
-if (AGNO_API_URL && AGNO_API_URL !== 'http://localhost:8000') {
+if (AGNO_IS_CONFIGURED) {
     const WARMUP_INTERVAL = 10 * 60 * 1000; // 10 minutos
 
     setInterval(async () => {
@@ -2165,8 +2209,8 @@ if (AGNO_API_URL && AGNO_API_URL !== 'http://localhost:8000') {
             // Aquecer apenas se inativo por mais de 8 minutos
             if (inactiveTime > 8 * 60 * 1000) {
                 console.log(`ðŸ”¥ [AUTO-WARMUP] Inativo ${inactiveMinutes}min - aquecendo...`);
-                const response = await fetch(`${AGNO_API_URL}/health`, {
-                    signal: AbortSignal.timeout(5000)
+                const response = await fetch(`${AGNO_BASE_URL}/health`, {
+                    signal: AbortSignal.timeout(10000)
                 });
 
                 if (response.ok) {
@@ -2189,7 +2233,7 @@ if (AGNO_API_URL && AGNO_API_URL !== 'http://localhost:8000') {
 /**
  * Processa mensagem com Agno AI (com fallback, circuit breaker e CACHE L1)
  */
-async function processarComAgnoAI(message, userId, agentId = 'matias', session_id = null) {
+async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_ID, session_id = null) {
     // 0. Verificar Cache L1 (Redis) - 🚀 OTIMIZAÇÃO EXTREMA
     const cacheKey = `agno:response:${userId}:${CacheService.hash(message)}`;
     const cachedResponse = await CacheService.get(cacheKey);
@@ -2209,6 +2253,17 @@ async function processarComAgnoAI(message, userId, agentId = 'matias', session_i
 
     console.log('💨 [CACHE] MISS - Consultando Agno AI...');
 
+    if (!AGNO_IS_CONFIGURED) {
+        return {
+            response: "Assistente AI nao configurado. Defina AGNO_API_URL para ativar o modo AI.",
+            conteudo: "Assistente AI nao configurado. Defina AGNO_API_URL para ativar o modo AI.",
+            metadata: {
+                model: "demo",
+                usage: { total_tokens: 0 }
+            }
+        };
+    }
+
     // 1. Verificar Circuit Breaker (Rate Limit Protection)
     if (!checkCircuitBreaker()) {
         console.warn('⚠️ [AGNO] Circuit breaker aberto. Usando fallback local.');
@@ -2226,24 +2281,25 @@ async function processarComAgnoAI(message, userId, agentId = 'matias', session_i
     const sessionId = session_id || agnoUserId; // Manter consistência da sessão
 
     try {
-        // Endpoint correto conforme matias_agno/api.py
-        const endpoint = `${AGNO_API_URL}/agno/chat-inteligente`;
-        console.log(`🚀 [AGNO] Enviando para ${endpoint}`);
+        const resolvedAgentId = (agentId || AGNO_DEFAULT_AGENT_ID || 'matias').trim() || 'matias';
 
-        // Payload compatível com matias_agno/api.py (ChatRequest)
-        const payload = {
-            message: message,
-            session_id: sessionId,
-            user_id: agnoUserId
-        };
+        // AgentOS: POST /agents/{agent_id}/runs (multipart/form-data)
+        const endpoint = `${AGNO_BASE_URL}/agents/${encodeURIComponent(resolvedAgentId)}/runs`;
+        console.log(`🚀 [AGNO] Executando agent=${resolvedAgentId} url=${endpoint}`);
+
+        const form = new FormData();
+        form.append('message', message);
+        form.append('stream', 'false'); // force JSON response (non-streaming)
+        form.append('session_id', sessionId);
+        form.append('user_id', agnoUserId);
 
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                ...form.getHeaders(),
                 ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
             },
-            body: JSON.stringify(payload),
+            body: form,
             signal: AbortSignal.timeout(60000) // 60s timeout (modelos demoram)
         });
 
@@ -2261,16 +2317,20 @@ async function processarComAgnoAI(message, userId, agentId = 'matias', session_i
         // 3. Processamento da Resposta
         const data = await response.json();
 
-        // Normalização da resposta (Agno retorna 'conteudo' no ChatResponse)
-        const respostaTexto = data.conteudo || data.response || data.message || data.content || "Não entendi.";
+        // Normalizacao da resposta (AgentOS retorna 'content')
+        const respostaTexto = data.content || data.conteudo || data.response || data.message || "Nao entendi.";
 
         const finalResponse = {
             response: respostaTexto,
             conteudo: respostaTexto, // Compatibilidade com frontend
             metadata: {
-                model: data.modelo || "agno-agent", // 'modelo' vem do ContextoResponse, mas aqui pode variar
+                model: data.model || data.modelo || "agno-agent",
+                model_provider: data.model_provider,
+                run_id: data.run_id,
+                agent_id: data.agent_id || resolvedAgentId,
                 usage: { total_tokens: 0 },
-                session_id: sessionId
+                session_id: data.session_id || sessionId,
+                metrics: data.metrics
             }
         };
 
