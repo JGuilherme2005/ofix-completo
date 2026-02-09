@@ -101,7 +101,8 @@ export const classifyIntent = (mensagem) => {
     // Normalizar score baseado no número de matches
     if (matchCount > 0) {
       scores[intencao] = {
-        score: score / config.keywords.length,
+        // Keep confidence meaningful even for intents with long keyword lists.
+        score: Math.min(score / 2, 1),
         matchCount
       };
     }
@@ -112,7 +113,7 @@ export const classifyIntent = (mensagem) => {
     .sort((a, b) => b[1].score - a[1].score)
     .map(([intencao, data]) => ({
       intencao,
-      confianca: Math.min(data.score * data.matchCount, 1.0)
+      confianca: data.score
     }));
 
   // Resultado principal

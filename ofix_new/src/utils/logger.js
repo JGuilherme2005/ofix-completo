@@ -12,6 +12,8 @@
  * - Contexto enriquecido automaticamente
  */
 
+import { getApiBaseUrl } from './api';
+
 const LOG_LEVELS = {
   ERROR: 'error',
   WARN: 'warn',
@@ -22,7 +24,7 @@ const LOG_LEVELS = {
 class Logger {
   constructor() {
     this.isDevelopment = import.meta.env.DEV;
-    this.apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1000';
+    this.apiUrl = getApiBaseUrl();
     this.logQueue = [];
     this.maxQueueSize = 50;
     this.flushInterval = 5000; // 5 segundos
@@ -55,7 +57,10 @@ class Logger {
     // Limpar entradas antigas
     for (const [k, v] of this.rateLimitMap.entries()) {
       if (!k.startsWith(key)) continue;
-      const timestamp = parseInt(k.split('_')[1]);
+      // Use the last token as the bucket timestamp, keys can contain underscores.
+      const keyParts = k.split('_');
+      const timestamp = parseInt(keyParts[keyParts.length - 1], 10);
+      if (Number.isNaN(timestamp)) continue;
       if (now - timestamp * this.rateLimitWindow > this.rateLimitWindow * 2) {
         this.rateLimitMap.delete(k);
       }

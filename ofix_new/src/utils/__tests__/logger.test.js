@@ -296,9 +296,11 @@ describe('Logger', () => {
       logger.error = vi.fn();
       logger.setupGlobalErrorHandler();
 
+      const rejectedPromise = Promise.reject(new Error('Promise rejected'));
+      rejectedPromise.catch(() => undefined);
       const rejectionEvent = new PromiseRejectionEvent('unhandledrejection', {
         reason: new Error('Promise rejected'),
-        promise: Promise.reject()
+        promise: rejectedPromise
       });
 
       window.dispatchEvent(rejectionEvent);
