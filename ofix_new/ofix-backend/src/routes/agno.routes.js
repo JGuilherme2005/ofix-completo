@@ -141,13 +141,10 @@ const publicLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     // ConfiguraÃ§Ã£o para contar requests corretamente
-    keyGenerator: (req) => {
-        // Em produÃ§Ã£o, usa X-Forwarded-For; em local, usa IP real
-        const ip = req.headers['x-forwarded-for']?.split(',')[0] ||
-            req.ip ||
-            req.connection.remoteAddress;
-        console.log(`ðŸ”’ [RATE-LIMIT] Request de IP: ${ip}`);
-        return ip;
+    keyGenerator: (req, res) => {
+        // Helper oficial: normaliza IPv6 e evita bypass do rate-limit.
+        // Importante: ipKeyGenerator espera (req, res), nÃ£o uma string de IP.
+        return ipKeyGenerator(req, res);
     },
     handler: (req, res) => {
         console.log(`â›” [RATE-LIMIT] Bloqueado IP: ${req.ip}`);
