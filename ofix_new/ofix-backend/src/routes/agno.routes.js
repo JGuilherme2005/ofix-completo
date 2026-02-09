@@ -2053,7 +2053,7 @@ router.get('/memories/:userId', verificarAuth, async (req, res) => {
         }
 
         const response = await fetch(
-            `${AGNO_BASE_URL}/memories?user_id=${agnoUserId}`,
+            `${AGNO_BASE_URL}/memories?user_id=${encodeURIComponent(agnoUserId)}&limit=200&page=1`,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -2068,7 +2068,8 @@ router.get('/memories/:userId', verificarAuth, async (req, res) => {
         }
 
         const data = await response.json();
-        const memories = data.memories || data.results || [];
+        const memories = data.data || data.memories || data.results || [];
+        const meta = data.meta || null;
 
         console.log(`âœ… [MEMÃ“RIA] ${memories.length} memÃ³rias encontradas para user_${userId}`);
 
@@ -2076,7 +2077,8 @@ router.get('/memories/:userId', verificarAuth, async (req, res) => {
             success: true,
             memories: memories,
             total: memories.length,
-            user_id: agnoUserId
+            user_id: agnoUserId,
+            meta
         });
 
     } catch (error) {
@@ -2118,27 +2120,57 @@ router.delete('/memories/:userId', verificarAuth, async (req, res) => {
             });
         }
 
-        const response = await fetch(
-            `${AGNO_BASE_URL}/memories?user_id=${agnoUserId}`,
+        // AgentOS delete is by memory_id(s). First list all memories for this user, then bulk-delete.
+        const listResponse = await fetch(
+            `${AGNO_BASE_URL}/memories?user_id=${encodeURIComponent(agnoUserId)}&limit=1000&page=1`,
             {
-                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                     ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
                 },
-                signal: AbortSignal.timeout(10000)
+                signal: AbortSignal.timeout(15000)
             }
         );
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+        if (!listResponse.ok) {
+            const errorText = await listResponse.text();
+            throw new Error(`Falha ao listar memorias (HTTP ${listResponse.status}): ${errorText.substring(0, 200)}`);
         }
 
-        console.log(`âœ… [MEMÃ“RIA] MemÃ³rias excluÃ­das com sucesso para user_${userId}`);
+        const listData = await listResponse.json();
+        const memories = listData.data || listData.memories || listData.results || [];
+        const memoryIds = memories.map((m) => m.memory_id).filter(Boolean);
+
+        if (!memoryIds.length) {
+            return res.json({
+                success: true,
+                message: 'Nenhuma memoria para excluir.',
+                deleted: 0,
+                user_id: agnoUserId
+            });
+        }
+
+        const response = await fetch(`${AGNO_BASE_URL}/memories`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
+            },
+            body: JSON.stringify({ memory_ids: memoryIds }),
+            signal: AbortSignal.timeout(15000)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Falha ao excluir memorias (HTTP ${response.status}): ${errorText.substring(0, 200)}`);
+        }
+
+        console.log(`âœ… [MEMÃ“RIA] MemÃ³rias excluÃ­das com sucesso: ${memoryIds.length} para user_${userId}`);
 
         return res.json({
             success: true,
             message: 'MemÃ³rias excluÃ­das com sucesso. O assistente nÃ£o se lembrarÃ¡ mais das conversas anteriores.',
+            deleted: memoryIds.length,
             user_id: agnoUserId
         });
 
