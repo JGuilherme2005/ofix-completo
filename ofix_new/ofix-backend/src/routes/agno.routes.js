@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import jwt from 'jsonwebtoken';
 import NodeCache from 'node-cache'; // Removido
 
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 // Importar serviÃ§os do Matias
 import ConversasService from '../services/conversas.service.js';
@@ -23,6 +23,20 @@ const router = express.Router();
 // ConfiguraÃ§Ãµes do Agno (pode vir de variÃ¡veis de ambiente)
 const AGNO_API_URL = process.env.AGNO_API_URL || 'http://localhost:7777';
 const AGNO_API_TOKEN = process.env.AGNO_API_TOKEN || '';
+
+function ensureDatabaseConfigured(res) {
+    if (process.env.DATABASE_URL) {
+        return true;
+    }
+
+    console.error('[AGNO] DATABASE_URL nao configurada para consultas locais');
+    res.status(503).json({
+        success: false,
+        error: 'Banco de dados nao configurado',
+        message: 'Configure DATABASE_URL no backend para habilitar consultas e agendamentos locais.'
+    });
+    return false;
+}
 
 // ðŸ’¾ CACHE DE RESPOSTAS - Reduz 60% das chamadas Ã  API (1h de TTL)
 // Cache gerenciado via CacheService (Redis)
@@ -142,12 +156,13 @@ const publicLimiter = rateLimit({
     legacyHeaders: false,
     // ConfiguraÃ§Ã£o para contar requests corretamente
     keyGenerator: (req) => {
-        // Em produÃ§Ã£o, usa X-Forwarded-For; em local, usa IP real
-        const ip = req.headers['x-forwarded-for']?.split(',')[0] ||
+        // Usa helper oficial para normalizar IPv6 e evitar bypass de limite.
+        const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
             req.ip ||
-            req.connection.remoteAddress;
+            req.connection?.remoteAddress ||
+            req.socket?.remoteAddress;
         console.log(`ðŸ”’ [RATE-LIMIT] Request de IP: ${ip}`);
-        return ip;
+        return ipKeyGenerator(ip);
     },
     handler: (req, res) => {
         console.log(`â›” [RATE-LIMIT] Bloqueado IP: ${req.ip}`);
@@ -234,9 +249,19 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
 // ðŸ¤– CHAT INTELIGENTE - PROCESSAMENTO DE LINGUAGEM NATURAL
 // ============================================================
 
-router.post('/chat-inteligente', validateMessage, async (req, res) => {
+router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res) => {
     try {
-        const { message, usuario_id, contexto_ativo } = req.body;
+        const { message, contexto_ativo } = req.body;
+
+        const usuario_id = req.user?.id || req.user?.userId;
+        const oficinaId = req.user?.oficinaId;
+
+        if (!usuario_id || !oficinaId) {
+            return res.status(401).json({
+                success: false,
+                error: 'Usu?rio n?o autenticado ou sem oficina vinculada'
+            });
+        }
 
         if (!message) {
             return res.status(400).json({
@@ -376,30 +401,28 @@ router.post('/chat-inteligente', validateMessage, async (req, res) => {
 // ðŸ“œ HISTÃ“RICO DE CONVERSAS
 // ============================================================
 
-router.get('/historico-conversa', async (req, res) => {
+router.get('/historico-conversa', verificarAuth, async (req, res) => {
     try {
-        const { usuario_id } = req.query;
+        const requestUserId = req.user?.id || req.user?.userId;
 
-        if (!usuario_id) {
-            return res.status(400).json({
+        if (!requestUserId) {
+            return res.status(401).json({
                 success: false,
-                error: 'usuario_id Ã© obrigatÃ³rio'
+                error: 'Usu?rio n?o autenticado'
             });
         }
 
-        console.log('ðŸ“œ Buscando histÃ³rico para usuÃ¡rio:', usuario_id);
+        console.log('?? Buscando hist?rico para usu?rio:', requestUserId);
 
-        // Converter UUID para Int para busca
-        const usuarioIdInt = parseInt(usuario_id.replace(/-/g, '').substring(0, 9), 16) % 2147483647;
+        const usuarioIdInt = parseInt(String(requestUserId).replace(/-/g, '').substring(0, 9), 16) % 2147483647;
 
-        // Buscar conversa mais recente do usuÃ¡rio
         const conversa = await prisma.conversaMatias.findFirst({
             where: { userId: usuarioIdInt },
             orderBy: { createdAt: 'desc' },
             include: {
                 mensagens: {
                     orderBy: { createdAt: 'asc' },
-                    take: 50 // Ãšltimas 50 mensagens
+                    take: 50
                 }
             }
         });
@@ -412,7 +435,6 @@ router.get('/historico-conversa', async (req, res) => {
             });
         }
 
-        // Formatar mensagens
         const mensagensFormatadas = conversa.mensagens.map(msg => ({
             id: msg.id,
             tipo_remetente: msg.tipo,
@@ -420,7 +442,7 @@ router.get('/historico-conversa', async (req, res) => {
             timestamp: msg.createdAt
         }));
 
-        console.log(`âœ… HistÃ³rico retornado: ${mensagensFormatadas.length} mensagens`);
+        console.log(`? Hist?rico retornado: ${mensagensFormatadas.length} mensagens`);
 
         res.json({
             success: true,
@@ -428,12 +450,11 @@ router.get('/historico-conversa', async (req, res) => {
             total: mensagensFormatadas.length,
             conversa_id: conversa.id
         });
-
     } catch (error) {
-        console.error('âŒ Erro ao buscar histÃ³rico:', error);
+        console.error('? Erro no hist?rico:', error);
         res.status(500).json({
             success: false,
-            error: 'Erro ao buscar histÃ³rico',
+            error: 'Erro ao recuperar hist?rico',
             message: error.message
         });
     }
@@ -895,20 +916,38 @@ async function processarAgendamento(mensagem, usuario_id, cliente_selecionado = 
 // ðŸ” FUNÃ‡ÃƒO: PROCESSAR CONSULTA OS
 // ============================================================================
 
-async function processarConsultaOS(mensagem) {
+async function processarConsultaOS(mensagem, oficinaId = null) {
     try {
         const dados = NLPService.extrairDadosConsultaOS(mensagem);
-        console.log('   ðŸ” Dados para consulta OS:', dados);
+        console.log('   ?? Dados para consulta OS:', dados);
+
+        if (!oficinaId) {
+            return {
+                success: false,
+                response: '? **Erro:** N?o foi poss?vel identificar sua oficina.',
+                tipo: 'erro'
+            };
+        }
 
         const where = {};
+        if (oficinaId) {
+            where.oficinaId = oficinaId;
+        }
 
         if (dados.numeroOS) {
-            where.id = dados.numeroOS;
+            const numeroStr = String(dados.numeroOS);
+            where.OR = [
+                { numeroOs: { contains: numeroStr, mode: 'insensitive' } },
+                { id: numeroStr }
+            ];
         }
 
         if (dados.placa) {
             where.veiculo = {
-                placa: dados.placa
+                placa: {
+                    contains: dados.placa,
+                    mode: 'insensitive'
+                }
             };
         }
 
@@ -922,7 +961,8 @@ async function processarConsultaOS(mensagem) {
         }
 
         if (dados.status) {
-            where.status = dados.status;
+            const statusNormalizado = dados.status === 'CONCLUIDO' ? 'FINALIZADO' : dados.status;
+            where.status = statusNormalizado;
         }
 
         const ordensServico = await prisma.servico.findMany({
@@ -940,33 +980,35 @@ async function processarConsultaOS(mensagem) {
         if (ordensServico.length === 0) {
             return {
                 success: false,
-                response: 'ðŸ” **Nenhuma ordem de serviÃ§o encontrada**\n\nðŸ’¡ Verifique os dados e tente novamente.',
+                response: 'Nenhuma ordem de servico encontrada. Verifique os dados e tente novamente.',
                 tipo: 'vazio'
             };
         }
 
         const lista = ordensServico.map((os, i) =>
-            `${i + 1}. **OS #${os.id}** - ${os.cliente.nomeCompleto}\n   ðŸš— ${os.veiculo.marca} ${os.veiculo.modelo} (${os.veiculo.placa})\n   ðŸ“Š Status: ${os.status}\n   ðŸ“… Abertura: ${new Date(os.dataAbertura).toLocaleDateString('pt-BR')}`
+            `${i + 1}. OS #${os.numeroOs || os.id} - ${os.cliente?.nomeCompleto || 'Cliente nao informado'}\n` +
+            `   Veiculo: ${os.veiculo?.marca || ''} ${os.veiculo?.modelo || ''} (${os.veiculo?.placa || 'Sem placa'})\n` +
+            `   Status: ${os.status}\n` +
+            `   Entrada: ${new Date(os.dataEntrada).toLocaleDateString('pt-BR')}`
         ).join('\n\n');
 
         return {
             success: true,
-            response: `ðŸ” **Ordens de ServiÃ§o Encontradas** (${ordensServico.length})\n\n${lista}`,
+            response: `Ordens de Servico Encontradas (${ordensServico.length})\n\n${lista}`,
             tipo: 'lista',
             total: ordensServico.length,
             ordensServico
         };
 
     } catch (error) {
-        console.error('âŒ Erro em processarConsultaOS:', error);
+        console.error('? Erro em processarConsultaOS:', error);
         return {
             success: false,
-            response: 'âŒ Erro ao consultar ordens de serviÃ§o',
+            response: 'Erro ao consultar ordens de servico',
             tipo: 'erro'
         };
     }
 }
-
 // ============================================================================
 // ðŸ“¦ FUNÃ‡ÃƒO: PROCESSAR CONSULTA ESTOQUE
 // ============================================================================
@@ -992,161 +1034,191 @@ async function processarConsultaEstoque(mensagem) {
 // ðŸ“Š FUNÃ‡ÃƒO: PROCESSAR ESTATÃSTICAS
 // ============================================================================
 
-async function processarEstatisticas(mensagem) {
+async function processarEstatisticas(mensagem, oficinaId = null) {
     try {
-        const stats = await ConsultasOSService.obterResumoOfficina('hoje');
+        if (!oficinaId) {
+            return {
+                success: false,
+                response: '? **Erro:** N?o foi poss?vel identificar sua oficina.',
+                tipo: 'erro'
+            };
+        }
+
+        const stats = await ConsultasOSService.obterResumoOfficina('hoje', oficinaId);
 
         return {
             success: true,
-            response: `ðŸ“Š **EstatÃ­sticas de Hoje**\n\nâ€¢ **Ordens de ServiÃ§o:** ${stats.total_os || 0}\nâ€¢ **Agendamentos:** ${stats.agendamentos || 0}\nâ€¢ **Clientes Atendidos:** ${stats.clientes || 0}\nâ€¢ **Receita:** R$ ${(stats.receita || 0).toFixed(2)}`,
+            response: `?? **Estat?sticas de Hoje**
+
+? **Ordens de Servi?o:** ${stats.total_os || 0}
+? **Agendamentos:** ${stats.agendamentos || 0}
+? **Clientes Atendidos:** ${stats.clientes || 0}
+? **Receita:** R$ ${(stats.receita || 0).toFixed(2)}`,
             tipo: 'estatisticas',
             stats
         };
     } catch (error) {
-        console.error('âŒ Erro em processarEstatisticas:', error);
+        console.error('? Erro em processarEstatisticas:', error);
         return {
             success: false,
-            response: 'âŒ Erro ao buscar estatÃ­sticas',
+            response: '? Erro ao buscar estat?sticas',
             tipo: 'erro'
         };
     }
 }
-
 // ============================================================================
 // ðŸ‘¤ FUNÃ‡ÃƒO: PROCESSAR CONSULTA CLIENTE
 // ============================================================================
 
-async function processarConsultaCliente(mensagem, contexto_ativo = null, usuario_id = null) {
+async function processarConsultaCliente(mensagem, contexto_ativo = null, usuario_id = null, oficinaId = null) {
     try {
-        console.log('ðŸ” DEBUG: processarConsultaCliente - Mensagem recebida:', mensagem);
-        console.log('ðŸ” DEBUG: processarConsultaCliente - Contexto ativo:', contexto_ativo);
-        console.log('ðŸ” DEBUG: processarConsultaCliente - Usuario ID:', usuario_id);
+        console.log('?? DEBUG: processarConsultaCliente - Mensagem recebida:', mensagem);
+        console.log('?? DEBUG: processarConsultaCliente - Contexto ativo:', contexto_ativo);
+        console.log('?? DEBUG: processarConsultaCliente - Usuario ID:', usuario_id);
 
-        // Verificar se a mensagem Ã© um nÃºmero e se estamos em um contexto de seleÃ§Ã£o de cliente
-        // ou se a mensagem Ã© composta apenas por um nÃºmero (o que indica seleÃ§Ã£o)
+        if (!oficinaId && usuario_id) {
+            const usuario = await prisma.user.findUnique({
+                where: { id: String(usuario_id) },
+                select: { oficinaId: true }
+            });
+            oficinaId = usuario?.oficinaId;
+        }
+
+        if (!oficinaId) {
+            return {
+                success: false,
+                response: '? **Erro:** N?o foi poss?vel identificar sua oficina.',
+                tipo: 'erro'
+            };
+        }
+
         const mensagemTrimmed = mensagem.trim();
-        console.log('ðŸ” DEBUG: Mensagem apÃ³s trim:', mensagemTrimmed);
+        console.log('?? DEBUG: Mensagem ap?s trim:', mensagemTrimmed);
 
-        if (mensagemTrimmed.match(/^\d+$/)) {  // Verifica se a mensagem contÃ©m apenas dÃ­gitos
-            console.log('ðŸ”¢ DEBUG: Detectado nÃºmero, tentando seleÃ§Ã£o de cliente');
+        if (mensagemTrimmed.match(/^\d+$/)) {
+            console.log('?? DEBUG: Detectado n?mero, tentando sele??o de cliente');
             const numeroDigitado = parseInt(mensagemTrimmed);
 
-            // Verificar se hÃ¡ clientes armazenados no cache para este usuÃ¡rio
             if (usuario_id) {
                 const dadosCache = await CacheService.get(`contexto_cliente:${usuario_id}`);
 
-                // CacheService (Redis) jÃ¡ gerencia expiraÃ§Ã£o automaticamente
                 if (dadosCache) {
                     const clientes = dadosCache.clientes;
-                    console.log('ðŸ”¢ DEBUG: Clientes no cache:', clientes.length);
+                    console.log('?? DEBUG: Clientes no cache:', clientes.length);
 
-                    // O usuÃ¡rio digitou um nÃºmero em resposta Ã  lista de clientes
                     if (numeroDigitado >= 1 && numeroDigitado <= clientes.length) {
                         const clienteSelecionado = clientes[numeroDigitado - 1];
-                        console.log('ðŸ”¢ DEBUG: Cliente selecionado:', clienteSelecionado.nomeCompleto);
+                        console.log('?? DEBUG: Cliente selecionado:', clienteSelecionado.nomeCompleto);
 
-                        // Limpar o cache apÃ³s seleÃ§Ã£o bem-sucedida
                         await CacheService.delete(`contexto_cliente:${usuario_id}`);
 
                         return {
                             success: true,
-                            response: `âœ… **Cliente selecionado:** ${clienteSelecionado.nomeCompleto}\n\nTelefone: ${clienteSelecionado.telefone || 'NÃ£o informado'}\nCPF/CNPJ: ${clienteSelecionado.cpfCnpj || 'NÃ£o informado'}\nVeÃ­culos: ${clienteSelecionado.veiculos && clienteSelecionado.veiculos.length > 0 ? clienteSelecionado.veiculos.map(v => v.modelo).join(', ') : 'Nenhum veÃ­culo cadastrado'}\n\nðŸ’¡ O que deseja fazer com este cliente?\nâ€¢ "agendar" - Agendar serviÃ§o\nâ€¢ "editar" - Editar dados\nâ€¢ "histÃ³rico" - Ver histÃ³rico de serviÃ§os`,
+                            response: `? **Cliente selecionado:** ${clienteSelecionado.nomeCompleto}
+
+Telefone: ${clienteSelecionado.telefone || 'N?o informado'}
+CPF/CNPJ: ${clienteSelecionado.cpfCnpj || 'N?o informado'}
+Ve?culos: ${clienteSelecionado.veiculos && clienteSelecionado.veiculos.length > 0 ? clienteSelecionado.veiculos.map(v => v.modelo).join(', ') : 'Nenhum ve?culo cadastrado'}
+
+?? O que deseja fazer com este cliente?
+? "agendar" - Agendar servi?o
+? "editar" - Editar dados
+? "hist?rico" - Ver hist?rico de servi?os`,
                             tipo: 'cliente_selecionado',
                             cliente: clienteSelecionado,
                             cliente_id: clienteSelecionado.id
                         };
                     } else {
-                        // NÃºmero fora do intervalo
-                        console.log('ðŸ”¢ DEBUG: NÃºmero fora do intervalo:', numeroDigitado);
+                        console.log('?? DEBUG: N?mero fora do intervalo:', numeroDigitado);
                         return {
                             success: false,
-                            response: `âŒ **NÃºmero invÃ¡lido:** ${numeroDigitado}\n\nPor favor, escolha um nÃºmero entre 1 e ${clientes.length}.`,
+                            response: `? **N?mero inv?lido:** ${numeroDigitado}
+
+Por favor, escolha um n?mero entre 1 e ${clientes.length}.`,
                             tipo: 'erro'
                         };
                     }
                 } else {
-                    console.log('ðŸ”¢ DEBUG: Cache expirado ou nÃ£o encontrado para o usuÃ¡rio:', usuario_id);
-                    // Cache expirado, remover entrada
+                    console.log('?? DEBUG: Cache expirado ou n?o encontrado para o usu?rio:', usuario_id);
                     await CacheService.delete(`contexto_cliente:${usuario_id}`);
                 }
             } else {
-                console.log('ðŸ”¢ DEBUG: Nenhum cache encontrado para o usuÃ¡rio ou usuÃ¡rio nÃ£o informado');
+                console.log('?? DEBUG: Nenhum cache encontrado para o usu?rio ou usu?rio n?o informado');
             }
         }
 
-        // Extrair nome, telefone ou cpf da mensagem
-        const padraoNome = /(?:nome|cliente|dados do cliente|consultar cliente|buscar cliente|telefone|cpf|cnpj):?\s*([A-Z\u00C0-\u00FFa-z0-9\s-]+)/i;
+        const padraoNome = /(?:nome|cliente|dados do cliente|consultar cliente|buscar cliente|telefone|cpf|cnpj):?\s*([A-Z?-?a-z0-9\s-]+)/i;
         let termoBusca = null;
         const matchNome = mensagem.match(padraoNome);
 
         if (matchNome) {
             termoBusca = matchNome[1].trim();
-            console.log('ðŸ” DEBUG: Termo de busca extraÃ­do do padrÃ£o:', termoBusca);
+            console.log('?? DEBUG: Termo de busca extra?do do padr?o:', termoBusca);
         } else {
-            // Se nÃ£o veio formatado, usa a mensagem inteira (Ãºtil para nomes compostos)
             termoBusca = mensagem.trim();
-            console.log('ðŸ” DEBUG: Termo de busca usando mensagem completa:', termoBusca);
+            console.log('?? DEBUG: Termo de busca usando mensagem completa:', termoBusca);
         }
 
         if (!termoBusca || termoBusca.length < 2) {
-            console.log('ðŸ” DEBUG: Termo de busca invÃ¡lido ou muito curto');
+            console.log('?? DEBUG: Termo de busca inv?lido ou muito curto');
             return {
                 success: false,
-                response: 'âŒ Informe o nome, telefone ou CPF do cliente para consultar.',
+                response: '? Informe o nome, telefone ou CPF do cliente para consultar.',
                 tipo: 'erro'
             };
         }
 
-        // Buscar clientes por nome, telefone ou cpf
-        console.log('ðŸ” DEBUG: Iniciando busca no banco de dados para:', termoBusca);
+        console.log('?? DEBUG: Iniciando busca no banco de dados para:', termoBusca);
 
         const clientes = await prisma.cliente.findMany({
             where: {
+                oficinaId,
                 OR: [
                     { nomeCompleto: { contains: termoBusca, mode: 'insensitive' } },
                     { telefone: { contains: termoBusca } },
                     { cpfCnpj: { contains: termoBusca } }
                 ]
             },
-            include: { veiculos: true }
+            include: { veiculos: true },
+            take: 10
         });
 
-        console.log('ðŸ” DEBUG: Resultado da busca - encontrados:', clientes.length, 'clientes');
+        console.log('?? DEBUG: Resultado da busca - encontrados:', clientes.length, 'clientes');
         if (clientes.length > 0) {
-            console.log('ðŸ” DEBUG: Clientes encontrados:', clientes.map(c => c.nomeCompleto));
+            console.log('?? DEBUG: Clientes encontrados:', clientes.map(c => c.nomeCompleto));
         }
 
         if (clientes.length === 0) {
-            console.log('ðŸ” DEBUG: Nenhum cliente encontrado para o termo de busca:', termoBusca);
+            console.log('?? DEBUG: Nenhum cliente encontrado para o termo de busca:', termoBusca);
             return {
                 success: false,
-                response: `âŒ Nenhum cliente encontrado para "${termoBusca}".\n\nTente informar nome completo, telefone ou CPF.`,
+                response: `? Nenhum cliente encontrado para "${termoBusca}".
+
+Tente informar nome completo, telefone ou CPF.`,
                 tipo: 'erro'
             };
         }
 
-        // Armazenar os clientes no cache para seleÃ§Ã£o futura, se tivermos usuario_id
         if (usuario_id) {
             await CacheService.set(`contexto_cliente:${usuario_id}`, {
                 clientes: clientes,
                 timestamp: Date.now()
-            }, 600); // 10 minutos TTL
-            console.log('ðŸ” DEBUG: Clientes armazenados no cache para usuÃ¡rio:', usuario_id);
+            }, 600);
+            console.log('?? DEBUG: Clientes armazenados no cache para usu?rio:', usuario_id);
         }
 
-        // Montar resposta com lista de clientes
-        let resposta = `ðŸ‘¤ **Clientes encontrados:**\n\n`;
+        let resposta = 'Clientes encontrados:\n\n';
         clientes.forEach((c, idx) => {
-            resposta += `${idx + 1}. **${c.nomeCompleto}**\n`;
-            resposta += `   â€¢ Telefone: ${c.telefone || 'NÃ£o informado'}\n`;
-            resposta += `   â€¢ CPF/CNPJ: ${c.cpfCnpj || 'NÃ£o informado'}\n`;
+            resposta += `${idx + 1}. ${c.nomeCompleto}\n`;
+            resposta += `   Telefone: ${c.telefone || 'Nao informado'}\n`;
+            resposta += `   CPF/CNPJ: ${c.cpfCnpj || 'Nao informado'}\n`;
             if (c.veiculos && c.veiculos.length > 0) {
-                resposta += `   â€¢ VeÃ­culos: ${c.veiculos.map(v => v.modelo).join(', ')}\n`;
+                resposta += `   Veiculos: ${c.veiculos.map(v => v.modelo).join(', ')}\n`;
             }
             resposta += '\n';
         });
 
-        resposta += `\nðŸ’¡ Digite o nÃºmero do cliente para selecionar ou "agendar" para iniciar um agendamento.`;
+        resposta += 'Digite o numero do cliente para selecionar ou "agendar" para iniciar um agendamento.';
 
         return {
             success: true,
@@ -1158,23 +1230,22 @@ async function processarConsultaCliente(mensagem, contexto_ativo = null, usuario
                     id: c.id,
                     label: c.nomeCompleto,
                     subtitle: c.telefone || 'Sem telefone',
-                    details: c.veiculos && c.veiculos.length > 0 ? [`ðŸš— ${c.veiculos.map(v => `${v.marca} ${v.modelo}`).join(', ')}`] : [],
-                    value: (idx + 1).toString() // Valor que serÃ¡ enviado ao selecionar por nÃºmero
+                    details: c.veiculos && c.veiculos.length > 0 ? [`?? ${c.veiculos.map(v => `${v.marca} ${v.modelo}`).join(', ')}`] : [],
+                    value: (idx + 1).toString()
                 })),
                 selectionTitle: 'Clientes encontrados:'
             },
-            contexto_ativo: 'buscar_cliente'  // Sinaliza que estamos em modo de busca de cliente
+            contexto_ativo: 'buscar_cliente'
         };
     } catch (error) {
-        console.error('âŒ Erro em processarConsultaCliente:', error.message);
+        console.error('? Erro em processarConsultaCliente:', error.message);
         return {
             success: false,
-            response: 'âŒ Erro ao consultar cliente',
+            response: '? Erro ao consultar cliente',
             tipo: 'erro'
         };
     }
 }
-
 // ============================================================================
 // ðŸ’¬ FUNÃ‡ÃƒO: PROCESSAR CONVERSA GERAL
 // ============================================================================
@@ -1221,11 +1292,9 @@ async function processarConversaGeral(mensagem, usuario_id = null) {
 // ðŸ‘¤ FUNÃ‡ÃƒO: PROCESSAR CADASTRO DE CLIENTE
 // ============================================================================
 
-async function processarCadastroCliente(mensagem, usuario_id) {
+async function processarCadastroCliente(mensagem, usuario_id, oficinaId = null) {
     try {
-        // Buscar oficinaId do usuÃ¡rio
-        let oficinaId = null;
-        if (usuario_id) {
+        if (!oficinaId && usuario_id) {
             const usuario = await prisma.user.findUnique({
                 where: { id: String(usuario_id) },
                 select: { oficinaId: true }
@@ -1236,40 +1305,35 @@ async function processarCadastroCliente(mensagem, usuario_id) {
         if (!oficinaId) {
             return {
                 success: false,
-                response: 'âŒ **Erro:** NÃ£o foi possÃ­vel identificar sua oficina.',
+                response: '? **Erro:** N?o foi poss?vel identificar sua oficina.',
                 tipo: 'erro'
             };
         }
 
-        // Extrair dados do cliente da mensagem
         const dados = NLPService.extrairDadosCliente(mensagem);
 
-        console.log('   ðŸ“‹ Dados extraÃ­dos:', dados);
+        console.log('   ?? Dados extra?dos:', dados);
 
-        // ðŸŽ¯ SEMPRE ABRIR MODAL PARA REVISÃƒO E COMPLEMENTO
-        // Mesmo que tenha nome, pedir para revisar e adicionar telefone, CPF, email
         if (!dados.nome || dados.nome.length < 3) {
-            // Sem nome ou nome muito curto - pedir dados
             return {
                 success: false,
-                response: `ðŸ“ **Para cadastrar um novo cliente, preciso dos seguintes dados:**
+                response: `?? **Para cadastrar um novo cliente, preciso dos seguintes dados:**
 
-â€¢ **Nome completo**
-â€¢ Telefone (opcional)
-â€¢ CPF/CNPJ (opcional)
-â€¢ Email (opcional)
+? **Nome completo**
+? Telefone (opcional)
+? CPF/CNPJ (opcional)
+? Email (opcional)
 
 **Exemplo:**
-"Nome: JoÃ£o Silva, Tel: (85) 99999-9999, CPF: 123.456.789-00"
+"Nome: Jo?o Silva, Tel: (85) 99999-9999, CPF: 123.456.789-00"
 
-**Ou informe apenas o nome para cadastro rÃ¡pido:**
-"Cadastrar cliente JoÃ£o Silva"`,
+**Ou informe apenas o nome para cadastro r?pido:**
+"Cadastrar cliente Jo?o Silva"`,
                 tipo: 'cadastro',
                 dadosExtraidos: dados
             };
         }
 
-        // Verificar se cliente jÃ¡ existe
         const clienteExistente = await prisma.cliente.findFirst({
             where: {
                 nomeCompleto: {
@@ -1281,16 +1345,15 @@ async function processarCadastroCliente(mensagem, usuario_id) {
         });
 
         if (clienteExistente) {
-            // Cliente existe - abrir modal com dados dele para ediÃ§Ã£o
             return {
                 success: false,
-                response: `âš ï¸ **Cliente jÃ¡ cadastrado!**
+                response: `?? **Cliente j? cadastrado!**
 
 **Nome:** ${clienteExistente.nomeCompleto}
-**Telefone:** ${clienteExistente.telefone || 'NÃ£o informado'}
-**CPF/CNPJ:** ${clienteExistente.cpfCnpj || 'NÃ£o informado'}
+**Telefone:** ${clienteExistente.telefone || 'N?o informado'}
+**CPF/CNPJ:** ${clienteExistente.cpfCnpj || 'N?o informado'}
 
-ðŸ’¡ Clique no formulÃ¡rio para editar ou adicionar mais informaÃ§Ãµes.`,
+?? Clique no formul?rio para editar ou adicionar mais informa??es.`,
                 tipo: 'alerta',
                 cliente: clienteExistente,
                 dadosExtraidos: {
@@ -1302,49 +1365,58 @@ async function processarCadastroCliente(mensagem, usuario_id) {
             };
         }
 
-        // ðŸŽ¯ NÃƒO CADASTRAR DIRETO - SEMPRE ABRIR MODAL PARA REVISÃƒO
-        // Retorna os dados extraÃ­dos para prÃ©-preencher o modal
-        // UsuÃ¡rio pode revisar e adicionar telefone, CPF, email antes de salvar
         return {
             success: false,
-            response: `ðŸ“ **Detectei os seguintes dados. Por favor, revise e complete no formulÃ¡rio:**
+            response: `?? **Detectei os seguintes dados. Por favor, revise e complete no formul?rio:**
 
 **Nome:** ${dados.nome}
-${dados.telefone ? `**Telefone:** ${dados.telefone}` : 'â€¢ Telefone (recomendado)'}
-${dados.cpfCnpj ? `**CPF/CNPJ:** ${dados.cpfCnpj}` : 'â€¢ CPF/CNPJ (recomendado)'}
-${dados.email ? `**Email:** ${dados.email}` : 'â€¢ Email (opcional)'}
+${dados.telefone ? `**Telefone:** ${dados.telefone}` : '? Telefone (recomendado)'}
+${dados.cpfCnpj ? `**CPF/CNPJ:** ${dados.cpfCnpj}` : '? CPF/CNPJ (recomendado)'}
+${dados.email ? `**Email:** ${dados.email}` : '? Email (opcional)'}
 
-âœ… Clique no formulÃ¡rio que abriu para revisar e salvar o cadastro.`,
+? Clique no formul?rio que abriu para revisar e salvar o cadastro.`,
             tipo: 'cadastro',
             dadosExtraidos: dados
         };
 
     } catch (error) {
-        console.error('âŒ Erro ao processar cadastro:', error);
+        console.error('? Erro ao processar cadastro:', error);
         return {
             success: false,
-            response: 'âŒ **Erro ao cadastrar cliente**\n\nPor favor, tente novamente ou cadastre manualmente na tela de clientes.',
+            response: 'Erro ao cadastrar cliente. Tente novamente ou cadastre manualmente na tela de clientes.',
             tipo: 'erro'
         };
     }
 }
-
 // ============================================================
 // ENDPOINTS PARA INTEGRAÃ‡ÃƒO COM AGNO - FUNCIONALIDADES MATIAS
 // ============================================================
 
 // Endpoint para o Agno consultar Ordens de ServiÃ§o
-router.post('/consultar-os', async (req, res) => {
+router.post('/consultar-os', verificarAuth, async (req, res) => {
     try {
         const { veiculo, proprietario, status, periodo } = req.body;
+        const oficinaId = req.user?.oficinaId;
 
-        console.log('ðŸ” Agno consultando OS:', { veiculo, proprietario, status, periodo });
+        if (!oficinaId) {
+            return res.status(401).json({
+                success: false,
+                error: 'Oficina n?o identificada'
+            });
+        }
+
+        if (!ensureDatabaseConfigured(res)) {
+            return;
+        }
+
+        console.log('?? Agno consultando OS:', { veiculo, proprietario, status, periodo, oficinaId });
 
         const resultados = await ConsultasOSService.consultarOS({
             veiculo,
             proprietario,
             status,
-            periodo
+            periodo,
+            oficinaId
         });
 
         res.json({
@@ -1355,21 +1427,43 @@ router.post('/consultar-os', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('âŒ Erro na consulta OS:', error);
-        res.status(500).json({
+        console.error('? Erro na consulta OS:', error);
+        const response = {
             success: false,
-            error: 'Erro ao consultar ordens de serviÃ§o',
-            message: error.message
-        });
+            error: 'Erro ao consultar ordens de servi?o'
+        };
+        if (process.env.NODE_ENV === 'development') {
+            response.message = error.message;
+        }
+        res.status(500).json(response);
     }
 });
 
 // Endpoint para o Agno agendar serviÃ§os
-router.post('/agendar-servico', async (req, res) => {
+router.post('/agendar-servico', verificarAuth, async (req, res) => {
     try {
         const { cliente, veiculo, servico, data_hora, descricao } = req.body;
+        const oficinaId = req.user?.oficinaId;
 
-        console.log('ðŸ“… Agno agendando serviÃ§o:', { cliente, veiculo, servico, data_hora });
+        if (!oficinaId) {
+            return res.status(401).json({
+                success: false,
+                error: 'Oficina n?o identificada'
+            });
+        }
+
+        if (!ensureDatabaseConfigured(res)) {
+            return;
+        }
+
+        if (!cliente?.id || !veiculo?.id || !data_hora) {
+            return res.status(400).json({
+                success: false,
+                error: 'cliente, veiculo e data_hora s?o obrigat?rios'
+            });
+        }
+
+        console.log('?? Agno agendando servi?o:', { cliente, veiculo, servico, data_hora, oficinaId });
 
         const agendamento = await AgendamentosService.criarAgendamento({
             clienteId: cliente.id,
@@ -1377,34 +1471,50 @@ router.post('/agendar-servico', async (req, res) => {
             tipoServico: servico,
             dataHora: new Date(data_hora),
             descricao,
-            status: 'AGENDADO'
+            status: 'AGUARDANDO',
+            oficinaId
         });
 
         res.json({
             success: true,
             agendamento,
-            mensagem: `ServiÃ§o ${servico} agendado para ${new Date(data_hora).toLocaleString('pt-BR')}`,
+            mensagem: `Servi?o ${servico} agendado para ${new Date(data_hora).toLocaleString('pt-BR')}`,
             timestamp: new Date().toISOString()
         });
 
     } catch (error) {
-        console.error('âŒ Erro no agendamento:', error);
-        res.status(500).json({
+        console.error('? Erro no agendamento:', error);
+        const response = {
             success: false,
-            error: 'Erro ao agendar serviÃ§o',
-            message: error.message
-        });
+            error: 'Erro ao agendar servi?o'
+        };
+        if (process.env.NODE_ENV === 'development') {
+            response.message = error.message;
+        }
+        res.status(500).json(response);
     }
 });
 
 // Endpoint para o Agno consultar estatÃ­sticas
-router.get('/estatisticas', async (req, res) => {
+router.get('/estatisticas', verificarAuth, async (req, res) => {
     try {
         const { periodo = '30_dias' } = req.query;
+        const oficinaId = req.user?.oficinaId;
 
-        console.log('ðŸ“Š Agno consultando estatÃ­sticas:', { periodo });
+        if (!oficinaId) {
+            return res.status(401).json({
+                success: false,
+                error: 'Oficina n?o identificada'
+            });
+        }
 
-        const stats = await ConsultasOSService.obterEstatisticas(periodo);
+        if (!ensureDatabaseConfigured(res)) {
+            return;
+        }
+
+        console.log('?? Agno consultando estat?sticas:', { periodo, oficinaId });
+
+        const stats = await ConsultasOSService.obterEstatisticas(periodo, oficinaId);
 
         res.json({
             success: true,
@@ -1414,26 +1524,52 @@ router.get('/estatisticas', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('âŒ Erro nas estatÃ­sticas:', error);
-        res.status(500).json({
+        console.error('? Erro nas estat?sticas:', error);
+        const response = {
             success: false,
-            error: 'Erro ao consultar estatÃ­sticas',
-            message: error.message
-        });
+            error: 'Erro ao consultar estat?sticas'
+        };
+        if (process.env.NODE_ENV === 'development') {
+            response.message = error.message;
+        }
+        res.status(500).json(response);
     }
 });
 
 // Endpoint para o Agno salvar conversas
-router.post('/salvar-conversa', async (req, res) => {
+router.post('/salvar-conversa', verificarAuth, async (req, res) => {
     try {
         const { usuario_id, mensagem, resposta, contexto } = req.body;
+        const requestUserId = req.user?.id || req.user?.userId;
 
-        console.log('ðŸ’¾ Agno salvando conversa:', { usuario_id, mensagem: mensagem?.substring(0, 50) });
+        if (!requestUserId) {
+            return res.status(401).json({
+                success: false,
+                error: 'Usu?rio n?o autenticado'
+            });
+        }
+
+        const effectiveUserId = usuario_id ? String(usuario_id) : String(requestUserId);
+        if (String(effectiveUserId) !== String(requestUserId)) {
+            return res.status(403).json({
+                success: false,
+                error: 'Acesso negado'
+            });
+        }
+
+        if (!mensagem?.trim()) {
+            return res.status(400).json({
+                success: false,
+                error: 'Mensagem ? obrigat?ria'
+            });
+        }
+
+        console.log('?? Agno salvando conversa:', { usuario_id: effectiveUserId, mensagem: mensagem?.substring(0, 50) });
 
         const conversa = await ConversasService.salvarConversa({
-            usuarioId: usuario_id,
+            usuarioId: effectiveUserId,
             pergunta: mensagem,
-            resposta,
+            resposta: resposta || '',
             contexto: JSON.stringify(contexto || {}),
             timestamp: new Date()
         });
@@ -1445,7 +1581,7 @@ router.post('/salvar-conversa', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('âŒ Erro ao salvar conversa:', error);
+        console.error('? Erro ao salvar conversa:', error);
         res.status(500).json({
             success: false,
             error: 'Erro ao salvar conversa',
@@ -1455,28 +1591,43 @@ router.post('/salvar-conversa', async (req, res) => {
 });
 
 // Endpoint para o Agno recuperar histÃ³rico de conversas
-router.get('/historico-conversas/:usuario_id', async (req, res) => {
+router.get('/historico-conversas/:usuario_id', verificarAuth, async (req, res) => {
     try {
         const { usuario_id } = req.params;
         const { limite = 10 } = req.query;
+        const requestUserId = req.user?.id || req.user?.userId;
 
-        console.log('ðŸ“š Agno recuperando histÃ³rico:', { usuario_id, limite });
+        if (!requestUserId) {
+            return res.status(401).json({
+                success: false,
+                error: 'Usu?rio n?o autenticado'
+            });
+        }
 
-        const historico = await ConversasService.obterHistorico(usuario_id, parseInt(limite));
+        if (usuario_id && usuario_id !== String(requestUserId)) {
+            return res.status(403).json({
+                success: false,
+                error: 'Acesso n?o autorizado ao hist?rico deste usu?rio'
+            });
+        }
+
+        console.log('?? Agno recuperando hist?rico:', { usuario_id: requestUserId, limite });
+
+        const historico = await ConversasService.obterHistorico(String(requestUserId), parseInt(limite));
 
         res.json({
             success: true,
-            usuario_id,
+            usuario_id: String(requestUserId),
             total: historico.length,
             conversas: historico,
             timestamp: new Date().toISOString()
         });
 
     } catch (error) {
-        console.error('âŒ Erro no histÃ³rico:', error);
+        console.error('? Erro no hist?rico:', error);
         res.status(500).json({
             success: false,
-            error: 'Erro ao recuperar histÃ³rico',
+            error: 'Erro ao recuperar hist?rico',
             message: error.message
         });
     }
@@ -1528,7 +1679,7 @@ router.get('/contexto-sistema', async (req, res) => {
 });
 
 // Middleware para verificar autenticaÃ§Ã£o
-const verificarAuth = (req, res, next) => {
+function verificarAuth(req, res, next) {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
@@ -1542,7 +1693,7 @@ const verificarAuth = (req, res, next) => {
     } catch (error) {
         return res.status(401).json({ error: 'Token invÃ¡lido' });
     }
-};
+}
 
 // Health check do agente Agno
 router.get('/health', verificarAuth, async (req, res) => {
@@ -1736,7 +1887,7 @@ async function processarLocal(message, classification, userId, contexto_ativo, r
 
             case 'ACTION':
                 // AÃ§Ãµes estruturadas (CRUD)
-                return await processarAcaoLocal(message, classification.subtype, userId, contexto_ativo);
+                return await processarAcaoLocal(message, classification.subtype, userId, contexto_ativo, req.user?.oficinaId);
 
             default:
                 // Fallback: envia para Agno AI
@@ -1753,7 +1904,7 @@ async function processarLocal(message, classification, userId, contexto_ativo, r
 /**
  * Processa aÃ§Ãµes estruturadas localmente
  */
-async function processarAcaoLocal(message, actionType, userId, contexto_ativo) {
+async function processarAcaoLocal(message, actionType, userId, contexto_ativo, oficinaId) {
     console.log(`ðŸ”§ [ACAO_LOCAL] Processando: ${actionType}`);
 
     try {
@@ -1764,7 +1915,7 @@ async function processarAcaoLocal(message, actionType, userId, contexto_ativo) {
 
             case 'CONSULTA_OS':
                 // Consulta de Ordem de ServiÃ§o (usa funÃ§Ã£o existente)
-                return await processarConsultaOS(message);
+                return await processarConsultaOS(message, oficinaId);
 
             case 'CONSULTA_ESTOQUE':
                 // Consulta de estoque (usa funÃ§Ã£o existente)
@@ -1772,15 +1923,15 @@ async function processarAcaoLocal(message, actionType, userId, contexto_ativo) {
 
             case 'CONSULTA_CLIENTE':
                 // Consulta de cliente (usa funÃ§Ã£o existente)
-                return await processarConsultaCliente(message, contexto_ativo, userId);
+                return await processarConsultaCliente(message, contexto_ativo, userId, oficinaId);
 
             case 'CADASTRO_CLIENTE':
                 // Cadastro de cliente (usa funÃ§Ã£o existente)
-                return await processarCadastroCliente(message, userId);
+                return await processarCadastroCliente(message, userId, oficinaId);
 
             case 'ESTATISTICAS':
                 // EstatÃ­sticas (usa funÃ§Ã£o existente)
-                return await processarEstatisticas(message);
+                return await processarEstatisticas(message, oficinaId);
 
             default:
                 // AÃ§Ã£o nÃ£o implementada, envia para Agno AI
@@ -2040,7 +2191,7 @@ if (AGNO_API_URL && AGNO_API_URL !== 'http://localhost:8000') {
  */
 async function processarComAgnoAI(message, userId, agentId = 'matias', session_id = null) {
     // 0. Verificar Cache L1 (Redis) - 🚀 OTIMIZAÇÃO EXTREMA
-    const cacheKey = `agno:response:${CacheService.hash(message)}`;
+    const cacheKey = `agno:response:${userId}:${CacheService.hash(message)}`;
     const cachedResponse = await CacheService.get(cacheKey);
 
     if (cachedResponse) {
