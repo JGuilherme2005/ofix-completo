@@ -9,15 +9,7 @@ class CacheService {
     }
 
     async init() {
-        const redisUrl =
-            process.env.REDIS_URL ||
-            (process.env.NODE_ENV === 'production' ? null : 'redis://localhost:6379');
-
-        if (!redisUrl) {
-            console.warn('[CACHE] REDIS_URL not set. Cache disabled.');
-            this.isConnected = false;
-            return false;
-        }
+        const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
         console.log('🔌 [CACHE] Inicializando serviço de cache...');
         console.log(`🔌 [CACHE] URL: ${redisUrl.substring(0, 30)}...`);
