@@ -9,7 +9,7 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "npm run prisma:migrate:strict && node src/server.js",
+    "start": "npm run prisma:migrate && node src/server.js",
     "prisma:migrate": "node scripts/prisma-migrate-safe.mjs",
     "prisma:migrate:strict": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
