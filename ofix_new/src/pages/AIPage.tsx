@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { User, Bot, CheckCircle, Loader2, AlertCircle, Volume2, VolumeX, Trash2, MessageSquare, Wrench, MicOff, Mic, Send, Brain, RefreshCw, PanelRightOpen, PanelRightClose, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import DOMPurify from "dompurify";
 import { useAuth } from '../context/AuthContext';
 import ClienteModal from '../components/clientes/ClienteModal';
@@ -1776,6 +1776,9 @@ const AIPage = () => {
                 <SheetContent side="right" className="w-[92vw] sm:max-w-md lg:max-w-lg">
                   <SheetHeader>
                     <SheetTitle>Painel do Matias</SheetTitle>
+                    <SheetDescription className="sr-only">
+                      Opcoes e informacoes do painel lateral do Matias.
+                    </SheetDescription>
                   </SheetHeader>
                   <div className="mt-4 flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-7rem)] pr-1">
                     {!painelFixoDesktop && (
