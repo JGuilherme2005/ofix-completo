@@ -39,13 +39,41 @@ class Application {
       'http://localhost:4174'    // Vite preview alternativa
     ];
 
+    function isAllowedOrigin(origin) {
+      if (!origin) return true;
+      if (allowedOrigins.includes(origin)) return true;
+
+      try {
+        const url = new URL(origin);
+        const hostname = url.hostname.toLowerCase();
+
+        // Allow Vercel deployments for this project (preview + branch alias).
+        // Examples:
+        // - https://ofix-completo-xxxxxx-catgreens-projects.vercel.app
+        // - https://ofix-completo-git-branch-catgreens-projects.vercel.app
+        if (url.protocol === 'https:' && hostname.endsWith('.vercel.app')) {
+          if (hostname === 'ofix-completo.vercel.app') return true;
+
+          const isSameVercelTeam = hostname.endsWith('-catgreens-projects.vercel.app');
+          const isOfixProject =
+            hostname.startsWith('ofix-completo-') || hostname.startsWith('ofix-completo-git-');
+
+          if (isSameVercelTeam && isOfixProject) return true;
+        }
+      } catch {
+        // Ignore invalid origin strings.
+      }
+
+      // Em desenvolvimento, permite qualquer localhost
+      if (process.env.NODE_ENV === 'development' && origin?.includes('localhost')) return true;
+
+      return false;
+    }
+
     // 2. Crie as opções do CORS
     const corsOptions = {
       origin: (origin, callback) => {
-        // Em desenvolvimento, permite qualquer localhost
-        if (!origin || 
-            allowedOrigins.includes(origin) || 
-            (process.env.NODE_ENV === 'development' && origin?.includes('localhost'))) {
+        if (isAllowedOrigin(origin)) {
           callback(null, true);
         } else {
           callback(new Error('Not allowed by CORS'));
