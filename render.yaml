@@ -1,9 +1,3 @@
-databases:
-  - name: ofix-db
-    databaseName: ofix_db
-    user: ofix_user
-    plan: free
-
 services:
   # BACKEND SERVICE
   - type: web
@@ -12,19 +6,16 @@ services:
     plan: free
     rootDir: ofix_new/ofix-backend
     # Render typically sets NODE_ENV=production; ensure Prisma CLI (devDependency) is present at build time.
-    buildCommand: npm ci --include=dev && npm run prisma:migrate
+    # NOTE: Do not run Prisma migrations during build (DB may be unavailable); run at startup instead.
+    buildCommand: npm ci --include=dev && npx prisma generate
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
         value: 20.14.0
       - key: DATABASE_URL
-        fromDatabase:
-          name: ofix-db
-          property: connectionString
+        sync: false # Configure no painel (ex: Supabase pooler + ?pgbouncer=true&sslmode=require)
       - key: DIRECT_DATABASE_URL
-        fromDatabase:
-          name: ofix-db
-          property: connectionString
+        sync: false # Configure no painel (ex: Supabase direct + ?sslmode=require)
       - key: REDIS_URL
         sync: false # Usuário deve configurar no painel
       - key: AGNO_API_URL
