@@ -39,3 +39,6 @@ ofix_new/ofix-backend/uploads/*
 
 # Matias Dados Locais (se houver)
 matias_agnoV1/storage/
+matias_agnoV1/tmp/*.db
+matias_agnoV1/tmp/*.sqlite
+matias_agnoV1/tmp/*.sqlite3
