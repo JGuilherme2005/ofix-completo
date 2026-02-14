@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { User, Bot, CheckCircle, Loader2, AlertCircle, Volume2, VolumeX, Trash2, MessageSquare, Wrench, MicOff, Mic, Send, Brain, RefreshCw, PanelRightOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Bot, CheckCircle, Loader2, AlertCircle, Volume2, VolumeX, Trash2, MessageSquare, Wrench, MicOff, Mic, Send, Brain, RefreshCw, PanelRightOpen, PanelRightClose, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -141,6 +141,25 @@ const AIPage = () => {
   const [memorias, setMemorias] = useState<any[]>([]);
   const [loadingMemorias, setLoadingMemorias] = useState(false);
   const [mostrarMemorias, setMostrarMemorias] = useState(false);
+
+  // Painel lateral (desktop): permite fixar/colapsar sem quebrar o layout.
+  const [painelFixoDesktop, setPainelFixoDesktop] = useState(() => {
+    try {
+      // "1" (padrao) = fixo; "0" = colapsado
+      return localStorage.getItem("matias_panel_pinned") !== "0";
+    } catch {
+      return true;
+    }
+  });
+  const [painelDrawerOpen, setPainelDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("matias_panel_pinned", painelFixoDesktop ? "1" : "0");
+    } catch {
+      // ignore (modo privado / storage bloqueado)
+    }
+  }, [painelFixoDesktop]);
 
   const chatContainerRef = useRef<any>(null);
   const inputRef = useRef<any>(null);
@@ -1668,9 +1687,13 @@ const AIPage = () => {
   );
 
   return (
-    <div className="h-full min-h-0 flex flex-col bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 p-2">
+    <div className="relative h-full min-h-0 flex flex-col bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 p-2 sm:p-4">
+      {/* Subtle pattern for desktop polish (keeps contrast in dark mode). */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:radial-gradient(#0f172a_1px,transparent_1px)] [background-size:24px_24px] dark:opacity-[0.10] dark:[background-image:radial-gradient(#ffffff_1px,transparent_1px)]" />
+
+      <div className="relative mx-auto w-full max-w-[1480px] flex flex-col min-h-0">
       {/* Header - 🎨 Melhorado com Gradiente Moderno */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg border-0 p-3 sm:p-4 mb-3 matias-animate-fade-in">
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg border-0 p-3 sm:p-4 mb-3 ring-1 ring-white/15 matias-animate-fade-in">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm shrink-0">
@@ -1685,7 +1708,7 @@ const AIPage = () => {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 sm:gap-3">
+          <div className="flex flex-wrap lg:flex-nowrap items-center justify-between sm:justify-end gap-2 sm:gap-3">
             {/* 🧠 Indicador de Memória Ativa */}
             {memoriaAtiva && (
               <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-green-500/20 border border-green-300/30 backdrop-blur-sm">
@@ -1739,22 +1762,41 @@ const AIPage = () => {
                 </Button>
               )}
 
-              <Sheet>
+              <Sheet open={painelDrawerOpen} onOpenChange={setPainelDrawerOpen}>
                 <SheetTrigger asChild>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="lg:hidden bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20"
+                    className={`${painelFixoDesktop ? "lg:hidden " : ""}bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20`}
                     aria-label="Abrir painel"
                   >
                     <PanelRightOpen className="w-4 h-4" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[92vw] sm:max-w-md">
+                <SheetContent side="right" className="w-[92vw] sm:max-w-md lg:max-w-lg">
                   <SheetHeader>
                     <SheetTitle>Painel do Matias</SheetTitle>
                   </SheetHeader>
                   <div className="mt-4 flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-7rem)] pr-1">
+                    {!painelFixoDesktop && (
+                      <div className="hidden lg:flex items-center justify-between gap-3 rounded-lg border border-slate-200/70 dark:border-slate-800/70 bg-slate-50/80 dark:bg-slate-900/40 px-3 py-2">
+                        <div className="text-xs text-slate-600 dark:text-slate-300">
+                          Quer deixar este painel fixo ao lado no desktop?
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            setPainelFixoDesktop(true);
+                            setPainelDrawerOpen(false);
+                          }}
+                          className="h-8"
+                        >
+                          Fixar
+                        </Button>
+                      </div>
+                    )}
                     {sidePanelContent}
                   </div>
                 </SheetContent>
@@ -1787,13 +1829,13 @@ const AIPage = () => {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-3">
+      <div className={`flex-1 min-h-0 grid grid-cols-1 gap-3 ${painelFixoDesktop ? 'lg:grid-cols-[minmax(0,1fr)_360px]' : 'lg:grid-cols-1'}`}>
       {/* Área de Chat */}
-      <div className="min-h-0 bg-white/90 dark:bg-slate-900/60 rounded-xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 flex flex-col overflow-hidden">
+      <div className="min-h-0 min-w-0 bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 flex flex-col overflow-hidden">
         {/* Container de Mensagens - 💬 Com Scrollbar Personalizada */}
         <div
           ref={chatContainerRef}
-          className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 matias-animate-fade-in"
+          className="flex-1 min-h-0 min-w-0 overflow-y-auto p-4 sm:p-5 space-y-4 matias-animate-fade-in"
           style={{
             scrollbarWidth: 'thin',
             scrollbarColor: '#cbd5e1 transparent'
@@ -2056,7 +2098,27 @@ const AIPage = () => {
         </div>
 
         {/* Sugestoes rapidas */}
-        <div className="border-t border-slate-200/60 dark:border-slate-800/60 bg-slate-50/60 dark:bg-slate-950/20 px-3 py-2">
+        <div className="border-t border-slate-200/60 dark:border-slate-800/60 bg-slate-50/70 dark:bg-slate-950/20 px-4 sm:px-5 py-3">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <div className="text-[11px] font-semibold tracking-wide uppercase text-slate-600 dark:text-slate-300">
+              SugestÃµes rÃ¡pidas
+            </div>
+            {contextoAtivo && (
+              <button
+                type="button"
+                onClick={() => {
+                  setContextoAtivo(null);
+                  setInputWarning("");
+                  setInputHint("");
+                  inputRef.current?.focus();
+                }}
+                className="text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 underline underline-offset-4 decoration-slate-300/60 hover:decoration-slate-500/70 dark:decoration-slate-600/60"
+              >
+                Limpar contexto
+              </button>
+            )}
+          </div>
+
           <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {[
               {
@@ -2252,10 +2314,31 @@ const AIPage = () => {
       </div>
 
       {/* Side panel (desktop) */}
-      <div className="hidden lg:flex min-h-0 overflow-y-auto pr-1">
-        {sidePanelContent}
-      </div>
+      {painelFixoDesktop && (
+        <div className="hidden lg:flex min-h-0 min-w-0 flex-col">
+          <div className="flex items-center justify-between px-1 pb-2">
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              Painel do Matias
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setPainelFixoDesktop(false)}
+              className="h-9 w-9 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/60"
+              aria-label="Fechar painel"
+              title="Fechar painel"
+            >
+              <PanelRightClose className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+            {sidePanelContent}
+          </div>
+        </div>
+      )}
     </div>
+  </div>
 
       {/* MODAL DE CADASTRO DE CLIENTE */}
       <ClienteModal
