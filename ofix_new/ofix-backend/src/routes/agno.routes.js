@@ -51,6 +51,13 @@ const AGNO_RUN_TIMEOUT_MS = parsePositiveInt(process.env.AGNO_RUN_TIMEOUT_MS, 12
 const AGNO_HEALTH_TIMEOUT_MS = parsePositiveInt(process.env.AGNO_HEALTH_TIMEOUT_MS, 10000);
 // Warm-up health checks should tolerate cold starts better than regular status checks.
 const AGNO_WARM_HEALTH_TIMEOUT_MS = parsePositiveInt(process.env.AGNO_WARM_HEALTH_TIMEOUT_MS, 20000);
+// Auto warm-up keeps Render free instances awake; disable for "wake on demand" testing.
+const AGNO_AUTO_WARMUP_ENABLED =
+    String(process.env.AGNO_AUTO_WARMUP || '').trim().toLowerCase() !== 'false';
+// When waking from cold start, poll health for up to this long before giving up.
+const AGNO_WARM_MAX_WAIT_MS = parsePositiveInt(process.env.AGNO_WARM_MAX_WAIT_MS, 90000);
+// Delay between warm health retries (capped in logic below).
+const AGNO_WARM_RETRY_DELAY_MS = parsePositiveInt(process.env.AGNO_WARM_RETRY_DELAY_MS, 3000);
 
 // Optional: perform a lightweight warm run to reduce cold-start latency (Render free tier, etc.)
 const AGNO_WARM_RUN_ENABLED = String(process.env.AGNO_WARM_RUN || '').trim().toLowerCase() === 'true';
@@ -152,6 +159,8 @@ function shouldRetryWithNextBase(errorOrStatus) {
         message.includes('network')
     );
 }
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function fetchAgnoHealth({ timeoutMs = AGNO_HEALTH_TIMEOUT_MS } = {}) {
     if (!AGNO_IS_CONFIGURED) {
@@ -341,7 +350,7 @@ async function runAgnoWarmRun({ agentId = AGNO_WARM_RUN_AGENT_ID } = {}) {
     return lastError || { ok: false, status: null, latency_ms: 0, error: 'AGNO_UNREACHABLE' };
 }
 
-async function warmAgnoService({ reason = 'manual' } = {}) {
+async function warmAgnoService({ reason = 'manual', maxWaitMs = AGNO_WARM_MAX_WAIT_MS } = {}) {
     lastWarmingAttempt = Date.now();
 
     if (!AGNO_IS_CONFIGURED) {
@@ -350,12 +359,40 @@ async function warmAgnoService({ reason = 'manual' } = {}) {
         return { ok: false, reason: 'not_configured', health: null, warm_run: null };
     }
 
-    const health = await fetchAgnoHealth({ timeoutMs: AGNO_WARM_HEALTH_TIMEOUT_MS });
-    agnoWarmed = health.ok;
+    const startedAt = Date.now();
+    const deadline = startedAt + Math.max(0, Number(maxWaitMs) || 0);
+
+    let attempts = 0;
+    let health = null;
+
+    while (Date.now() <= deadline) {
+        attempts += 1;
+        health = await fetchAgnoHealth({ timeoutMs: AGNO_WARM_HEALTH_TIMEOUT_MS });
+
+        if (health.ok) {
+            break;
+        }
+
+        // Break early for non-retryable HTTP statuses (misconfig, auth, etc).
+        if (typeof health?.status === 'number' && !shouldRetryWithNextBase(health.status)) {
+            break;
+        }
+
+        const remainingMs = deadline - Date.now();
+        if (remainingMs <= 0) {
+            break;
+        }
+
+        const backoffMs = Math.min(AGNO_WARM_RETRY_DELAY_MS * attempts, 8000);
+        await sleep(Math.min(backoffMs, remainingMs));
+    }
+
+    agnoWarmed = Boolean(health?.ok);
+    const waited_ms = Date.now() - startedAt;
 
     if (!health.ok) {
         console.warn('⚠️ [AGNO] Warm falhou no health:', health.error);
-        return { ok: false, reason, health, warm_run: null };
+        return { ok: false, reason, health, warm_run: null, attempts, waited_ms };
     }
 
     let warmRunResult = null;
@@ -368,7 +405,7 @@ async function warmAgnoService({ reason = 'manual' } = {}) {
         }
     }
 
-    return { ok: true, reason, health, warm_run: warmRunResult };
+    return { ok: true, reason, health, warm_run: warmRunResult, attempts, waited_ms };
 }
 
 // Endpoint pÃºblico para verificar configuraÃ§Ã£o do Agno
@@ -676,8 +713,43 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
                 const errorType = isTimeoutOrRateLimit ? 'â±ï¸ Timeout/Rate Limit' : 'âŒ Erro';
                 console.error(`   âš ï¸ Agno falhou (${errorType}), usando fallback:`, errorMessage);
 
-                // Fallback para resposta local baseado no subtipo
-                const duration = Date.now() - startTime;
+                const statusCode = Number(agnoError?.status);
+                const errorMessageLower = errorMessage.toLowerCase();
+                const isServerError = Number.isFinite(statusCode) && statusCode >= 500;
+                const isAgentNotFound = statusCode === 404 && errorMessageLower.includes('agent not found');
+                const isNetworkError = /econnrefused|enotfound|fetch failed|network/i.test(errorMessageLower);
+
+                // Free-tier cold start: warm up once and retry before falling back.
+                if (!isRateLimit && (isTimeout || isServerError || isAgentNotFound || isNetworkError)) {
+                    try {
+                        console.warn('[AGNO_AI] Provavel cold start. Tentando aquecer e reenviar uma vez...');
+                        const warmResult = await warmAgnoService({ reason: 'chat_retry', maxWaitMs: 60000 });
+
+                        if (warmResult?.ok) {
+                            responseData = await processarComAgnoAI(message, usuario_id, 'matias', null, { throwOnError: true });
+
+                            const retryDuration = Date.now() - startTime;
+                            console.log(`✅ [AGNO_AI] Reprocessado apos warm em ${retryDuration}ms`);
+
+                            responseData.metadata = {
+                                ...responseData.metadata,
+                                processed_by: 'AGNO_AI',
+                                processing_time_ms: retryDuration,
+                                classification: classification,
+                                warm_attempted: true,
+                                warm_ok: true,
+                                warm_attempts: warmResult.attempts,
+                                warm_waited_ms: warmResult.waited_ms
+                            };
+                        }
+                    } catch (retryError) {
+                        console.warn('[AGNO_AI] Retry apos warm falhou:', String(retryError?.message || retryError));
+                    }
+                }
+
+                if (!responseData) {
+                    // Fallback para resposta local baseado no subtipo
+                    const duration = Date.now() - startTime;
 
                 if (classification.subtype === 'ORCAMENTO' || classification.subtype === 'CONSULTA_PRECO') {
                     responseData = {
@@ -710,6 +782,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
                             classification: classification
                         }
                     };
+                }
                 }
             }
         }
@@ -2603,7 +2676,7 @@ router.get('/memory-status', async (req, res) => {
 });
 
 // Warm-up INTELIGENTE - apenas se inativo por >8 minutos (economia 50%)
-if (AGNO_IS_CONFIGURED) {
+if (AGNO_IS_CONFIGURED && AGNO_AUTO_WARMUP_ENABLED) {
     const WARMUP_INTERVAL = 10 * 60 * 1000; // 10 minutos
 
     setInterval(async () => {
