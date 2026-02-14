@@ -30,10 +30,11 @@ def _select_model():
         return Groq(id=model_id)
 
     hf_token = (os.getenv("HF_TOKEN") or "").strip()
-    if hf_token:
-        return HuggingFace(id="Qwen/Qwen2.5-7B-Instruct", api_key=hf_token)
+    if not hf_token:
+        # Do not crash the service on missing credentials; return a clear error on run instead.
+        print("[matias] Missing GROQ_API_KEY and HF_TOKEN; model calls will fail until one is configured.")
 
-    raise ValueError("Missing LLM credentials: set GROQ_API_KEY or HF_TOKEN")
+    return HuggingFace(id="Qwen/Qwen2.5-7B-Instruct", api_key=hf_token)
 
 
 def create_matias_agent():
@@ -58,4 +59,3 @@ def create_matias_agent():
         add_history_to_context=True,
         num_history_runs=5,
     )
-
