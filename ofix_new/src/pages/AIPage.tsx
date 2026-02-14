@@ -1427,7 +1427,7 @@ const AIPage = () => {
       >
         <div className="text-left">
           <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Configuracoes de voz
+            Configurações de voz
           </div>
           <div className="text-xs text-slate-600 dark:text-slate-400">
             {vozSelecionada?.name ? `Voz: ${vozSelecionada.name}` : "Selecione uma voz"}
@@ -1465,7 +1465,7 @@ const AIPage = () => {
           <div className="mb-4 flex items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-950/20 rounded-lg border border-slate-200/60 dark:border-slate-800/60">
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-slate-200 block">
-                Modo continuo
+                Modo contínuo
               </label>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Reconhecimento de voz sem parar
@@ -1533,7 +1533,7 @@ const AIPage = () => {
 
           <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
             <Button
-              onClick={() => falarTexto('Ola! Esta e a voz do Matias. Como posso ajuda-lo hoje?')}
+              onClick={() => falarTexto('Olá! Esta é a voz do Matias. Como posso ajudá-lo hoje?')}
               variant="outline"
               size="sm"
               className="w-full"
@@ -1556,7 +1556,7 @@ const AIPage = () => {
           className="flex items-center gap-2 text-blue-900 dark:text-blue-200 font-semibold hover:text-blue-700 dark:hover:text-blue-100 transition-colors min-w-0"
         >
           <Brain className="w-5 h-5 shrink-0" />
-          <span className="truncate">O que o Matias lembra sobre voce</span>
+          <span className="truncate">O que o Matias lembra sobre você</span>
           {memoriaAtiva && (
             <span className="text-xs bg-blue-100 dark:bg-blue-950/40 dark:text-blue-200 px-2 py-0.5 rounded-full shrink-0">
               {memorias.length}
@@ -1564,7 +1564,7 @@ const AIPage = () => {
           )}
           {!memoriaAtiva && (
             <span className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-200 px-2 py-0.5 rounded-full shrink-0">
-              Aguardando ativacao
+              Aguardando ativação
             </span>
           )}
         </button>
@@ -1578,7 +1578,7 @@ const AIPage = () => {
                 size="sm"
                 disabled={loadingMemorias}
                 className="text-blue-600 dark:text-blue-300 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30"
-                title="Atualizar memorias"
+                title="Atualizar memórias"
               >
                 <RefreshCw className={`w-4 h-4 ${loadingMemorias ? 'animate-spin' : ''}`} />
               </Button>
@@ -1602,7 +1602,7 @@ const AIPage = () => {
           {!memoriaAtiva ? (
             <div className="mt-3 bg-yellow-50 border border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-900/30 rounded-lg p-4">
               <p className="text-sm text-yellow-900 dark:text-yellow-200 font-medium mb-2">
-                Sistema de memoria nao ativado
+                Sistema de memória não ativado
               </p>
               <p className="text-xs text-yellow-800 dark:text-yellow-200/90 mb-3">
                 Configure no Render para o Matias lembrar das conversas:
@@ -1616,7 +1616,7 @@ const AIPage = () => {
           ) : loadingMemorias ? (
             <div className="flex items-center justify-center py-6">
               <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
-              <span className="ml-2 text-sm text-slate-600 dark:text-slate-300">Carregando memorias...</span>
+              <span className="ml-2 text-sm text-slate-600 dark:text-slate-300">Carregando memórias...</span>
             </div>
           ) : memorias.length > 0 ? (
             <ul className="mt-3 space-y-2">
@@ -1630,7 +1630,7 @@ const AIPage = () => {
           ) : (
             <div className="text-center py-6">
               <p className="text-sm text-slate-600 dark:text-slate-300 italic">
-                Ainda nao ha memorias salvas.
+                Ainda não há memórias salvas.
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Continue conversando com o Matias.
@@ -1645,7 +1645,7 @@ const AIPage = () => {
   const actionsCard = (
     <div className="bg-white dark:bg-slate-900/60 rounded-xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 p-4">
       <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">
-        Acoes
+        Ações
       </div>
       <div className="flex flex-col gap-2">
         <Button onClick={limparHistorico} variant="outline" className="justify-start gap-2">
@@ -1653,7 +1653,7 @@ const AIPage = () => {
           Limpar conversa
         </Button>
         <div className="text-xs text-slate-500 dark:text-slate-400">
-          Dica: ESC para parar gravacao ou fala.
+          Dica: ESC para parar gravação ou fala.
         </div>
       </div>
     </div>
@@ -1681,7 +1681,7 @@ const AIPage = () => {
                 Assistente IA OFIX
                 <span className="text-xs font-normal bg-white/20 px-2 py-0.5 rounded-full">AI v2.0</span>
               </h1>
-              <p className="text-xs sm:text-sm text-blue-100 hidden sm:block">Seu especialista em oficina mecanica</p>
+              <p className="text-xs sm:text-sm text-blue-100 hidden sm:block">Seu especialista em oficina mecânica</p>
             </div>
           </div>
 
@@ -1690,7 +1690,7 @@ const AIPage = () => {
             {memoriaAtiva && (
               <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-green-500/20 border border-green-300/30 backdrop-blur-sm">
                 <Brain className="w-4 h-4 text-green-100" />
-                <span className="text-xs font-medium text-green-100 hidden sm:inline">Memoria ativa</span>
+                <span className="text-xs font-medium text-green-100 hidden sm:inline">Memória ativa</span>
               </div>
             )}
             {/* Status da Conexão - 🎨 Melhorado para Header com Gradiente */}
