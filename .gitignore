@@ -33,6 +33,9 @@ build/
 *.swp
 .DS_Store
 
+# Vercel local metadata
+.vercel/
+
 # Ofix Backend Uploads
 ofix_new/ofix-backend/uploads/*
 !ofix_new/ofix-backend/uploads/.gitkeep

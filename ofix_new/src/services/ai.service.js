@@ -1,10 +1,13 @@
+import { getApiBaseUrl } from '../utils/api';
+
 /**
  * Serviço de IA para o frontend
  * Centraliza todas as chamadas para as APIs de IA
  */
 class AIService {
   constructor() {
-    this.baseURL = '/api/ai';
+    const base = getApiBaseUrl();
+    this.baseURL = base ? `${base}/api/ai` : '/api/ai';
     this.timeout = 60000; // 1 minuto
   }
 

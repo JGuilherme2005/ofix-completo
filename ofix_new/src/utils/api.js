@@ -15,18 +15,15 @@ export const getApiBaseUrl = () => {
   const viteUrl = import.meta.env?.VITE_API_BASE_URL;
   if (viteUrl) return normalizeBaseUrl(viteUrl);
 
-  // Production (Vercel)
-  if (window.location.hostname === "ofix.vercel.app") {
-    return normalizeBaseUrl("https://ofix-backend-prod.onrender.com");
-  }
+  const hostname = window.location.hostname;
 
-  // Local dev
-  if (window.location.hostname === "localhost") {
+  // Local dev (use Vite proxy: /api -> backend local)
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
     return "";
   }
 
   // Default fallback
-  return normalizeBaseUrl("https://ofix-backend-prod.onrender.com");
+  return normalizeBaseUrl("https://ofix-backend-r556.onrender.com");
 };
 
 const API_BASE_URL = getApiBaseUrl();

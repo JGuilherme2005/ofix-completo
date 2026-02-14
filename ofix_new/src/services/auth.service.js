@@ -13,6 +13,8 @@ export const login = async (credentials) => {
         token: response.data.token,
         user: response.data.user
       }));
+      // Backward-compat: partes antigas do front leem `localStorage.getItem('token')` direto.
+      localStorage.setItem('token', response.data.token);
     }
     return response.data; // Retorna { user, token }
   } catch (error) {
@@ -37,6 +39,7 @@ export const register = async (userData) => {
 export const logout = () => {
   // Remove o token do localStorage
   localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem('token');
   // Adicionalmente, se houver um estado global de autenticação, ele deve ser resetado.
   // O AuthContext cuidará disso.
   // Não há chamada de API para logout no backend JWT stateless, a menos que haja uma blacklist de tokens.
@@ -96,6 +99,7 @@ export const loginWithInvite = async (token) => {
         token: response.data.token,
         user: response.data.user
       }));
+      localStorage.setItem('token', response.data.token);
     }
     return response.data;
   } catch (error) {

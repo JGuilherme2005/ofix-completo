@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../services/api';
 
 /**
  * 🔧 Hook para dados administrativos do OFIX
@@ -31,16 +31,12 @@ export const useAdminData = () => {
             try {
                 setAdminData(prev => ({ ...prev, loading: true, error: null }));
                 
-                const token = localStorage.getItem('token');
-                const headers = token ? { Authorization: `Bearer ${token}` } : {};
-                const baseURL = '/api';
-
                 // Buscar dados de diferentes endpoints em paralelo
                 const requests = [
-                    axios.get(`${baseURL}/clientes`, { headers }).catch(() => ({ data: [] })),
-                    axios.get(`${baseURL}/servicos`, { headers }).catch(() => ({ data: [] })),
-                    axios.get(`${baseURL}/procedimentos`, { headers }).catch(() => ({ data: [] })),
-                    axios.get(`${baseURL}/mensagens`, { headers }).catch(() => ({ data: [] }))
+                    apiClient.get(`/clientes`).catch(() => ({ data: [] })),
+                    apiClient.get(`/servicos`).catch(() => ({ data: [] })),
+                    apiClient.get(`/procedimentos`).catch(() => ({ data: [] })),
+                    apiClient.get(`/mensagens`).catch(() => ({ data: [] }))
                 ];
 
                 const [clientesRes, servicosRes, procedimentosRes, mensagensRes] = await Promise.all(requests);

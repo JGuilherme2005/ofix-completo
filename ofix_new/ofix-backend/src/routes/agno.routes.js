@@ -24,7 +24,7 @@ const AGNO_API_URL = (process.env.AGNO_API_URL || '').trim();
 const AGNO_PUBLIC_API_URL = (process.env.AGNO_PUBLIC_API_URL || '').trim();
 const AGNO_FALLBACK_API_URL = (process.env.AGNO_FALLBACK_API_URL || '').trim();
 const AGNO_DEFAULT_PUBLIC_URL =
-    process.env.NODE_ENV === 'production' ? 'https://matias-agno-assistant.onrender.com' : '';
+    process.env.NODE_ENV === 'production' ? 'https://matias-agno-r556.onrender.com' : '';
 
 const AGNO_BASE_URLS = [
     AGNO_API_URL,
@@ -523,7 +523,7 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
         if (!AGNO_IS_CONFIGURED) {
             return res.json({
                 success: true,
-                response: `ðŸ¤– **Modo DemonstraÃ§Ã£o Ativado**\n\nVocÃª disse: "${message}"\n\nðŸ“‹ **Status**: Agente Matias nÃ£o configurado no ambiente de produÃ§Ã£o.\n\nâš™ï¸ **ConfiguraÃ§Ã£o necessÃ¡ria no Render:**\n- AGNO_API_URL=https://matias-agno-assistant.onrender.com\n- AGNO_DEFAULT_AGENT_ID=matias\n\nðŸ’¡ ApÃ³s configurar, o assistente conectarÃ¡ com seu agente real!`,
+                response: `ðŸ¤– **Modo DemonstraÃ§Ã£o Ativado**\n\nVocÃª disse: "${message}"\n\nðŸ“‹ **Status**: Agente Matias nÃ£o configurado no ambiente de produÃ§Ã£o.\n\nâš™ï¸ **ConfiguraÃ§Ã£o necessÃ¡ria no Render:**\n- AGNO_API_URL=https://matias-agno-r556.onrender.com\n- AGNO_DEFAULT_AGENT_ID=matias\n\nðŸ’¡ ApÃ³s configurar, o assistente conectarÃ¡ com seu agente real!`,
                 mode: 'demo',
                 agno_configured: false
             });

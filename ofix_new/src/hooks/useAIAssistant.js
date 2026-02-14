@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { aiService } from '../services/ai.service';
 import { useAuth } from '../context/AuthContext';
+import { getApiBaseUrl } from '../utils/api';
 
 export function useAIAssistant(options = {}) {
     const {
@@ -47,6 +48,10 @@ export function useAIAssistant(options = {}) {
     const responseTimeRef = useRef(null);
     const abortControllerRef = useRef(null);
 
+    // Base URL do backend (prod) ou string vazia (dev via proxy do Vite)
+    const API_BASE_URL = getApiBaseUrl();
+    const buildUrl = (path) => (API_BASE_URL ? `${API_BASE_URL}${path}` : path);
+
     // Carregar sugestões baseadas no contexto
     useEffect(() => {
         const loadSuggestions = async () => {
@@ -84,7 +89,7 @@ export function useAIAssistant(options = {}) {
             setError(null);
 
             // Primeiro verificar se a API está funcionando (sem autenticação)
-            const healthResponse = await fetch('/api/agno/health', {
+            const healthResponse = await fetch(buildUrl('/agno/health'), {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -104,7 +109,7 @@ export function useAIAssistant(options = {}) {
             }
 
             // Verificar conectividade com a API autenticada
-            const authResponse = await fetch('/api/ai/suggestions', {
+            const authResponse = await fetch(buildUrl('/api/ai/suggestions'), {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -141,7 +146,7 @@ export function useAIAssistant(options = {}) {
      */
     const loadConversationHistory = useCallback(async () => {
         try {
-            const response = await fetch(`/api/ai/conversations/${conversationId}`, {
+            const response = await fetch(buildUrl(`/api/ai/conversations/${conversationId}`), {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -182,7 +187,7 @@ export function useAIAssistant(options = {}) {
      */
     const loadSuggestions = async () => {
         try {
-            const response = await fetch(`/api/ai/suggestions?context=${encodeURIComponent(JSON.stringify(context))}`, {
+            const response = await fetch(buildUrl(`/api/ai/suggestions?context=${encodeURIComponent(JSON.stringify(context))}`), {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -232,7 +237,7 @@ export function useAIAssistant(options = {}) {
             };
 
             // Enviar para a nova API
-            const response = await fetch('/api/ai/chat', {
+            const response = await fetch(buildUrl('/api/ai/chat'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -322,7 +327,7 @@ export function useAIAssistant(options = {}) {
             setIsLoading(true);
             setError(null);
 
-            const response = await fetch('/api/ai/diagnosis', {
+            const response = await fetch(buildUrl('/api/ai/diagnosis'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -369,7 +374,7 @@ export function useAIAssistant(options = {}) {
         try {
             setIsLoading(true);
 
-            const response = await fetch('/api/ai/quick-action', {
+            const response = await fetch(buildUrl('/api/ai/quick-action'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -420,7 +425,7 @@ export function useAIAssistant(options = {}) {
      */
     const provideFeedback = useCallback(async (messageId, feedbackData) => {
         try {
-            const response = await fetch('/api/ai/feedback', {
+            const response = await fetch(buildUrl('/api/ai/feedback'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -481,7 +486,7 @@ export function useAIAssistant(options = {}) {
     const endConversation = useCallback(async () => {
         if (conversationId) {
             try {
-                await fetch(`/api/ai/conversations/${conversationId}/end`, {
+                await fetch(buildUrl(`/api/ai/conversations/${conversationId}/end`), {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
