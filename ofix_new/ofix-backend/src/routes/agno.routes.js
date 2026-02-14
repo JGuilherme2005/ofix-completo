@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import jwt from 'jsonwebtoken';
@@ -19,12 +19,27 @@ import CacheService from '../services/cache.service.js';
 
 const router = express.Router();
 
-// ConfiguraÃ§Ãµes do Agno (pode vir de variÃ¡veis de ambiente)
+// Configuracoes do Agno (aceita URL principal e fallback para ambientes com DNS interno)
 const AGNO_API_URL = (process.env.AGNO_API_URL || '').trim();
-const AGNO_BASE_URL = AGNO_API_URL.replace(/\/$/, '');
+const AGNO_PUBLIC_API_URL = (process.env.AGNO_PUBLIC_API_URL || '').trim();
+const AGNO_FALLBACK_API_URL = (process.env.AGNO_FALLBACK_API_URL || '').trim();
+const AGNO_DEFAULT_PUBLIC_URL =
+    process.env.NODE_ENV === 'production' ? 'https://matias-agno-assistant.onrender.com' : '';
+
+const AGNO_BASE_URLS = [
+    AGNO_API_URL,
+    AGNO_PUBLIC_API_URL,
+    AGNO_FALLBACK_API_URL,
+    AGNO_DEFAULT_PUBLIC_URL,
+]
+    .map((url) => String(url || '').trim().replace(/\/$/, ''))
+    .filter(Boolean)
+    .filter((url, index, list) => list.indexOf(url) === index);
+
+const AGNO_BASE_URL = AGNO_BASE_URLS[0] || '';
 const AGNO_API_TOKEN = (process.env.AGNO_API_TOKEN || '').trim();
 const AGNO_DEFAULT_AGENT_ID = (process.env.AGNO_DEFAULT_AGENT_ID || 'matias').trim();
-const AGNO_IS_CONFIGURED = Boolean(AGNO_BASE_URL);
+const AGNO_IS_CONFIGURED = AGNO_BASE_URLS.length > 0;
 
 function parsePositiveInt(value, fallback) {
     const parsed = Number.parseInt(String(value ?? ''), 10);
@@ -118,35 +133,144 @@ function getAgnoAuthHeaders() {
     return AGNO_API_TOKEN ? { 'Authorization': `Bearer ${AGNO_API_TOKEN}` } : {};
 }
 
+function getAgnoCandidateBaseUrls(preferredBaseUrl = AGNO_BASE_URL) {
+    const ordered = [preferredBaseUrl, ...AGNO_BASE_URLS].filter(Boolean);
+    return ordered.filter((url, index) => ordered.indexOf(url) === index);
+}
+
+function shouldRetryWithNextBase(errorOrStatus) {
+    if (typeof errorOrStatus === 'number') {
+        return errorOrStatus >= 500 || errorOrStatus === 429;
+    }
+
+    const message = String(errorOrStatus?.message || '').toLowerCase();
+    return (
+        message.includes('econnrefused') ||
+        message.includes('enotfound') ||
+        message.includes('timed out') ||
+        message.includes('timeout') ||
+        message.includes('network')
+    );
+}
+
 async function fetchAgnoHealth({ timeoutMs = AGNO_HEALTH_TIMEOUT_MS } = {}) {
     if (!AGNO_IS_CONFIGURED) {
         return { ok: false, status: null, latency_ms: 0, data: null, error: 'AGNO_NOT_CONFIGURED' };
     }
 
-    const startedAt = Date.now();
-    try {
-        const response = await fetch(`${AGNO_BASE_URL}/health`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                ...getAgnoAuthHeaders()
-            },
-            signal: AbortSignal.timeout(timeoutMs)
-        });
+    const baseUrls = getAgnoCandidateBaseUrls();
+    let lastHealthResult = null;
 
-        const latency_ms = Date.now() - startedAt;
-        let data = null;
+    for (const baseUrl of baseUrls) {
+        const startedAt = Date.now();
+
         try {
-            data = await response.json();
-        } catch (_) {
-            // ignore non-JSON health bodies
-        }
+            const response = await fetch(`${baseUrl}/health`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAgnoAuthHeaders(),
+                },
+                signal: AbortSignal.timeout(timeoutMs),
+            });
 
-        return { ok: response.ok, status: response.status, latency_ms, data, error: null };
-    } catch (error) {
-        const latency_ms = Date.now() - startedAt;
-        return { ok: false, status: null, latency_ms, data: null, error: error.message };
+            const latency_ms = Date.now() - startedAt;
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (_) {
+                // Ignore non-JSON health body.
+            }
+
+            const healthResult = {
+                ok: response.ok,
+                status: response.status,
+                latency_ms,
+                data,
+                error: response.ok ? null : `HTTP ${response.status}`,
+                base_url: baseUrl,
+                tried_urls: baseUrls,
+            };
+
+            if (response.ok) {
+                return healthResult;
+            }
+
+            lastHealthResult = healthResult;
+            if (!shouldRetryWithNextBase(response.status)) {
+                return healthResult;
+            }
+        } catch (error) {
+            const latency_ms = Date.now() - startedAt;
+            lastHealthResult = {
+                ok: false,
+                status: null,
+                latency_ms,
+                data: null,
+                error: error.message,
+                base_url: baseUrl,
+                tried_urls: baseUrls,
+            };
+        }
     }
+
+    return lastHealthResult || {
+        ok: false,
+        status: null,
+        latency_ms: 0,
+        data: null,
+        error: 'AGNO_UNREACHABLE',
+        base_url: AGNO_BASE_URL,
+        tried_urls: baseUrls,
+    };
+}
+
+async function fetchAgnoWithFallback(path, { method = 'GET', headers = {}, body, timeoutMs = AGNO_RUN_TIMEOUT_MS } = {}) {
+    const baseUrls = getAgnoCandidateBaseUrls();
+    let lastError = null;
+
+    for (const baseUrl of baseUrls) {
+        const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+        const url = `${baseUrl}${normalizedPath}`;
+
+        try {
+            const response = await fetch(url, {
+                method,
+                headers,
+                body,
+                signal: AbortSignal.timeout(timeoutMs),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                const httpError = new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+                httpError.status = response.status;
+                httpError.base_url = baseUrl;
+                httpError.tried_urls = baseUrls;
+
+                if (shouldRetryWithNextBase(response.status)) {
+                    lastError = httpError;
+                    continue;
+                }
+
+                throw httpError;
+            }
+
+            return { response, base_url: baseUrl, tried_urls: baseUrls };
+        } catch (error) {
+            error.base_url = error.base_url || baseUrl;
+            error.tried_urls = error.tried_urls || baseUrls;
+            lastError = error;
+
+            if (shouldRetryWithNextBase(error)) {
+                continue;
+            }
+
+            throw error;
+        }
+    }
+
+    throw lastError || new Error('AGNO_UNREACHABLE');
 }
 
 async function runAgnoWarmRun({ agentId = AGNO_WARM_RUN_AGENT_ID } = {}) {
@@ -155,7 +279,8 @@ async function runAgnoWarmRun({ agentId = AGNO_WARM_RUN_AGENT_ID } = {}) {
     }
 
     const resolvedAgentId = (agentId || AGNO_DEFAULT_AGENT_ID || 'matias').trim() || 'matias';
-    const endpoint = `${AGNO_BASE_URL}/agents/${encodeURIComponent(resolvedAgentId)}/runs`;
+    const baseUrls = getAgnoCandidateBaseUrls();
+    let lastError = null;
 
     const form = new FormData();
     form.append('message', AGNO_WARM_RUN_MESSAGE || 'ping');
@@ -163,43 +288,57 @@ async function runAgnoWarmRun({ agentId = AGNO_WARM_RUN_AGENT_ID } = {}) {
     form.append('session_id', AGNO_WARM_RUN_SESSION_ID);
     form.append('user_id', AGNO_WARM_RUN_USER_ID);
 
-    const startedAt = Date.now();
-    try {
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                ...form.getHeaders(),
-                ...getAgnoAuthHeaders()
-            },
-            body: form,
-            signal: AbortSignal.timeout(AGNO_WARM_RUN_TIMEOUT_MS)
-        });
+    for (const baseUrl of baseUrls) {
+        const endpoint = `${baseUrl}/agents/${encodeURIComponent(resolvedAgentId)}/runs`;
+        const startedAt = Date.now();
 
-        const latency_ms = Date.now() - startedAt;
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    ...form.getHeaders(),
+                    ...getAgnoAuthHeaders(),
+                },
+                body: form,
+                signal: AbortSignal.timeout(AGNO_WARM_RUN_TIMEOUT_MS),
+            });
 
-        if (!response.ok) {
-            const errText = await response.text();
+            const latency_ms = Date.now() - startedAt;
+
+            if (!response.ok) {
+                const errText = await response.text();
+                lastError = {
+                    ok: false,
+                    status: response.status,
+                    latency_ms,
+                    error: errText.substring(0, 200),
+                    base_url: baseUrl,
+                };
+
+                if (!shouldRetryWithNextBase(response.status)) {
+                    return lastError;
+                }
+
+                continue;
+            }
+
+            const data = await response.json();
             return {
-                ok: false,
-                status: response.status,
+                ok: true,
+                status: 200,
                 latency_ms,
-                error: errText.substring(0, 200)
+                run_id: data.run_id,
+                model: data.model,
+                agent_id: data.agent_id || resolvedAgentId,
+                base_url: baseUrl,
             };
+        } catch (error) {
+            const latency_ms = Date.now() - startedAt;
+            lastError = { ok: false, status: null, latency_ms, error: error.message, base_url: baseUrl };
         }
-
-        const data = await response.json();
-        return {
-            ok: true,
-            status: 200,
-            latency_ms,
-            run_id: data.run_id,
-            model: data.model,
-            agent_id: data.agent_id || resolvedAgentId
-        };
-    } catch (error) {
-        const latency_ms = Date.now() - startedAt;
-        return { ok: false, status: null, latency_ms, error: error.message };
     }
+
+    return lastError || { ok: false, status: null, latency_ms: 0, error: 'AGNO_UNREACHABLE' };
 }
 
 async function warmAgnoService({ reason = 'manual' } = {}) {
@@ -242,6 +381,7 @@ router.get('/config', async (req, res) => {
         res.json({
             configured: AGNO_IS_CONFIGURED,
             agno_url: AGNO_BASE_URL || null,
+            agno_urls: AGNO_BASE_URLS,
             has_token: !!AGNO_API_TOKEN,
             agent_id: AGNO_DEFAULT_AGENT_ID,
             warmed: agnoWarmed,
@@ -280,6 +420,7 @@ router.post('/warm', async (req, res) => {
             success: result.ok,
             warmed: agnoWarmed,
             agno_url: AGNO_BASE_URL || null,
+            agno_urls: AGNO_BASE_URLS,
             message: result.ok ? 'ServiÃ§o Agno aquecido com sucesso' : 'Falha ao aquecer serviÃ§o Agno',
             health: result.health,
             warm_run: result.warm_run,
@@ -305,6 +446,7 @@ router.get('/status', verificarAuth, async (req, res) => {
             online: false,
             status: AGNO_IS_CONFIGURED ? 'unknown' : 'not_configured',
             agno_url: AGNO_BASE_URL || null,
+            agno_urls: AGNO_BASE_URLS,
             agent_id: AGNO_DEFAULT_AGENT_ID,
             warmed: agnoWarmed,
             last_warming: lastWarmingAttempt ? new Date(lastWarmingAttempt).toISOString() : null,
@@ -334,6 +476,7 @@ router.get('/status', verificarAuth, async (req, res) => {
             ...base.agno,
             online: health.ok,
             status: health.ok ? 'online' : 'offline',
+            active_base_url: health.base_url || null,
             health
         }
     });
@@ -371,6 +514,7 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
 
         console.log('ðŸ§ª Teste pÃºblico do chat - ConfiguraÃ§Ã£o:', {
             agno_url: AGNO_BASE_URL || null,
+            agno_urls: AGNO_BASE_URLS,
             configured: AGNO_IS_CONFIGURED,
             message: message.substring(0, 50) + '...'
         });
@@ -391,7 +535,8 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
         try {
             const result = await processarComAgnoAI(message, 'test_user', AGNO_DEFAULT_AGENT_ID, null);
 
-            const responseText = result.response || result.content || result.message || 'Resposta do agente Matias';
+            const responseTextRaw = result.response || result.content || result.message || 'Resposta do agente Matias';
+            const responseText = normalizarTextoResposta(responseTextRaw);
 
             console.log(`âœ… Sucesso na comunicaÃ§Ã£o com Agno ${result.from_cache ? '(CACHE)' : '(API)'}`);
 
@@ -420,7 +565,7 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
 
             res.json({
                 success: true,
-                response: fallbackResponse,
+                response: normalizarTextoResposta(fallbackResponse),
                 mode: 'fallback',
                 agno_configured: true,
                 agno_error: agnoError.message
@@ -431,7 +576,8 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
         res.status(500).json({
             error: 'Erro interno',
             message: mainError.message,
-            agno_url: AGNO_BASE_URL || null
+            agno_url: AGNO_BASE_URL || null,
+            agno_urls: AGNO_BASE_URLS
         });
     }
 });
@@ -450,7 +596,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
         if (!usuario_id || !oficinaId) {
             return res.status(401).json({
                 success: false,
-                error: 'Usu?rio n?o autenticado ou sem oficina vinculada'
+                error: 'Usuario nao autenticado ou sem oficina vinculada'
             });
         }
 
@@ -513,6 +659,14 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
                     responseData.metadata.processed_by = 'AGNO_AI';
                     responseData.metadata.processing_time_ms = duration;
                     responseData.metadata.classification = classification;
+
+                    const modelName = String(responseData.metadata.model || '').toLowerCase();
+                    const isAgnoFallback =
+                        modelName.includes('fallback') || Boolean(responseData.metadata.error);
+
+                    if (isAgnoFallback) {
+                        responseData.metadata.processed_by = 'BACKEND_LOCAL_FALLBACK';
+                    }
                 }
             } catch (agnoError) {
                 const errorMessage = String(agnoError?.message || '');
@@ -561,6 +715,12 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
         }
 
         // 3ï¸âƒ£ SALVAR CONVERSA NO BANCO
+        if (responseData?.response) {
+            const normalizedResponse = normalizarTextoResposta(responseData.response);
+            responseData.response = normalizedResponse;
+            responseData.conteudo = normalizarTextoResposta(responseData.conteudo || normalizedResponse);
+        }
+
         try {
             if (usuario_id) {
                 await ConversasService.salvarConversa({
@@ -607,11 +767,11 @@ router.get('/historico-conversa', verificarAuth, async (req, res) => {
         if (!requestUserId) {
             return res.status(401).json({
                 success: false,
-                error: 'Usu?rio n?o autenticado'
+                error: 'Usuario nao autenticado'
             });
         }
 
-        console.log('?? Buscando hist?rico para usu?rio:', requestUserId);
+        console.log('?? Buscando historico para usuario:', requestUserId);
 
         const usuarioIdInt = parseInt(String(requestUserId).replace(/-/g, '').substring(0, 9), 16) % 2147483647;
 
@@ -650,10 +810,10 @@ router.get('/historico-conversa', verificarAuth, async (req, res) => {
             conversa_id: conversa.id
         });
     } catch (error) {
-        console.error('? Erro no hist?rico:', error);
+        console.error('? Erro no historico:', error);
         res.status(500).json({
             success: false,
-            error: 'Erro ao recuperar hist?rico',
+            error: 'Erro ao recuperar historico',
             message: error.message
         });
     }
@@ -1123,7 +1283,7 @@ async function processarConsultaOS(mensagem, oficinaId = null) {
         if (!oficinaId) {
             return {
                 success: false,
-                response: '? **Erro:** N?o foi poss?vel identificar sua oficina.',
+                response: '? **Erro:** Nao foi possivel identificar sua oficina.',
                 tipo: 'erro'
             };
         }
@@ -1238,7 +1398,7 @@ async function processarEstatisticas(mensagem, oficinaId = null) {
         if (!oficinaId) {
             return {
                 success: false,
-                response: '? **Erro:** N?o foi poss?vel identificar sua oficina.',
+                response: '? **Erro:** Nao foi possivel identificar sua oficina.',
                 tipo: 'erro'
             };
         }
@@ -1260,7 +1420,7 @@ async function processarEstatisticas(mensagem, oficinaId = null) {
         console.error('? Erro em processarEstatisticas:', error);
         return {
             success: false,
-            response: '? Erro ao buscar estat?sticas',
+            response: '? Erro ao buscar estatisticas',
             tipo: 'erro'
         };
     }
@@ -1286,16 +1446,16 @@ async function processarConsultaCliente(mensagem, contexto_ativo = null, usuario
         if (!oficinaId) {
             return {
                 success: false,
-                response: '? **Erro:** N?o foi poss?vel identificar sua oficina.',
+                response: '? **Erro:** Nao foi possivel identificar sua oficina.',
                 tipo: 'erro'
             };
         }
 
         const mensagemTrimmed = mensagem.trim();
-        console.log('?? DEBUG: Mensagem ap?s trim:', mensagemTrimmed);
+        console.log('?? DEBUG: Mensagem apos trim:', mensagemTrimmed);
 
         if (mensagemTrimmed.match(/^\d+$/)) {
-            console.log('?? DEBUG: Detectado n?mero, tentando sele??o de cliente');
+            console.log('?? DEBUG: Detectado numero, tentando selecao de cliente');
             const numeroDigitado = parseInt(mensagemTrimmed);
 
             if (usuario_id) {
@@ -1315,34 +1475,34 @@ async function processarConsultaCliente(mensagem, contexto_ativo = null, usuario
                             success: true,
                             response: `? **Cliente selecionado:** ${clienteSelecionado.nomeCompleto}
 
-Telefone: ${clienteSelecionado.telefone || 'N?o informado'}
-CPF/CNPJ: ${clienteSelecionado.cpfCnpj || 'N?o informado'}
-Ve?culos: ${clienteSelecionado.veiculos && clienteSelecionado.veiculos.length > 0 ? clienteSelecionado.veiculos.map(v => v.modelo).join(', ') : 'Nenhum ve?culo cadastrado'}
+Telefone: ${clienteSelecionado.telefone || 'Nao informado'}
+CPF/CNPJ: ${clienteSelecionado.cpfCnpj || 'Nao informado'}
+Veiculos: ${clienteSelecionado.veiculos && clienteSelecionado.veiculos.length > 0 ? clienteSelecionado.veiculos.map(v => v.modelo).join(', ') : 'Nenhum veiculo cadastrado'}
 
 ?? O que deseja fazer com este cliente?
-? "agendar" - Agendar servi?o
+? "agendar" - Agendar servico
 ? "editar" - Editar dados
-? "hist?rico" - Ver hist?rico de servi?os`,
+? "historico" - Ver historico de servicos`,
                             tipo: 'cliente_selecionado',
                             cliente: clienteSelecionado,
                             cliente_id: clienteSelecionado.id
                         };
                     } else {
-                        console.log('?? DEBUG: N?mero fora do intervalo:', numeroDigitado);
+                        console.log('?? DEBUG: Numero fora do intervalo:', numeroDigitado);
                         return {
                             success: false,
-                            response: `? **N?mero inv?lido:** ${numeroDigitado}
+                            response: `? **Numero invalido:** ${numeroDigitado}
 
-Por favor, escolha um n?mero entre 1 e ${clientes.length}.`,
+Por favor, escolha um numero entre 1 e ${clientes.length}.`,
                             tipo: 'erro'
                         };
                     }
                 } else {
-                    console.log('?? DEBUG: Cache expirado ou n?o encontrado para o usu?rio:', usuario_id);
+                    console.log('?? DEBUG: Cache expirado ou nao encontrado para o usuario:', usuario_id);
                     await CacheService.delete(`contexto_cliente:${usuario_id}`);
                 }
             } else {
-                console.log('?? DEBUG: Nenhum cache encontrado para o usu?rio ou usu?rio n?o informado');
+                console.log('?? DEBUG: Nenhum cache encontrado para o usuario ou usuario nao informado');
             }
         }
 
@@ -1359,7 +1519,7 @@ Por favor, escolha um n?mero entre 1 e ${clientes.length}.`,
         }
 
         if (!termoBusca || termoBusca.length < 2) {
-            console.log('?? DEBUG: Termo de busca inv?lido ou muito curto');
+            console.log('?? DEBUG: Termo de busca invalido ou muito curto');
             return {
                 success: false,
                 response: '? Informe o nome, telefone ou CPF do cliente para consultar.',
@@ -1403,7 +1563,7 @@ Tente informar nome completo, telefone ou CPF.`,
                 clientes: clientes,
                 timestamp: Date.now()
             }, 600);
-            console.log('?? DEBUG: Clientes armazenados no cache para usu?rio:', usuario_id);
+            console.log('?? DEBUG: Clientes armazenados no cache para usuario:', usuario_id);
         }
 
         let resposta = 'Clientes encontrados:\n\n';
@@ -1504,7 +1664,7 @@ async function processarCadastroCliente(mensagem, usuario_id, oficinaId = null) 
         if (!oficinaId) {
             return {
                 success: false,
-                response: '? **Erro:** N?o foi poss?vel identificar sua oficina.',
+                response: '? **Erro:** Nao foi possivel identificar sua oficina.',
                 tipo: 'erro'
             };
         }
@@ -1526,7 +1686,7 @@ async function processarCadastroCliente(mensagem, usuario_id, oficinaId = null) 
 **Exemplo:**
 "Nome: Jo?o Silva, Tel: (85) 99999-9999, CPF: 123.456.789-00"
 
-**Ou informe apenas o nome para cadastro r?pido:**
+**Ou informe apenas o nome para cadastro rapido:**
 "Cadastrar cliente Jo?o Silva"`,
                 tipo: 'cadastro',
                 dadosExtraidos: dados
@@ -1546,13 +1706,13 @@ async function processarCadastroCliente(mensagem, usuario_id, oficinaId = null) 
         if (clienteExistente) {
             return {
                 success: false,
-                response: `?? **Cliente j? cadastrado!**
+                response: `?? **Cliente ja cadastrado!**
 
 **Nome:** ${clienteExistente.nomeCompleto}
-**Telefone:** ${clienteExistente.telefone || 'N?o informado'}
-**CPF/CNPJ:** ${clienteExistente.cpfCnpj || 'N?o informado'}
+**Telefone:** ${clienteExistente.telefone || 'Nao informado'}
+**CPF/CNPJ:** ${clienteExistente.cpfCnpj || 'Nao informado'}
 
-?? Clique no formul?rio para editar ou adicionar mais informa??es.`,
+?? Clique no formulario para editar ou adicionar mais informacoes.`,
                 tipo: 'alerta',
                 cliente: clienteExistente,
                 dadosExtraidos: {
@@ -1566,14 +1726,14 @@ async function processarCadastroCliente(mensagem, usuario_id, oficinaId = null) 
 
         return {
             success: false,
-            response: `?? **Detectei os seguintes dados. Por favor, revise e complete no formul?rio:**
+            response: `?? **Detectei os seguintes dados. Por favor, revise e complete no formulario:**
 
 **Nome:** ${dados.nome}
 ${dados.telefone ? `**Telefone:** ${dados.telefone}` : '? Telefone (recomendado)'}
 ${dados.cpfCnpj ? `**CPF/CNPJ:** ${dados.cpfCnpj}` : '? CPF/CNPJ (recomendado)'}
 ${dados.email ? `**Email:** ${dados.email}` : '? Email (opcional)'}
 
-? Clique no formul?rio que abriu para revisar e salvar o cadastro.`,
+? Clique no formulario que abriu para revisar e salvar o cadastro.`,
             tipo: 'cadastro',
             dadosExtraidos: dados
         };
@@ -1600,7 +1760,7 @@ router.post('/consultar-os', verificarAuth, async (req, res) => {
         if (!oficinaId) {
             return res.status(401).json({
                 success: false,
-                error: 'Oficina n?o identificada'
+                error: 'Oficina nao identificada'
             });
         }
 
@@ -1629,7 +1789,7 @@ router.post('/consultar-os', verificarAuth, async (req, res) => {
         console.error('? Erro na consulta OS:', error);
         const response = {
             success: false,
-            error: 'Erro ao consultar ordens de servi?o'
+            error: 'Erro ao consultar ordens de servico'
         };
         if (process.env.NODE_ENV === 'development') {
             response.message = error.message;
@@ -1647,7 +1807,7 @@ router.post('/agendar-servico', verificarAuth, async (req, res) => {
         if (!oficinaId) {
             return res.status(401).json({
                 success: false,
-                error: 'Oficina n?o identificada'
+                error: 'Oficina nao identificada'
             });
         }
 
@@ -1658,11 +1818,11 @@ router.post('/agendar-servico', verificarAuth, async (req, res) => {
         if (!cliente?.id || !veiculo?.id || !data_hora) {
             return res.status(400).json({
                 success: false,
-                error: 'cliente, veiculo e data_hora s?o obrigat?rios'
+                error: 'cliente, veiculo e data_hora sao obrigatorios'
             });
         }
 
-        console.log('?? Agno agendando servi?o:', { cliente, veiculo, servico, data_hora, oficinaId });
+        console.log('?? Agno agendando servico:', { cliente, veiculo, servico, data_hora, oficinaId });
 
         const agendamento = await AgendamentosService.criarAgendamento({
             clienteId: cliente.id,
@@ -1685,7 +1845,7 @@ router.post('/agendar-servico', verificarAuth, async (req, res) => {
         console.error('? Erro no agendamento:', error);
         const response = {
             success: false,
-            error: 'Erro ao agendar servi?o'
+            error: 'Erro ao agendar servico'
         };
         if (process.env.NODE_ENV === 'development') {
             response.message = error.message;
@@ -1703,7 +1863,7 @@ router.get('/estatisticas', verificarAuth, async (req, res) => {
         if (!oficinaId) {
             return res.status(401).json({
                 success: false,
-                error: 'Oficina n?o identificada'
+                error: 'Oficina nao identificada'
             });
         }
 
@@ -1711,7 +1871,7 @@ router.get('/estatisticas', verificarAuth, async (req, res) => {
             return;
         }
 
-        console.log('?? Agno consultando estat?sticas:', { periodo, oficinaId });
+        console.log('?? Agno consultando estatisticas:', { periodo, oficinaId });
 
         const stats = await ConsultasOSService.obterEstatisticas(periodo, oficinaId);
 
@@ -1723,10 +1883,10 @@ router.get('/estatisticas', verificarAuth, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('? Erro nas estat?sticas:', error);
+        console.error('? Erro nas estatisticas:', error);
         const response = {
             success: false,
-            error: 'Erro ao consultar estat?sticas'
+            error: 'Erro ao consultar estatisticas'
         };
         if (process.env.NODE_ENV === 'development') {
             response.message = error.message;
@@ -1744,7 +1904,7 @@ router.post('/salvar-conversa', verificarAuth, async (req, res) => {
         if (!requestUserId) {
             return res.status(401).json({
                 success: false,
-                error: 'Usu?rio n?o autenticado'
+                error: 'Usuario nao autenticado'
             });
         }
 
@@ -1759,7 +1919,7 @@ router.post('/salvar-conversa', verificarAuth, async (req, res) => {
         if (!mensagem?.trim()) {
             return res.status(400).json({
                 success: false,
-                error: 'Mensagem ? obrigat?ria'
+                error: 'Mensagem ? obrigatoria'
             });
         }
 
@@ -1799,18 +1959,18 @@ router.get('/historico-conversas/:usuario_id', verificarAuth, async (req, res) =
         if (!requestUserId) {
             return res.status(401).json({
                 success: false,
-                error: 'Usu?rio n?o autenticado'
+                error: 'Usuario nao autenticado'
             });
         }
 
         if (usuario_id && usuario_id !== String(requestUserId)) {
             return res.status(403).json({
                 success: false,
-                error: 'Acesso n?o autorizado ao hist?rico deste usu?rio'
+                error: 'Acesso nao autorizado ao historico deste usuario'
             });
         }
 
-        console.log('?? Agno recuperando hist?rico:', { usuario_id: requestUserId, limite });
+        console.log('?? Agno recuperando historico:', { usuario_id: requestUserId, limite });
 
         const historico = await ConversasService.obterHistorico(String(requestUserId), parseInt(limite));
 
@@ -1823,10 +1983,10 @@ router.get('/historico-conversas/:usuario_id', verificarAuth, async (req, res) =
         });
 
     } catch (error) {
-        console.error('? Erro no hist?rico:', error);
+        console.error('? Erro no historico:', error);
         res.status(500).json({
             success: false,
-            error: 'Erro ao recuperar hist?rico',
+            error: 'Erro ao recuperar historico',
             message: error.message
         });
     }
@@ -1947,15 +2107,14 @@ router.get('/agents', verificarAuth, async (req, res) => {
                 error: 'AGNO_API_URL nao configurada'
             });
         }
-
-          const response = await fetch(`${AGNO_BASE_URL}/agents`, {
-              method: 'GET',
-              headers: {
-                  'Content-Type': 'application/json',
-                  ...getAgnoAuthHeaders()
-              },
-              signal: AbortSignal.timeout(AGNO_HEALTH_TIMEOUT_MS)
-          });
+        const { response, base_url, tried_urls } = await fetchAgnoWithFallback('/agents', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAgnoAuthHeaders()
+            },
+            timeoutMs: AGNO_HEALTH_TIMEOUT_MS
+        });
 
         if (response.ok) {
             const data = await response.json();
@@ -1964,7 +2123,9 @@ router.get('/agents', verificarAuth, async (req, res) => {
             res.json({
                 success: true,
                 agents: data,
-                count: data.length
+                count: data.length,
+                base_url,
+                tried_urls
             });
         } else {
             const errorData = await response.text();
@@ -2036,6 +2197,12 @@ router.post('/chat', verificarAuth, async (req, res) => {
                 classification: classification
             };
 
+            if (responseData?.response) {
+                const normalizedResponse = normalizarTextoResposta(responseData.response);
+                responseData.response = normalizedResponse;
+                responseData.conteudo = normalizarTextoResposta(responseData.conteudo || normalizedResponse);
+            }
+
             return res.json({
                 success: true,
                 ...responseData
@@ -2056,6 +2223,17 @@ router.post('/chat', verificarAuth, async (req, res) => {
                 responseData.metadata.processed_by = 'AGNO_AI';
                 responseData.metadata.processing_time_ms = duration;
                 responseData.metadata.classification = classification;
+
+                const modelName = String(responseData.metadata.model || '').toLowerCase();
+                if (modelName.includes('fallback') || responseData.metadata.error) {
+                    responseData.metadata.processed_by = 'BACKEND_LOCAL_FALLBACK';
+                }
+            }
+
+            if (responseData?.response) {
+                const normalizedResponse = normalizarTextoResposta(responseData.response);
+                responseData.response = normalizedResponse;
+                responseData.conteudo = normalizarTextoResposta(responseData.conteudo || normalizedResponse);
             }
 
             return res.json(responseData);
@@ -2174,6 +2352,32 @@ function sanitizeForLog(text) {
         .substring(0, 150);
 }
 
+function normalizarTextoResposta(texto) {
+    if (!texto || typeof texto !== 'string') return texto;
+
+    // Corrige respostas com texto mojibake mais comum sem alterar respostas ja validas.
+    const precisaNormalizar = /Ã.|â.|ðŸ|ï¸|Usu\?|n\?o|hist\?rico/i.test(texto);
+    if (!precisaNormalizar) return texto;
+
+    try {
+        const decoded = Buffer.from(texto, 'latin1').toString('utf8');
+        if (decoded && decoded !== texto) {
+            return decoded;
+        }
+    } catch (_) {
+        // fallback para mapa manual abaixo
+    }
+
+    return texto
+        .replace(/Usu\?rio/g, 'Usuario')
+        .replace(/n\?o/g, 'nao')
+        .replace(/hist\?rico/gi, 'historico')
+        .replace(/servi\?o/gi, 'servico')
+        .replace(/estat\?sticas/gi, 'estatisticas')
+        .replace(/ap\?s/gi, 'apos')
+        .replace(/sele\?\?o/gi, 'selecao');
+}
+
 /**
  * âœ… Middleware de validaÃ§Ã£o de mensagens
  */
@@ -2218,14 +2422,14 @@ router.get('/memories/:userId', verificarAuth, async (req, res) => {
             });
         }
 
-        const response = await fetch(
-            `${AGNO_BASE_URL}/memories?user_id=${encodeURIComponent(agnoUserId)}&limit=200&page=1`,
+        const { response, base_url, tried_urls } = await fetchAgnoWithFallback(
+            `/memories?user_id=${encodeURIComponent(agnoUserId)}&limit=200&page=1`,
             {
                 headers: {
                     'Content-Type': 'application/json',
                     ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
                 },
-                signal: AbortSignal.timeout(10000)
+                timeoutMs: 10000
             }
         );
 
@@ -2244,7 +2448,9 @@ router.get('/memories/:userId', verificarAuth, async (req, res) => {
             memories: memories,
             total: memories.length,
             user_id: agnoUserId,
-            meta
+            meta,
+            base_url,
+            tried_urls
         });
 
     } catch (error) {
@@ -2287,14 +2493,14 @@ router.delete('/memories/:userId', verificarAuth, async (req, res) => {
         }
 
         // AgentOS delete is by memory_id(s). First list all memories for this user, then bulk-delete.
-        const listResponse = await fetch(
-            `${AGNO_BASE_URL}/memories?user_id=${encodeURIComponent(agnoUserId)}&limit=1000&page=1`,
+        const { response: listResponse, base_url, tried_urls } = await fetchAgnoWithFallback(
+            `/memories?user_id=${encodeURIComponent(agnoUserId)}&limit=1000&page=1`,
             {
                 headers: {
                     'Content-Type': 'application/json',
                     ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
                 },
-                signal: AbortSignal.timeout(15000)
+                timeoutMs: 15000
             }
         );
 
@@ -2316,14 +2522,14 @@ router.delete('/memories/:userId', verificarAuth, async (req, res) => {
             });
         }
 
-        const response = await fetch(`${AGNO_BASE_URL}/memories`, {
+        const { response, base_url: delete_base_url } = await fetchAgnoWithFallback('/memories', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
                 ...(AGNO_API_TOKEN && { 'Authorization': `Bearer ${AGNO_API_TOKEN}` })
             },
             body: JSON.stringify({ memory_ids: memoryIds }),
-            signal: AbortSignal.timeout(15000)
+            timeoutMs: 15000
         });
 
         if (!response.ok) {
@@ -2337,7 +2543,9 @@ router.delete('/memories/:userId', verificarAuth, async (req, res) => {
             success: true,
             message: 'MemÃ³rias excluÃ­das com sucesso. O assistente nÃ£o se lembrarÃ¡ mais das conversas anteriores.',
             deleted: memoryIds.length,
-            user_id: agnoUserId
+            user_id: agnoUserId,
+            base_url: delete_base_url || base_url,
+            tried_urls
         });
 
     } catch (error) {
@@ -2373,7 +2581,8 @@ router.get('/memory-status', async (req, res) => {
         return res.json({
             enabled: isOnline,
             status: isOnline ? 'active' : 'unavailable',
-            agno_url: AGNO_BASE_URL,
+            agno_url: health.base_url || AGNO_BASE_URL || null,
+            agno_urls: AGNO_BASE_URLS,
             health,
             message: isOnline
                 ? 'Sistema de memÃ³ria ativo - Matias lembra das suas conversas'
@@ -2479,99 +2688,123 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
 
     const requestedTimeoutMs = parsePositiveInt(options.timeout_ms ?? options.timeoutMs, AGNO_RUN_TIMEOUT_MS);
     const throwOnError = Boolean(options.throwOnError);
+    const baseUrls = getAgnoCandidateBaseUrls();
+    let lastError = null;
+    let lastErrorUrl = null;
 
-    try {
-        // AgentOS: POST /agents/{agent_id}/runs (multipart/form-data)
-        const endpoint = `${AGNO_BASE_URL}/agents/${encodeURIComponent(resolvedAgentId)}/runs`;
-        console.log(`🚀 [AGNO] Executando agent=${resolvedAgentId} url=${endpoint} timeout_ms=${requestedTimeoutMs}`);
+    for (const baseUrl of baseUrls) {
+        try {
+            // AgentOS: POST /agents/{agent_id}/runs (multipart/form-data)
+            const endpoint = `${baseUrl}/agents/${encodeURIComponent(resolvedAgentId)}/runs`;
+            console.log(`🚀 [AGNO] Executando agent=${resolvedAgentId} url=${endpoint} timeout_ms=${requestedTimeoutMs}`);
 
-        const form = new FormData();
-        form.append('message', message);
-        form.append('stream', 'false'); // force JSON response (non-streaming)
-        form.append('session_id', sessionId);
-        form.append('user_id', agnoUserId);
+            const form = new FormData();
+            form.append('message', message);
+            form.append('stream', 'false'); // force JSON response (non-streaming)
+            form.append('session_id', sessionId);
+            form.append('user_id', agnoUserId);
 
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                ...form.getHeaders(),
-                ...getAgnoAuthHeaders()
-            },
-            body: form,
-            signal: AbortSignal.timeout(requestedTimeoutMs)
-        });
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    ...form.getHeaders(),
+                    ...getAgnoAuthHeaders()
+                },
+                body: form,
+                signal: AbortSignal.timeout(requestedTimeoutMs)
+            });
 
-        // 2. Tratamento de Erros HTTP
-        if (!response.ok) {
-            // Se for 429 (Too Many Requests), abrir circuit breaker
-            if (response.status === 429) {
-                openCircuitBreaker();
+            // Tratamento de erros HTTP
+            if (!response.ok) {
+                if (response.status === 429) {
+                    openCircuitBreaker();
+                }
+
+                const errorText = await response.text();
+                const httpError = new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+                httpError.status = response.status;
+                httpError.base_url = baseUrl;
+
+                if (shouldRetryWithNextBase(response.status)) {
+                    lastError = httpError;
+                    lastErrorUrl = baseUrl;
+                    continue;
+                }
+
+                throw httpError;
             }
 
-            const errorText = await response.text();
-            const httpError = new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
-            httpError.status = response.status;
-            throw httpError;
+            // Processamento da resposta
+            const data = await response.json();
+
+            const respostaTextoRaw =
+                data.content ||
+                data.result ||
+                data.conteudo ||
+                data.response ||
+                data.message ||
+                "Nao entendi.";
+
+            const respostaTexto = normalizarTextoResposta(respostaTextoRaw);
+            const finalResponse = {
+                response: respostaTexto,
+                conteudo: respostaTexto,
+                metadata: {
+                    model: data.model || data.modelo || "agno-agent",
+                    model_provider: data.model_provider,
+                    run_id: data.run_id,
+                    agent_id: data.agent_id || resolvedAgentId,
+                    usage: { total_tokens: 0 },
+                    session_id: data.session_id || sessionId,
+                    metrics: data.metrics,
+                    timeout_ms: requestedTimeoutMs,
+                    base_url: baseUrl
+                }
+            };
+
+            await CacheService.set(cacheKey, finalResponse, 86400);
+            console.log('💾 [CACHE] Resposta salva no Redis (TTL 24h)');
+
+            return finalResponse;
+        } catch (error) {
+            lastError = error;
+            lastErrorUrl = baseUrl;
+
+            if (shouldRetryWithNextBase(error)) {
+                continue;
+            }
+
+            break;
         }
-
-        // 3. Processamento da Resposta
-        const data = await response.json();
-
-        // Normalizacao da resposta (AgentOS pode retornar content ou result)
-        const respostaTexto =
-            data.content ||
-            data.result ||
-            data.conteudo ||
-            data.response ||
-            data.message ||
-            "Nao entendi.";
-
-        const finalResponse = {
-            response: respostaTexto,
-            conteudo: respostaTexto, // Compatibilidade com frontend
-            metadata: {
-                model: data.model || data.modelo || "agno-agent",
-                model_provider: data.model_provider,
-                run_id: data.run_id,
-                agent_id: data.agent_id || resolvedAgentId,
-                usage: { total_tokens: 0 },
-                session_id: data.session_id || sessionId,
-                metrics: data.metrics,
-                timeout_ms: requestedTimeoutMs
-            }
-        };
-
-        // 4. Salvar no Cache (TTL 24h)
-        await CacheService.set(cacheKey, finalResponse, 86400);
-        console.log('💾 [CACHE] Resposta salva no Redis (TTL 24h)');
-
-        return finalResponse;
-
-    } catch (error) {
-        const messageText = String(error?.message || '');
-        const isTimeout = error?.name === 'AbortError' || /aborted|timeout/i.test(messageText);
-
-        // Attach hints for caller fallbacks.
-        error.is_timeout = Boolean(isTimeout);
-
-        console.error('❌ [AGNO] Erro na requisicao:', error.message);
-
-        if (throwOnError) {
-            throw error;
-        }
-
-        // Fallback gracioso (mantem compatibilidade onde o caller nao trata throw)
-        return {
-            response: "Desculpe, estou tendo dificuldades para conectar com minha inteligencia central. Tente novamente em alguns instantes.",
-            conteudo: "Desculpe, estou tendo dificuldades para conectar com minha inteligencia central. Tente novamente em alguns instantes.",
-            metadata: {
-                model: "fallback-error",
-                error: error.message,
-                is_timeout: Boolean(isTimeout),
-                timeout_ms: requestedTimeoutMs
-            }
-        };
     }
+
+    const messageText = String(lastError?.message || '');
+    const isTimeout = lastError?.name === 'AbortError' || /aborted|timeout/i.test(messageText);
+
+    if (lastError) {
+        lastError.is_timeout = Boolean(isTimeout);
+        lastError.base_url = lastErrorUrl;
+    }
+
+    console.error('❌ [AGNO] Erro na requisicao:', lastError?.message || 'Erro desconhecido');
+
+    if (throwOnError && lastError) {
+        throw lastError;
+    }
+
+    // Fallback gracioso (mantem compatibilidade onde o caller nao trata throw)
+    return {
+        response: "Desculpe, estou tendo dificuldades para conectar com minha inteligencia central. Tente novamente em alguns instantes.",
+        conteudo: "Desculpe, estou tendo dificuldades para conectar com minha inteligencia central. Tente novamente em alguns instantes.",
+        metadata: {
+            model: "fallback-error",
+            error: lastError?.message || 'Falha de conexao com Agno',
+            is_timeout: Boolean(isTimeout),
+            timeout_ms: requestedTimeoutMs,
+            base_url: lastErrorUrl,
+            tried_urls: baseUrls
+        }
+    };
 }
 
 export default router;

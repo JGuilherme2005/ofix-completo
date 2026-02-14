@@ -49,6 +49,12 @@ describe('ChatHeader', () => {
       expect(screen.getByText('Conectando...')).toBeInTheDocument();
     });
 
+    it('deve exibir status "Modo Local" quando em fallback local', () => {
+      render(<ChatHeader {...defaultProps} statusConexao="local" />);
+
+      expect(screen.getByText('Modo Local')).toBeInTheDocument();
+    });
+
     it('deve exibir status "Erro de Conexão" quando houver erro', () => {
       render(<ChatHeader {...defaultProps} statusConexao="erro" />);
 
@@ -177,7 +183,7 @@ describe('ChatHeader', () => {
       );
 
       expect(screen.getByText('Desconectado')).toBeInTheDocument();
-      expect(screen.getByTitle('Desativar voz')).toBeInTheDocument();
+      expect(screen.getByTitle('Ativar voz')).toBeInTheDocument();
     });
   });
 

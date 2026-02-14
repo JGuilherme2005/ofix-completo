@@ -10,7 +10,7 @@ import { Button } from '../ui/button';
 
 const ChatHeader = ({
   statusConexao = 'desconectado',
-  vozHabilitada = true,
+  vozHabilitada = false,
   falando = false,
   onToggleVoz,
   onPararFala,
@@ -24,6 +24,8 @@ const ChatHeader = ({
         return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'conectando':
         return <Loader2 className="w-4 h-4 text-yellow-500 animate-spin" />;
+      case 'local':
+        return <AlertCircle className="w-4 h-4 text-amber-500" />;
       case 'erro':
         return <AlertCircle className="w-4 h-4 text-red-500" />;
       default:
@@ -37,6 +39,8 @@ const ChatHeader = ({
         return 'Agente Online';
       case 'conectando':
         return 'Conectando...';
+      case 'local':
+        return 'Modo Local';
       case 'erro':
         return 'Erro de Conexão';
       default:

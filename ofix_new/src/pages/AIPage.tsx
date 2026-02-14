@@ -65,34 +65,25 @@ const AIPage = () => {
       const clienteSalvo = localStorage.getItem('clienteSelecionado');
       if (clienteSalvo) {
         const clienteParseado = JSON.parse(clienteSalvo);
-        console.log('🔍 DEBUG: Cliente selecionado recuperado do localStorage:', clienteParseado);
-        console.log('🔍 DEBUG: Cliente JSON string recuperado:', clienteSalvo.substring(0, 100) + '...');
         return clienteParseado;
-      } else {
-        console.log('🔍 DEBUG: Nenhum cliente selecionado no localStorage');
       }
     } catch (error) {
-      console.error('❌ Erro ao recuperar cliente selecionado do localStorage:', error);
+      logger.warn('Erro ao recuperar cliente selecionado do localStorage', { error: (error as Error).message });
     }
     return null;
   });
   const [inputWarning, setInputWarning] = useState('');
   const [inputHint, setInputHint] = useState('');
 
-  // Função para limpar o cliente selecionado
-  const limparClienteSelecionado = useCallback(() => {
-    setClienteSelecionado(null);
-    try {
-      localStorage.removeItem('clienteSelecionado');
-      console.log('🔍 DEBUG: Cliente selecionado removido do localStorage');
-    } catch (error) {
-      console.error('❌ Erro ao remover cliente selecionado do localStorage:', error);
-    }
-  }, []);
-
   // Estados para funcionalidades de voz
   const [gravando, setGravando] = useState(false);
-  const [vozHabilitada, setVozHabilitada] = useState(true);
+  const [vozHabilitada, setVozHabilitada] = useState(() => {
+    try {
+      return localStorage.getItem('matias_voice_enabled') === '1';
+    } catch {
+      return false;
+    }
+  });
   const [falando, setFalando] = useState(false);
   const [mostrarConfig, setMostrarConfig] = useState(false);
   const [modoContinuo, setModoContinuo] = useState(false);
@@ -242,6 +233,26 @@ const AIPage = () => {
       return false;
     }
   };
+
+  const atualizarStatusPorMetadata = useCallback((metadata: any = {}) => {
+    const processedBy = metadata?.processed_by;
+    const model = String(metadata?.model || '').toLowerCase();
+    const isFallback =
+      processedBy === 'BACKEND_LOCAL_FALLBACK' ||
+      model.includes('fallback') ||
+      Boolean(metadata?.error) ||
+      Boolean(metadata?.is_timeout) ||
+      Boolean(metadata?.is_rate_limit);
+
+    if (isFallback) {
+      setStatusConexao('local');
+      return;
+    }
+
+    if (processedBy === 'AGNO_AI') {
+      setStatusConexao('conectado');
+    }
+  }, []);
 
   // ============================================
   // FUNÇÕES DE VOZ
@@ -456,13 +467,11 @@ const AIPage = () => {
           context: 'falarTexto'
         });
       } else {
-        logger.error('Erro na síntese de voz', {
+        logger.warn('Falha na síntese de voz', {
           error: event.error,
           message: (event as any).message ?? event.error,
           context: 'falarTexto'
         });
-        // Só mostrar toast para erros críticos
-        showToast('Erro ao falar texto', 'error');
       }
 
       // Reiniciar gravação se estava gravando
@@ -487,7 +496,13 @@ const AIPage = () => {
   };
 
   const alternarVoz = () => {
-    setVozHabilitada(!vozHabilitada);
+    const proximoEstado = !vozHabilitada;
+    setVozHabilitada(proximoEstado);
+    try {
+      localStorage.setItem('matias_voice_enabled', proximoEstado ? '1' : '0');
+    } catch {
+      // Ignora falhas de persistencia local.
+    }
     if (falando) {
       pararFala();
     }
@@ -737,13 +752,6 @@ const AIPage = () => {
   const enviarMensagem = async () => {
     if (!mensagem.trim() || carregando) return;
     
-    // Log para debug do estado antes de enviar
-    console.log('🔍 DEBUG: Estado antes de enviar mensagem:', {
-      contextoAtivo: contextoAtivo,
-      clienteSelecionado: clienteSelecionado,
-      mensagem: mensagem
-    });
-
     // Verificar se estamos no contexto de busca de cliente e a mensagem é um número
     if (contextoAtivo === 'buscar_cliente' && /^\d+$/.test(mensagem.trim())) {
       const numeroDigitado = parseInt(mensagem.trim());
@@ -775,9 +783,7 @@ const AIPage = () => {
         const clientes = clientesExtraidos.length > 0 ? clientesExtraidos : ultimaMensagemAssistente.metadata?.clientes;
         
         if (clientes && numeroDigitado >= 1 && numeroDigitado <= clientes.length) {
-          // O usuário digitou um número válido de cliente
-          const clienteSelecionado = clientes[numeroDigitado - 1];
-          
+          // O usuário digitou um número válido de cliente.
           // Enviar mensagem como se o usuário tivesse selecionado a opção
           const novaMensagem = {
             id: Date.now(),
@@ -874,6 +880,8 @@ const AIPage = () => {
                   actions: data.metadata?.actions
                 }
               };
+
+              atualizarStatusPorMetadata(respostaAgente.metadata);
 
               setConversas(prev => {
                 const novasConversas = [...prev, respostaAgente];
@@ -1037,16 +1045,6 @@ const AIPage = () => {
         cliente_selecionado: clienteSelecionado  // ✅ Envia cliente selecionado
       };
       
-      // Adicionar log para debug
-      console.log('🔍 DEBUG: Enviando requisição com cliente selecionado:', clienteSelecionado);
-      if (clienteSelecionado) {
-        console.log('🔍 DEBUG: Cliente selecionado detalhes:', {
-          id: clienteSelecionado.id,
-          nome: clienteSelecionado.nomeCompleto,
-          telefone: clienteSelecionado.telefone
-        });
-      }
-      
       // Adicionar NLP se disponível
       if (mensagemEnriquecida) {
         requestBody.nlp = mensagemEnriquecida.nlp;
@@ -1150,7 +1148,6 @@ const AIPage = () => {
           // Processar o conteúdo linha por linha para identificar clientes
           const linhas = responseContent.split('\n');
           const clientesExtraidos: any[] = [];
-          let ultimoNumero = 0;
           
           for (const linha of linhas) {
             // Padrão para identificar clientes numerados: "1. **Nome do Cliente**"
@@ -1164,8 +1161,6 @@ const AIPage = () => {
                 label: nome,
                 value: numero.toString()
               });
-              
-              ultimoNumero = numero;
             }
           }
           
@@ -1184,6 +1179,8 @@ const AIPage = () => {
           timestamp: new Date().toISOString(),
           metadata: metadataAtualizado
         };
+
+        atualizarStatusPorMetadata(respostaAgente.metadata);
 
         // Adicionando a renderização da lista de seleção de clientes se necessário
         if (tipoResposta === 'consulta_cliente' && metadataAtualizado.clientes && metadataAtualizado.clientes.length > 0) {
@@ -1222,38 +1219,18 @@ const AIPage = () => {
         
         // Atualizar cliente selecionado se for uma seleção
         if (tipoResposta === 'cliente_selecionado' && data.cliente) {
-          console.log('🔍 DEBUG: Atualizando cliente selecionado:', data.cliente);
           setClienteSelecionado(data.cliente);
           
           // Armazenar também no localStorage para persistência
           try {
             const clienteString = JSON.stringify(data.cliente);
             localStorage.setItem('clienteSelecionado', clienteString);
-            console.log('🔍 DEBUG: Cliente selecionado salvo no localStorage:', data.cliente);
-            console.log('🔍 DEBUG: Cliente JSON string:', clienteString.substring(0, 100) + '...');
           } catch (error) {
-            console.error('❌ Erro ao salvar cliente selecionado no localStorage:', error);
+            logger.warn('Erro ao salvar cliente selecionado no localStorage', { error: (error as Error).message });
           }
           
           // Forçar atualização do contexto também para garantir sincronização
           setContextoAtivo('cliente_selecionado');
-          
-          // Log imediato para verificar atualização
-          console.log('🔍 DEBUG: Cliente selecionado atualizado para:', data.cliente);
-        }
-        
-        // Log para debug do estado atual
-        console.log('🔍 DEBUG: Estado após processamento:', {
-          contextoAtivo: contextoAtivo,
-          clienteSelecionado: clienteSelecionado,
-          tipoResposta: tipoResposta
-        });
-        
-        // Verificação especial para cliente selecionado
-        if (tipoResposta === 'cliente_selecionado' && data.cliente) {
-          setTimeout(() => {
-            console.log('🔍 DEBUG: Verificação após timeout - cliente selecionado:', clienteSelecionado);
-          }, 100);
         }
 
         // Falar resposta se voz habilitada
@@ -1376,6 +1353,31 @@ const AIPage = () => {
       default:
         return 'Desconectado';
     }
+  };
+
+  const formatarFonteResposta = (metadata: any = {}) => {
+    const processedBy = metadata?.processed_by;
+    const model = String(metadata?.model || '').toLowerCase();
+    const isFallback =
+      processedBy === 'BACKEND_LOCAL_FALLBACK' ||
+      model.includes('fallback') ||
+      Boolean(metadata?.error) ||
+      Boolean(metadata?.is_timeout) ||
+      Boolean(metadata?.is_rate_limit);
+
+    if (isFallback) {
+      return 'Fallback local';
+    }
+
+    if (processedBy === 'AGNO_AI') {
+      return metadata?.model ? `Matias (Agno AI: ${metadata.model})` : 'Matias (Agno AI)';
+    }
+
+    if (processedBy === 'BACKEND_LOCAL') {
+      return 'Backend local';
+    }
+
+    return processedBy || 'Desconhecido';
   };
 
   return (
@@ -1764,14 +1766,7 @@ const AIPage = () => {
                 {conversa.tipo !== 'usuario' && conversa.metadata?.processed_by && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600">
-                      Fonte:{' '}
-                      {conversa.metadata.processed_by === 'AGNO_AI'
-                        ? `Matias (Agno AI${conversa.metadata.model ? `: ${conversa.metadata.model}` : ''})`
-                        : conversa.metadata.processed_by === 'BACKEND_LOCAL'
-                          ? 'Backend local'
-                          : conversa.metadata.processed_by === 'BACKEND_LOCAL_FALLBACK'
-                            ? 'Fallback local'
-                            : conversa.metadata.processed_by}
+                      Fonte: {formatarFonteResposta(conversa.metadata)}
                     </span>
 
                     {typeof conversa.metadata.processing_time_ms === 'number' && (
