@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { User, Bot, CheckCircle, Loader2, AlertCircle, Volume2, VolumeX, Trash2, Settings, MessageSquare, Wrench, MicOff, Mic, Send, Brain, RefreshCw } from 'lucide-react';
+import { User, Bot, CheckCircle, Loader2, AlertCircle, Volume2, VolumeX, Trash2, MessageSquare, Wrench, MicOff, Mic, Send, Brain, RefreshCw, PanelRightOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import DOMPurify from "dompurify";
 import { useAuth } from '../context/AuthContext';
 import ClienteModal from '../components/clientes/ClienteModal';
 import ActionButtons from '../components/chat/ActionButtons';
@@ -20,12 +22,47 @@ import { getApiBaseUrl } from '../utils/api';
 import '../styles/matias-design-system.css';
 import '../styles/matias-animations.css';
 
+const QUICK_SUGGESTION_CLASS: Record<string, string> = {
+  blue: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-900/60 dark:hover:bg-blue-950/60",
+  green: "bg-green-50 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-950/30 dark:text-green-200 dark:border-green-900/50 dark:hover:bg-green-950/50",
+  purple: "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 dark:bg-purple-950/35 dark:text-purple-200 dark:border-purple-900/50 dark:hover:bg-purple-950/55",
+  orange: "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 dark:bg-orange-950/30 dark:text-orange-200 dark:border-orange-900/50 dark:hover:bg-orange-950/50",
+  cyan: "bg-cyan-50 text-cyan-700 border-cyan-200 hover:bg-cyan-100 dark:bg-cyan-950/30 dark:text-cyan-200 dark:border-cyan-900/50 dark:hover:bg-cyan-950/50",
+};
+
 /**
  * Página dedicada para interação com o Assistente de IA (Agno Agent)
  * Interface principal para comunicação com o agente inteligente
  * 
  * 🎨 Fase 1: Melhorias Visuais Aplicadas
  */
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+const formatMatiasMessageHtml = (value: string) => {
+  const escaped = escapeHtml(value);
+
+  // Minimal Markdown: bold, inline code, and http(s) links.
+  const withFormatting = escaped
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+?)`/g, "<code>$1</code>")
+    .replace(
+      /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noreferrer">$1</a>'
+    )
+    .replace(/\n/g, "<br />");
+
+  return DOMPurify.sanitize(withFormatting, {
+    ALLOWED_TAGS: ["br", "strong", "code", "a"],
+    ALLOWED_ATTR: ["href", "target", "rel"],
+  });
+};
+
 const AIPage = () => {
   const { user } = useAuth();
 
@@ -1380,30 +1417,280 @@ const AIPage = () => {
     return processedBy || 'Desconhecido';
   };
 
-  return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-blue-50 p-2">
-      {/* Header - 🎨 Melhorado com Gradiente Moderno */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg border-0 p-4 mb-4 matias-animate-fade-in">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-              <Wrench className="w-6 h-6 text-white" />
-            </div>
+  const voiceSettingsCard = (
+    <div className="bg-white dark:bg-slate-900/60 rounded-xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setMostrarConfig(!mostrarConfig)}
+        aria-expanded={mostrarConfig}
+        className="w-full flex items-center justify-between gap-3 p-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+      >
+        <div className="text-left">
+          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            Configuracoes de voz
+          </div>
+          <div className="text-xs text-slate-600 dark:text-slate-400">
+            {vozSelecionada?.name ? `Voz: ${vozSelecionada.name}` : "Selecione uma voz"}
+          </div>
+        </div>
+        {mostrarConfig ? (
+          <ChevronUp className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+        )}
+      </button>
+
+      {mostrarConfig && (
+        <div className="p-4 pt-0">
+          <div className="mb-4">
+            <label className="text-xs text-slate-600 dark:text-slate-300 mb-2 block font-medium">
+              Voz do assistente
+            </label>
+            <select
+              value={vozSelecionada?.name || ''}
+              onChange={(e) => {
+                const voz = vozesDisponiveis.find(v => v.name === e.target.value);
+                setVozSelecionada(voz);
+              }}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-950/30 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
+            >
+              {vozesDisponiveis.map((voz) => (
+                <option key={voz.name} value={voz.name}>
+                  {voz.name} ({voz.lang})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-4 flex items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-950/20 rounded-lg border border-slate-200/60 dark:border-slate-800/60">
             <div>
-              <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                Assistente IA OFIX
-                <span className="text-xs font-normal bg-white/20 px-2 py-0.5 rounded-full">AI v2.0</span>
-              </h1>
-              <p className="text-sm text-blue-100">🎯 Seu especialista em oficina mecânica</p>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200 block">
+                Modo continuo
+              </label>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Reconhecimento de voz sem parar
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setModoContinuo(!modoContinuo)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${modoContinuo ? 'bg-blue-600' : 'bg-gray-300 dark:bg-slate-700'
+                }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${modoContinuo ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+              />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs text-slate-600 dark:text-slate-300 mb-1 block">
+                Velocidade: {configVoz.rate.toFixed(1)}x
+              </label>
+              <input
+                type="range"
+                min="0.5"
+                max="2"
+                step="0.1"
+                value={configVoz.rate}
+                onChange={(e) => setConfigVoz({ ...configVoz, rate: parseFloat(e.target.value) })}
+                className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-slate-600 dark:text-slate-300 mb-1 block">
+                Tom: {configVoz.pitch.toFixed(1)}
+              </label>
+              <input
+                type="range"
+                min="0.5"
+                max="2"
+                step="0.1"
+                value={configVoz.pitch}
+                onChange={(e) => setConfigVoz({ ...configVoz, pitch: parseFloat(e.target.value) })}
+                className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-slate-600 dark:text-slate-300 mb-1 block">
+                Volume: {Math.round(configVoz.volume * 100)}%
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={configVoz.volume}
+                onChange={(e) => setConfigVoz({ ...configVoz, volume: parseFloat(e.target.value) })}
+                className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
+              />
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
+            <Button
+              onClick={() => falarTexto('Ola! Esta e a voz do Matias. Como posso ajuda-lo hoje?')}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              Testar voz
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const memoryCard = (
+    <div className="bg-white dark:bg-slate-900/60 rounded-xl shadow-sm border border-blue-200/70 dark:border-blue-900/40 overflow-hidden">
+      <div className="flex items-center justify-between gap-3 p-4">
+        <button
+          type="button"
+          onClick={() => setMostrarMemorias(!mostrarMemorias)}
+          aria-expanded={mostrarMemorias}
+          className="flex items-center gap-2 text-blue-900 dark:text-blue-200 font-semibold hover:text-blue-700 dark:hover:text-blue-100 transition-colors min-w-0"
+        >
+          <Brain className="w-5 h-5 shrink-0" />
+          <span className="truncate">O que o Matias lembra sobre voce</span>
+          {memoriaAtiva && (
+            <span className="text-xs bg-blue-100 dark:bg-blue-950/40 dark:text-blue-200 px-2 py-0.5 rounded-full shrink-0">
+              {memorias.length}
+            </span>
+          )}
+          {!memoriaAtiva && (
+            <span className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-200 px-2 py-0.5 rounded-full shrink-0">
+              Aguardando ativacao
+            </span>
+          )}
+        </button>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          {mostrarMemorias && memoriaAtiva && (
+            <>
+              <Button
+                onClick={carregarMemorias}
+                variant="ghost"
+                size="sm"
+                disabled={loadingMemorias}
+                className="text-blue-600 dark:text-blue-300 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                title="Atualizar memorias"
+              >
+                <RefreshCw className={`w-4 h-4 ${loadingMemorias ? 'animate-spin' : ''}`} />
+              </Button>
+
+              <Button
+                onClick={excluirMemorias}
+                variant="ghost"
+                size="sm"
+                className="text-red-600 dark:text-red-300 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                title="Esquecer minhas conversas (LGPD)"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {mostrarMemorias && (
+        <div className="px-4 pb-4 pt-0 border-t border-blue-100/70 dark:border-blue-900/30">
+          {!memoriaAtiva ? (
+            <div className="mt-3 bg-yellow-50 border border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-900/30 rounded-lg p-4">
+              <p className="text-sm text-yellow-900 dark:text-yellow-200 font-medium mb-2">
+                Sistema de memoria nao ativado
+              </p>
+              <p className="text-xs text-yellow-800 dark:text-yellow-200/90 mb-3">
+                Configure no Render para o Matias lembrar das conversas:
+              </p>
+              <ol className="text-xs text-yellow-800 dark:text-yellow-200/90 space-y-1 list-decimal list-inside">
+                <li>Backend - Environment - <code className="bg-yellow-100 dark:bg-yellow-950/40 px-1 rounded">AGNO_ENABLE_MEMORY=true</code></li>
+                <li>Agente - Start Command - <code className="bg-yellow-100 dark:bg-yellow-950/40 px-1 rounded">python agent_with_memory.py</code></li>
+                <li>Fazer Deploy Manual</li>
+              </ol>
+            </div>
+          ) : loadingMemorias ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+              <span className="ml-2 text-sm text-slate-600 dark:text-slate-300">Carregando memorias...</span>
+            </div>
+          ) : memorias.length > 0 ? (
+            <ul className="mt-3 space-y-2">
+              {memorias.map((memoria, idx) => (
+                <li key={idx} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-200">
+                  <span className="text-blue-500 mt-1">•</span>
+                  <span className="break-words">{memoria.memory || memoria.content || JSON.stringify(memoria)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-sm text-slate-600 dark:text-slate-300 italic">
+                Ainda nao ha memorias salvas.
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Continue conversando com o Matias.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  const actionsCard = (
+    <div className="bg-white dark:bg-slate-900/60 rounded-xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 p-4">
+      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">
+        Acoes
+      </div>
+      <div className="flex flex-col gap-2">
+        <Button onClick={limparHistorico} variant="outline" className="justify-start gap-2">
+          <Trash2 className="w-4 h-4" />
+          Limpar conversa
+        </Button>
+        <div className="text-xs text-slate-500 dark:text-slate-400">
+          Dica: ESC para parar gravacao ou fala.
+        </div>
+      </div>
+    </div>
+  );
+
+  const sidePanelContent = (
+    <div className="flex flex-col gap-3">
+      {voiceSettingsCard}
+      {memoryCard}
+      {actionsCard}
+    </div>
+  );
+
+  return (
+    <div className="h-full min-h-0 flex flex-col bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 p-2">
+      {/* Header - 🎨 Melhorado com Gradiente Moderno */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg border-0 p-3 sm:p-4 mb-3 matias-animate-fade-in">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm shrink-0">
+              <Wrench className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                Assistente IA OFIX
+                <span className="text-xs font-normal bg-white/20 px-2 py-0.5 rounded-full">AI v2.0</span>
+              </h1>
+              <p className="text-xs sm:text-sm text-blue-100 hidden sm:block">Seu especialista em oficina mecanica</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 sm:gap-3">
             {/* 🧠 Indicador de Memória Ativa */}
             {memoriaAtiva && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/20 border border-green-300/30 backdrop-blur-sm">
+              <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-green-500/20 border border-green-300/30 backdrop-blur-sm">
                 <Brain className="w-4 h-4 text-green-100" />
-                <span className="text-sm font-medium text-green-100">Matias lembra de você</span>
+                <span className="text-xs font-medium text-green-100 hidden sm:inline">Memoria ativa</span>
               </div>
             )}
             {/* Status da Conexão - 🎨 Melhorado para Header com Gradiente */}
@@ -1423,7 +1710,7 @@ const AIPage = () => {
                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
                 )}
               </div>
-              <span className="text-sm font-medium text-white">
+              <span className="text-xs sm:text-sm font-medium text-white">
                 {getStatusText()}
               </span>
             </div>
@@ -1452,25 +1739,27 @@ const AIPage = () => {
                 </Button>
               )}
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={limparHistorico}
-                className="flex items-center gap-2 bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20 transition-all"
-                title="Limpar histórico"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="lg:hidden bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20"
+                    aria-label="Abrir painel"
+                  >
+                    <PanelRightOpen className="w-4 h-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[92vw] sm:max-w-md">
+                  <SheetHeader>
+                    <SheetTitle>Painel do Matias</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-4 flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-7rem)] pr-1">
+                    {sidePanelContent}
+                  </div>
+                </SheetContent>
+              </Sheet>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setMostrarConfig(!mostrarConfig)}
-                className="flex items-center gap-2 bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20 transition-all"
-                title="Configurações de voz"
-              >
-                <Settings className="w-4 h-4" />
-              </Button>
             </div>
 
             {/* Botão de Reconectar - 🎨 Estilo Moderno */}
@@ -1479,226 +1768,32 @@ const AIPage = () => {
               size="sm"
               onClick={() => verificarConexao({ warm: true })}
               disabled={statusConexao === 'conectando'}
-              className="flex items-center gap-2 bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20 transition-all disabled:opacity-50"
+              className="hidden sm:flex items-center gap-2 bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20 transition-all disabled:opacity-50"
             >
               <RefreshCw className="w-4 h-4" />
               Reconectar
             </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Painel de Configurações de Voz */}
-      {mostrarConfig && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-4 mb-4">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">⚙️ Configurações de Voz</h3>
-
-          {/* Seletor de Voz */}
-          <div className="mb-4">
-            <label className="text-xs text-slate-600 mb-2 block font-medium">
-              🎤 Voz do Assistente
-            </label>
-            <select
-              value={vozSelecionada?.name || ''}
-              onChange={(e) => {
-                const voz = vozesDisponiveis.find(v => v.name === e.target.value);
-                setVozSelecionada(voz);
-              }}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {vozesDisponiveis.map((voz) => (
-                <option key={voz.name} value={voz.name}>
-                  {voz.name} ({voz.lang})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Modo Contínuo */}
-          <div className="mb-4 flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-            <div>
-              <label className="text-sm font-medium text-slate-700 block">
-                🔄 Modo Contínuo
-              </label>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Reconhecimento de voz sem parar
-              </p>
-            </div>
-            <button
-              onClick={() => setModoContinuo(!modoContinuo)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${modoContinuo ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${modoContinuo ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-              />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            {/* Velocidade */}
-            <div>
-              <label className="text-xs text-slate-600 mb-1 block">
-                Velocidade: {configVoz.rate.toFixed(1)}x
-              </label>
-              <input
-                type="range"
-                min="0.5"
-                max="2"
-                step="0.1"
-                value={configVoz.rate}
-                onChange={(e) => setConfigVoz({ ...configVoz, rate: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-              />
-            </div>
-
-            {/* Tom */}
-            <div>
-              <label className="text-xs text-slate-600 mb-1 block">
-                Tom: {configVoz.pitch.toFixed(1)}
-              </label>
-              <input
-                type="range"
-                min="0.5"
-                max="2"
-                step="0.1"
-                value={configVoz.pitch}
-                onChange={(e) => setConfigVoz({ ...configVoz, pitch: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-              />
-            </div>
-
-            {/* Volume */}
-            <div>
-              <label className="text-xs text-slate-600 mb-1 block">
-                Volume: {Math.round(configVoz.volume * 100)}%
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={configVoz.volume}
-                onChange={(e) => setConfigVoz({ ...configVoz, volume: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-              />
-            </div>
-          </div>
-
-          {/* Botão de Teste */}
-          <div className="mt-4 pt-4 border-t border-slate-200">
             <Button
-              onClick={() => falarTexto('Olá! Esta é a voz do Matias. Como posso ajudá-lo hoje?')}
               variant="outline"
-              size="sm"
-              className="w-full"
+              size="icon"
+              onClick={() => verificarConexao({ warm: true })}
+              disabled={statusConexao === 'conectando'}
+              className="sm:hidden bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20 transition-all disabled:opacity-50"
+              aria-label="Reconectar"
             >
-              🎵 Testar Voz
+              <RefreshCw className="w-4 h-4" />
             </Button>
           </div>
         </div>
-      )}
-
-      {/* 🧠 Card de Memórias - SEMPRE VISÍVEL */}
-      <div className="bg-white rounded-xl shadow-sm border border-blue-200 p-4 mb-4 matias-animate-fade-in">
-        <div className="flex items-center justify-between mb-3">
-          <button
-            onClick={() => setMostrarMemorias(!mostrarMemorias)}
-            className="flex items-center gap-2 text-blue-900 font-semibold hover:text-blue-700 transition-colors"
-          >
-            <Brain className="w-5 h-5" />
-            <span>O que o Matias lembra sobre você</span>
-            {memoriaAtiva && (
-              <span className="text-xs bg-blue-100 px-2 py-0.5 rounded-full">
-                {memorias.length}
-              </span>
-            )}
-            {!memoriaAtiva && (
-              <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
-                Aguardando ativação
-              </span>
-            )}
-          </button>
-          
-          <div className="flex items-center gap-2">
-            {mostrarMemorias && memoriaAtiva && (
-              <>
-                <Button
-                  onClick={carregarMemorias}
-                  variant="ghost"
-                  size="sm"
-                  disabled={loadingMemorias}
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                  title="Atualizar memórias"
-                >
-                  <RefreshCw className={`w-4 h-4 ${loadingMemorias ? 'animate-spin' : ''}`} />
-                </Button>
-                
-                <Button
-                  onClick={excluirMemorias}
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  title="Esquecer minhas conversas (LGPD)"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {mostrarMemorias && (
-          <div className="mt-3 pt-3 border-t border-blue-100">
-            {!memoriaAtiva ? (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-sm text-yellow-800 font-medium mb-2">
-                  ⚠️ Sistema de memória não ativado
-                </p>
-                <p className="text-xs text-yellow-700 mb-3">
-                  Configure no Render para o Matias lembrar das conversas:
-                </p>
-                <ol className="text-xs text-yellow-700 space-y-1 list-decimal list-inside">
-                  <li>Backend → Environment → <code className="bg-yellow-100 px-1 rounded">AGNO_ENABLE_MEMORY=true</code></li>
-                  <li>Agente → Start Command → <code className="bg-yellow-100 px-1 rounded">python agent_with_memory.py</code></li>
-                  <li>Fazer Deploy Manual</li>
-                </ol>
-              </div>
-            ) : loadingMemorias ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
-                <span className="ml-2 text-sm text-gray-600">Carregando memórias...</span>
-              </div>
-            ) : memorias.length > 0 ? (
-              <ul className="space-y-2">
-                {memorias.map((memoria, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className="text-blue-500 mt-1">•</span>
-                    <span>{memoria.memory || memoria.content || JSON.stringify(memoria)}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-sm text-gray-600 italic">
-                  Ainda não há memórias salvas.
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Continue conversando com o Matias!
-                </p>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-3">
       {/* Área de Chat */}
-      <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200/60 flex flex-col overflow-hidden">
+      <div className="min-h-0 bg-white/90 dark:bg-slate-900/60 rounded-xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 flex flex-col overflow-hidden">
         {/* Container de Mensagens - 💬 Com Scrollbar Personalizada */}
         <div
           ref={chatContainerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4 matias-animate-fade-in"
+          className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 matias-animate-fade-in"
           style={{
             scrollbarWidth: 'thin',
             scrollbarColor: '#cbd5e1 transparent'
@@ -1746,43 +1841,52 @@ const AIPage = () => {
                 className={`max-w-2xl rounded-2xl px-4 py-3 shadow-sm matias-animate-message-slide transition-all duration-200 hover:shadow-md ${conversa.tipo === 'usuario'
                   ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
                   : conversa.tipo === 'confirmacao' || conversa.tipo === 'sistema'
-                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 border border-green-200'
+                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 border border-green-200 dark:from-green-950/30 dark:to-emerald-950/30 dark:text-green-100 dark:border-green-900/40'
                     : conversa.tipo === 'erro'
-                      ? 'bg-gradient-to-r from-red-50 to-orange-50 text-red-800 border border-red-200'
+                      ? 'bg-gradient-to-r from-red-50 to-orange-50 text-red-800 border border-red-200 dark:from-red-950/30 dark:to-orange-950/30 dark:text-red-100 dark:border-red-900/40'
                       : conversa.tipo === 'pergunta'
-                        ? 'bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-800 border border-yellow-200'
+                        ? 'bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-800 border border-yellow-200 dark:from-yellow-950/25 dark:to-amber-950/25 dark:text-yellow-100 dark:border-yellow-900/35'
                         : conversa.tipo === 'cadastro' || conversa.tipo === 'alerta'
-                          ? 'bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-800 border border-purple-200'
+                          ? 'bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-800 border border-purple-200 dark:from-purple-950/30 dark:to-indigo-950/30 dark:text-purple-100 dark:border-purple-900/40'
                           : conversa.tipo === 'consulta_cliente'
-                            ? 'bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-900 border border-cyan-200'
-                            : 'bg-white text-slate-900 border border-slate-200'
+                            ? 'bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-900 border border-cyan-200 dark:from-cyan-950/25 dark:to-blue-950/25 dark:text-cyan-100 dark:border-cyan-900/40'
+                            : 'bg-white text-slate-900 border border-slate-200 dark:bg-slate-950/30 dark:text-slate-100 dark:border-slate-800/60'
                   }`}
               >
-                <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {conversa.conteudo}
+                <div className="text-sm leading-relaxed">
+                  {conversa.tipo === 'usuario' ? (
+                    <div className="whitespace-pre-wrap break-words">
+                      {conversa.conteudo}
+                    </div>
+                  ) : (
+                    <div
+                      className="break-words [&_strong]:font-semibold [&_a]:underline [&_a]:underline-offset-2 [&_code]:rounded [&_code]:bg-slate-900/10 dark:[&_code]:bg-white/10 [&_code]:px-1 [&_code]:py-0.5"
+                      dangerouslySetInnerHTML={{ __html: formatMatiasMessageHtml(String(conversa.conteudo || "")) }}
+                    />
+                  )}
                 </div>
 
                 {/* Fonte da resposta (LOCAL vs AGNO_AI) */}
                 {conversa.tipo !== 'usuario' && conversa.metadata?.processed_by && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
                       Fonte: {formatarFonteResposta(conversa.metadata)}
                     </span>
 
                     {typeof conversa.metadata.processing_time_ms === 'number' && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
                         {conversa.metadata.processing_time_ms}ms
                       </span>
                     )}
 
                     {conversa.metadata.run_id && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
                         run: {String(conversa.metadata.run_id).slice(0, 8)}
                       </span>
                     )}
 
                     {conversa.metadata.cached && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
                         cache
                       </span>
                     )}
@@ -1914,7 +2018,7 @@ const AIPage = () => {
                     📝 Abrir Formulário de Cadastro
                   </Button>
                 )}
-                <div className={`text-xs mt-2 opacity-60 ${conversa.tipo === 'usuario' ? 'text-white' : 'text-slate-500'
+                <div className={`text-xs mt-2 opacity-60 ${conversa.tipo === 'usuario' ? 'text-white' : 'text-slate-500 dark:text-slate-400'
                   }`}>
                   {new Date(conversa.timestamp).toLocaleTimeString('pt-BR', {
                     hour: '2-digit',
@@ -1931,134 +2035,135 @@ const AIPage = () => {
               )}
             </div>
           ))}
-          {/* Sugestões rápidas */}
-          <div className="flex flex-wrap gap-2 px-4 pb-2">
-            {[
-              { 
-                icon: '🔍',  // Mudou de 👤 para 🔍 (mais intuitivo)
-                text: 'Buscar cliente', 
-                command: 'buscar_cliente',  // Comando interno, não enviado
-                placeholder: 'Digite nome, CPF ou telefone...',
-                mensagemGuia: '👤 Claro! Me diga o nome, CPF ou telefone do cliente que você procura.\n\nExemplos:\n• João Silva\n• 123.456.789-00\n• (11) 98765-4321',
-                color: 'blue' 
-              },
-              { 
-                icon: '📅', 
-                text: 'Agendar serviço', 
-                command: 'agendar_servico',
-                placeholder: 'Ex: Troca de óleo para amanhã às 14h',
-                mensagemGuia: '📅 Vou te ajudar a agendar! Me diga:\n• Qual serviço?\n• Para quando?\n• Qual cliente?',
-                color: 'green' 
-              },
-              { 
-                icon: '🔧', 
-                text: 'Status da OS', 
-                command: 'status_os',
-                placeholder: 'Ex: OS 1234 ou cliente João Silva',
-                mensagemGuia: '🔧 Vou consultar o status! Me informe:\n• Número da OS, ou\n• Nome do cliente',
-                color: 'purple' 
-              },
-              { 
-                icon: '📦', 
-                text: 'Consultar peças', 
-                command: 'consultar_pecas',
-                placeholder: 'Ex: filtro de óleo ou código ABC123',
-                mensagemGuia: '📦 Vou buscar as peças! Me diga:\n• Nome da peça, ou\n• Código da peça',
-                color: 'orange' 
-              },
-              { 
-                icon: '💰', 
-                text: 'Calcular orçamento', 
-                command: 'calcular_orcamento',
-                placeholder: 'Ex: troca de óleo + filtro',
-                mensagemGuia: '💰 Vou calcular o orçamento! Me diga:\n• Quais serviços?\n• Quais peças?',
-                color: 'cyan' 
-              }
-            ].map((sugestao) => (
-              <button
-                key={sugestao.text}
-                onClick={() => {
-                  // NÃO envia mensagem automaticamente
-                  // Apenas prepara o contexto
-                  
-                  // Limpa o campo
-                  setMensagem("");
-                  
-                  // Atualiza placeholder
-                  if (inputRef.current) {
-                    inputRef.current.placeholder = sugestao.placeholder;
-                    inputRef.current.focus();
-                  }
-                  
-                  // Define contexto ativo
-                  setContextoAtivo(sugestao.command);
-                  
-                  // Envia mensagem guia do assistente
-                  const mensagemGuia = {
-                    id: Date.now(),
-                    tipo: 'sistema',
-                    conteudo: sugestao.mensagemGuia,
-                    timestamp: new Date().toISOString()
-                  };
-                  
-                  setConversas(prev => {
-                    const novasConversas = [...prev, mensagemGuia];
-                    salvarConversasLocal(novasConversas);
-                    return novasConversas;
-                  });
-                  
-                  logger.info('Contexto ativado', {
-                    contexto: sugestao.command,
-                    placeholder: sugestao.placeholder
-                  });
-                }}
-                disabled={carregando}
-                className={`px-3 py-1.5 text-sm bg-${sugestao.color}-50 text-${sugestao.color}-700 rounded-full hover:bg-${sugestao.color}-100 transition-all duration-200 border border-${sugestao.color}-200 hover:shadow-md hover:scale-105 active:scale-95 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
-              >
-                <span>{sugestao.icon}</span>
-                <span>{sugestao.text}</span>
-              </button>
-            ))}
-          </div>
-
           {/* Indicador de carregamento - Melhorado */}
           {carregando && (
             <div className="flex gap-3 justify-start animate-fade-in">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
                 <Bot className="w-4 h-4 text-white" />
               </div>
-              <div className="bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 rounded-2xl px-4 py-3 shadow-sm">
+              <div className="bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 dark:from-slate-900/60 dark:to-slate-900/40 dark:border-slate-800/60 rounded-2xl px-4 py-3 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="flex gap-1">
                     <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
                     <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
                     <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
                   </div>
-                  <span className="text-sm text-slate-700 font-medium">Matias está pensando...</span>
+                  <span className="text-sm text-slate-700 dark:text-slate-200 font-medium">Matias está pensando...</span>
                 </div>
               </div>
             </div>
           )}
         </div>
 
+        {/* Sugestoes rapidas */}
+        <div className="border-t border-slate-200/60 dark:border-slate-800/60 bg-slate-50/60 dark:bg-slate-950/20 px-3 py-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {[
+              {
+                icon: "🔍",
+                text: "Buscar cliente",
+                command: "buscar_cliente",
+                placeholder: "Digite nome, CPF ou telefone...",
+                mensagemGuia:
+                  "👤 Claro! Me diga o nome, CPF ou telefone do cliente que você procura.\n\nExemplos:\n• João Silva\n• 123.456.789-00\n• (11) 98765-4321",
+                color: "blue",
+              },
+              {
+                icon: "📅",
+                text: "Agendar serviço",
+                command: "agendar_servico",
+                placeholder: "Ex: Troca de óleo para amanhã às 14h",
+                mensagemGuia:
+                  "📅 Vou te ajudar a agendar! Me diga:\n• Qual serviço?\n• Para quando?\n• Qual cliente?",
+                color: "green",
+              },
+              {
+                icon: "🔧",
+                text: "Status da OS",
+                command: "status_os",
+                placeholder: "Ex: OS 1234 ou cliente João Silva",
+                mensagemGuia:
+                  "🔧 Vou consultar o status! Me informe:\n• Número da OS, ou\n• Nome do cliente",
+                color: "purple",
+              },
+              {
+                icon: "📦",
+                text: "Consultar peças",
+                command: "consultar_pecas",
+                placeholder: "Ex: filtro de óleo ou código ABC123",
+                mensagemGuia:
+                  "📦 Vou buscar as peças! Me diga:\n• Nome da peça, ou\n• Código da peça",
+                color: "orange",
+              },
+              {
+                icon: "💰",
+                text: "Calcular orçamento",
+                command: "calcular_orcamento",
+                placeholder: "Ex: troca de óleo + filtro",
+                mensagemGuia:
+                  "💰 Vou calcular o orçamento! Me diga:\n• Quais serviços?\n• Quais peças?",
+                color: "cyan",
+              },
+            ].map((sugestao) => (
+              <button
+                key={sugestao.text}
+                type="button"
+                onClick={() => {
+                  setMensagem("");
+
+                  if (inputRef.current) {
+                    inputRef.current.placeholder = sugestao.placeholder;
+                    inputRef.current.focus();
+                  }
+
+                  setContextoAtivo(sugestao.command);
+
+                  const mensagemGuia = {
+                    id: Date.now(),
+                    tipo: "sistema",
+                    conteudo: sugestao.mensagemGuia,
+                    timestamp: new Date().toISOString(),
+                  };
+
+                  setConversas((prev) => {
+                    const novasConversas = [...prev, mensagemGuia];
+                    salvarConversasLocal(novasConversas);
+                    return novasConversas;
+                  });
+
+                  logger.info("Contexto ativado", {
+                    contexto: sugestao.command,
+                    placeholder: sugestao.placeholder,
+                  });
+                }}
+                disabled={carregando}
+                className={`flex-none px-3 py-1.5 text-sm rounded-full transition-all duration-200 border hover:shadow-md hover:scale-105 active:scale-95 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${QUICK_SUGGESTION_CLASS[sugestao.color] || QUICK_SUGGESTION_CLASS.blue}`}
+              >
+                <span aria-hidden="true">{sugestao.icon}</span>
+                <span className="whitespace-nowrap">{sugestao.text}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Banner de status de voz */}
         {(gravando || falando) && (
-          <div className={`px-4 py-2 border-t ${gravando ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
+          <div className={`px-4 py-2 border-t ${gravando ? 'bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-900/40' : 'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900/40'}`}>
             <div className="flex items-center justify-center gap-2">
               {gravando ? (
                 <>
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                  <span className="text-sm font-medium text-red-700">
+                  <span className="text-sm font-medium text-red-700 dark:text-red-200">
                     🎤 Gravando... Fale agora
                   </span>
                   {modoContinuo && (
-                    <span className="text-xs text-red-600">(Modo contínuo)</span>
+                    <span className="text-xs text-red-600 dark:text-red-200/80">(Modo contínuo)</span>
                   )}
                 </>
               ) : (
                 <>
                   <Volume2 className="w-4 h-4 text-blue-600 animate-pulse" />
-                  <span className="text-sm font-medium text-blue-700">
+                  <span className="text-sm font-medium text-blue-700 dark:text-blue-200">
                     🔊 Matias está falando...
                   </span>
                 </>
@@ -2068,7 +2173,7 @@ const AIPage = () => {
         )}
 
         {/* Input de Mensagem - ✨ Design Moderno */}
-        <div className="border-t border-slate-200 p-4 bg-white">
+        <div className="border-t border-slate-200/60 dark:border-slate-800/60 p-4 bg-white/95 dark:bg-slate-950/20">
           <div className="flex gap-3 items-end">
             <div className="flex-1">
               <Input
@@ -2078,7 +2183,7 @@ const AIPage = () => {
                   setMensagem(e.target.value);
                   validarInputBusca(e.target.value);
                 }}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 placeholder={gravando ? "🎤 Gravando..." : falando ? "Matias está falando..." : contextoAtivo ? 
                   (contextoAtivo === 'buscar_cliente' ? 'Digite nome, CPF ou telefone...' : 
                    contextoAtivo === 'agendar_servico' ? 'Ex: Troca de óleo para amanhã às 14h' :
@@ -2088,21 +2193,21 @@ const AIPage = () => {
                    "Digite sua mensagem...") : 
                   "Digite sua pergunta ou solicitação..."}
                 disabled={carregando || !podeInteragir || gravando}
-                className="resize-none border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl transition-all duration-200 shadow-sm focus:shadow-md"
+                className="resize-none border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/40 rounded-xl transition-all duration-200 shadow-sm focus:shadow-md"
               />
               {/* ✅ CONTADOR DE CARACTERES */}
-              <div className={`text-xs mt-1 ${mensagem.length > AI_CONFIG.CHAT.MAX_MESSAGE_LENGTH ? 'text-red-600' : 'text-slate-500'}`}>
+              <div className={`text-xs mt-1 ${mensagem.length > AI_CONFIG.CHAT.MAX_MESSAGE_LENGTH ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>
                 {mensagem.length}/{AI_CONFIG.CHAT.MAX_MESSAGE_LENGTH} caracteres
               </div>
               
               {/* Adicionar feedback visual abaixo do input */}
               {inputWarning && (
-                <div className="px-4 py-1 text-xs text-red-600 bg-red-50 rounded">
+                <div className="px-4 py-1 text-xs text-red-600 dark:text-red-200 bg-red-50 dark:bg-red-950/30 rounded">
                   ⚠️ {inputWarning}
                 </div>
               )}
               {inputHint && (
-                <div className="px-4 py-1 text-xs text-green-600 bg-green-50 rounded">
+                <div className="px-4 py-1 text-xs text-green-600 dark:text-green-200 bg-green-50 dark:bg-green-950/30 rounded">
                   {inputHint}
                 </div>
               )}
@@ -2134,7 +2239,7 @@ const AIPage = () => {
           </div>
 
           {statusConexao !== 'conectado' && (
-            <div className={`mt-2 text-xs flex items-center gap-1 ${statusConexao === 'erro' ? 'text-red-600' : 'text-amber-600'}`}>
+            <div className={`mt-2 text-xs flex items-center gap-1 ${statusConexao === 'erro' ? 'text-red-600 dark:text-red-200' : 'text-amber-600 dark:text-amber-200'}`}>
               <AlertCircle className="w-3 h-3" />
               {statusConexao === 'local'
                 ? 'Agno offline: modo local ativo (respostas locais).'
@@ -2146,7 +2251,13 @@ const AIPage = () => {
         </div>
       </div>
 
-      {/* 📝 MODAL DE CADASTRO DE CLIENTE */}
+      {/* Side panel (desktop) */}
+      <div className="hidden lg:flex min-h-0 overflow-y-auto pr-1">
+        {sidePanelContent}
+      </div>
+    </div>
+
+      {/* MODAL DE CADASTRO DE CLIENTE */}
       <ClienteModal
         isOpen={modalClienteAberto}
         onClose={() => {
