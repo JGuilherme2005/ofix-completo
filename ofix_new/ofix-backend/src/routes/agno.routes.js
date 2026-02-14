@@ -2361,7 +2361,8 @@ function normalizarTextoResposta(texto) {
 
     try {
         const decoded = Buffer.from(texto, 'latin1').toString('utf8');
-        if (decoded && decoded !== texto) {
+        // Se a conversao introduzir caracteres de substituicao (�), nao piorar a resposta.
+        if (decoded && decoded !== texto && !decoded.includes('\uFFFD')) {
             return decoded;
         }
     } catch (_) {
