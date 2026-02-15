@@ -2104,7 +2104,7 @@ const AIPage = () => {
         <div className="border-t border-slate-200/60 dark:border-slate-800/60 bg-slate-50/70 dark:bg-slate-950/20 px-4 sm:px-5 py-3">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="text-[11px] font-semibold tracking-wide uppercase text-slate-600 dark:text-slate-300">
-              SugestÃµes rÃ¡pidas
+              Sugestões rápidas
             </div>
             {contextoAtivo && (
               <button
