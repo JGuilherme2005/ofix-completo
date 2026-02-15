@@ -726,22 +726,26 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
             } catch (agnoError) {
                 const errorMessage = String(agnoError?.message || '');
                 const isTimeout = Boolean(agnoError?.is_timeout) || /aborted|timeout/i.test(errorMessage);
-                const isRateLimit = agnoError?.status === 429 || errorMessage.includes('429');
-                const isTimeoutOrRateLimit = isTimeout || isRateLimit;
+                const statusCode = Number(agnoError?.status);
+                const errorMessageLower = errorMessage.toLowerCase();
+                const isRateLimit =
+                    Boolean(agnoError?.is_rate_limit) ||
+                    (statusCode === 429 && /rate\s*limit|too many requests/i.test(errorMessageLower));
+                // Render/proxy cold-start can surface as 429 without being a true model/provider rate limit.
+                const isColdStart = Boolean(agnoError?.is_cold_start) || (statusCode === 429 && !isRateLimit);
+                const isTimeoutOrRateLimit = isTimeout || isRateLimit || isColdStart;
                 const errorType = isTimeoutOrRateLimit ? 'â±ï¸ Timeout/Rate Limit' : 'âŒ Erro';
                 console.error(`   âš ï¸ Agno falhou (${errorType}), usando fallback:`, errorMessage);
 
-                const statusCode = Number(agnoError?.status);
-                const errorMessageLower = errorMessage.toLowerCase();
                 const isServerError = Number.isFinite(statusCode) && statusCode >= 500;
                 const isAgentNotFound = statusCode === 404 && errorMessageLower.includes('agent not found');
                 const isNetworkError = /econnrefused|enotfound|fetch failed|network/i.test(errorMessageLower);
 
                 // Free-tier cold start: warm up once and retry before falling back.
-                if (!isRateLimit && (isTimeout || isServerError || isAgentNotFound || isNetworkError)) {
+                if (isColdStart || (!isRateLimit && (isTimeout || isServerError || isAgentNotFound || isNetworkError))) {
                     try {
                         console.warn('[AGNO_AI] Provavel cold start. Tentando aquecer e reenviar uma vez...');
-                        const warmResult = await warmAgnoService({ reason: 'chat_retry', maxWaitMs: 60000 });
+                        const warmResult = await warmAgnoService({ reason: 'chat_retry', maxWaitMs: 90000 });
 
                         if (warmResult?.ok) {
                             responseData = await processarComAgnoAI(message, usuario_id, AGNO_DEFAULT_AGENT_ID, agentSessionId, { throwOnError: true, dependencies: { oficina_id: oficinaId, user_id: usuario_id, role: req.user?.role || null, public: false } });
@@ -781,6 +785,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
                             agno_error: errorMessage,
                             is_timeout: isTimeout,
                             is_rate_limit: isRateLimit,
+                            is_cold_start: isColdStart,
                             classification: classification
                         }
                     };
@@ -797,6 +802,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
                             agno_error: errorMessage,
                             is_timeout: isTimeout,
                             is_rate_limit: isRateLimit,
+                            is_cold_start: isColdStart,
                             classification: classification
                         }
                     };
@@ -2822,14 +2828,34 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
 
             // Tratamento de erros HTTP
             if (!response.ok) {
-                if (response.status === 429) {
-                    openCircuitBreaker();
-                }
-
                 const errorText = await response.text();
+                const retryAfter = response.headers?.get?.('retry-after') || null;
+                const errorTextLower = String(errorText || '').toLowerCase();
+                const isHtmlLike =
+                    errorTextLower.includes('<!doctype') ||
+                    errorTextLower.includes('<html') ||
+                    errorTextLower.includes('<body');
+
+                // Render cold start / proxy errors can surface as 429 while the service is waking up.
+                // We only open the circuit breaker for explicit, non-cold-start rate limits.
+                const isExplicitRateLimit =
+                    Boolean(retryAfter) ||
+                    /rate\s*limit|too many requests|exceeded/i.test(errorTextLower);
+                const isColdStartHint =
+                    isHtmlLike || /spin|start|starting|sleep|waking|warming|deploy/i.test(errorTextLower);
+                const isRateLimit = response.status === 429 && isExplicitRateLimit && !isColdStartHint;
+                const isColdStart = response.status === 429 && !isRateLimit;
+
                 const httpError = new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
                 httpError.status = response.status;
                 httpError.base_url = baseUrl;
+                httpError.retry_after = retryAfter;
+                httpError.is_rate_limit = Boolean(isRateLimit);
+                httpError.is_cold_start = Boolean(isColdStart);
+
+                if (httpError.is_rate_limit) {
+                    openCircuitBreaker();
+                }
 
                 if (shouldRetryWithNextBase(response.status)) {
                     lastError = httpError;
@@ -2906,6 +2932,9 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
             model: "fallback-error",
             error: lastError?.message || 'Falha de conexao com Agno',
             is_timeout: Boolean(isTimeout),
+            is_rate_limit: Boolean(lastError?.is_rate_limit),
+            is_cold_start: Boolean(lastError?.is_cold_start),
+            retry_after: lastError?.retry_after || null,
             timeout_ms: requestedTimeoutMs,
             base_url: lastErrorUrl,
             tried_urls: baseUrls
