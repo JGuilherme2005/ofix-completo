@@ -53,9 +53,9 @@ model Oficina {
 model Cliente {
   id           String    @id @default(uuid())
   nomeCompleto String
-  cpfCnpj      String?   @unique
+  cpfCnpj      String?
   telefone     String?
-  email        String?   @unique
+  email        String?
   endereco     String?
   oficinaId    String
   createdAt    DateTime  @default(now())
@@ -63,30 +63,38 @@ model Cliente {
   oficina      Oficina   @relation(fields: [oficinaId], references: [id])
   veiculos     Veiculo[]
   servicos     Servico[]
+
+  @@unique([oficinaId, cpfCnpj])
+  @@unique([oficinaId, email])
+  @@index([oficinaId, nomeCompleto])
 }
 
 model Veiculo {
   id            String    @id @default(uuid())
-  placa         String    @unique
+  placa         String
   marca         String
   modelo        String
   anoFabricacao Int?
   anoModelo     Int?
   cor           String?
-  chassi        String?   @unique
+  chassi        String?
   kmAtual       Int?
   clienteId     String
-  oficinaId     String?
+  oficinaId     String
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   cliente       Cliente   @relation(fields: [clienteId], references: [id])
-  oficina       Oficina?  @relation(fields: [oficinaId], references: [id])
+  oficina       Oficina   @relation(fields: [oficinaId], references: [id])
   servicos      Servico[]
+
+  @@unique([oficinaId, placa])
+  @@unique([oficinaId, chassi])
+  @@index([oficinaId, clienteId])
 }
 
 model Servico {
   id                  String                      @id @default(uuid())
-  numeroOs            String                      @unique
+  numeroOs            String
   status              ServiceStatus               @default(AGUARDANDO)
   descricaoProblema   String?
   descricaoSolucao    String?
@@ -114,11 +122,14 @@ model Servico {
   itensPeca           ItemServicoPeca[]
   procedimentos       ProcedimentoPadraoServico[]
   mensagens           MensagemServico[]
+
+  @@unique([oficinaId, numeroOs])
+  @@index([oficinaId, status, dataEntrada])
 }
 
 model Peca {
   id               String            @id @default(uuid())
-  codigoInterno    String?           @unique
+  codigoInterno    String?
   codigoFabricante String?
   nome             String
   descricao        String?
@@ -136,20 +147,27 @@ model Peca {
   oficina          Oficina           @relation(fields: [oficinaId], references: [id])
   fornecedor       Fornecedor?       @relation(fields: [fornecedorId], references: [id])
   servicos         ItemServicoPeca[]
+
+  @@unique([oficinaId, codigoInterno])
+  @@index([oficinaId, nome])
 }
 
 model Fornecedor {
   id        String   @id @default(uuid())
   nome      String
-  cnpjCpf   String?  @unique
+  cnpjCpf   String?
   telefone  String?
-  email     String?  @unique
+  email     String?
   endereco  String?
   oficinaId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   oficina   Oficina  @relation(fields: [oficinaId], references: [id])
   pecas     Peca[]
+
+  @@unique([oficinaId, cnpjCpf])
+  @@unique([oficinaId, email])
+  @@index([oficinaId, nome])
 }
 
 model ItemServicoPeca {
@@ -169,7 +187,7 @@ model ItemServicoPeca {
 
 model ProcedimentoPadrao {
   id                 String                      @id @default(uuid())
-  codigo             String?                     @unique
+  codigo             String?
   nome               String
   descricao          String?
   tempoEstimadoHoras Decimal?
@@ -180,6 +198,9 @@ model ProcedimentoPadrao {
   categoria          String?                     @default("manutencao_preventiva")
   oficina            Oficina                     @relation(fields: [oficinaId], references: [id])
   servicos           ProcedimentoPadraoServico[]
+
+  @@unique([oficinaId, codigo])
+  @@index([oficinaId, nome])
 }
 
 model ProcedimentoPadraoServico {
@@ -199,7 +220,7 @@ model ProcedimentoPadraoServico {
 
 model MensagemPadrao {
   id        String   @id @default(uuid())
-  codigo    String?  @unique
+  codigo    String?
   nome      String
   template  String
   oficinaId String
@@ -207,6 +228,8 @@ model MensagemPadrao {
   updatedAt DateTime @updatedAt
   categoria String?
   oficina   Oficina  @relation(fields: [oficinaId], references: [id])
+
+  @@unique([oficinaId, codigo])
 }
 
 model MensagemServico {
