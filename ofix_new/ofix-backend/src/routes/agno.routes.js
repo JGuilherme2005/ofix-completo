@@ -551,16 +551,26 @@ const publicLimiter = rateLimit({
 router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => {
     try {
         const message = String(req.body?.message || '').trim();
-        const oficinaId = String(req.body?.oficinaId || req.query?.oficinaId || '').trim();
+        // Support both "oficinaRef" (preferred: UUID or slug) and legacy "oficinaId" (UUID).
+        const oficinaRefRaw = String(
+            req.body?.oficinaRef ||
+            req.query?.oficinaRef ||
+            req.body?.oficinaId ||
+            req.query?.oficinaId ||
+            ''
+        ).trim();
         const publicSessionId = String(req.body?.publicSessionId || req.query?.publicSessionId || '').trim();
 
-        if (!oficinaId) {
-            return res.status(400).json({ success: false, error: 'oficinaId obrigatorio' });
+        if (!oficinaRefRaw) {
+            return res.status(400).json({ success: false, error: 'oficinaRef obrigatorio' });
         }
 
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(oficinaId);
-        if (!isUuid) {
-            return res.status(400).json({ success: false, error: 'oficinaId invalido' });
+        const oficinaRef = oficinaRefRaw.toLowerCase();
+        const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        const isUuid = uuidRe.test(oficinaRef);
+        const slugRe = /^[a-z0-9][a-z0-9-]{2,63}$/;
+        if (!isUuid && !slugRe.test(oficinaRef)) {
+            return res.status(400).json({ success: false, error: 'oficinaRef invalido' });
         }
 
         if (!publicSessionId) {
@@ -571,7 +581,7 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
         }
 
         // Nao vaze a mensagem em logs (pode conter PII).
-        console.log('[CHAT-PUBLIC] request', { oficinaId, ip: req.ip });
+        console.log('[CHAT-PUBLIC] request', { oficinaRef: oficinaRef, ip: req.ip });
 
         // Se nao esta configurado, retornar status de indisponibilidade (feature publica).
         if (!AGNO_IS_CONFIGURED) {
@@ -582,15 +592,20 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
             });
         }
 
-        // Validar oficina existente (escopo obrigatorio).
+        // Validar oficina existente (escopo obrigatorio) e se esta ativa.
+        const oficinaWhere = isUuid ? { id: oficinaRef } : { slug: oficinaRef };
         const oficina = await prisma.oficina.findFirst({
-            where: { id: oficinaId },
-            select: { id: true, nome: true }
+            where: oficinaWhere,
+            select: { id: true, nome: true, slug: true, isActive: true }
         });
         if (!oficina) {
             return res.status(404).json({ success: false, error: 'Oficina nao encontrada' });
         }
+        if (!oficina.isActive) {
+            return res.status(403).json({ success: false, error: 'Oficina desativada' });
+        }
 
+        const oficinaId = oficina.id;
         // Namespacing evita colisao de memoria/cache entre oficinas.
         const userId = `public_${oficinaId}_${publicSessionId}`;
         const sessionId = `of_${oficinaId}_anon_${publicSessionId}`;
@@ -610,7 +625,7 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
             success: true,
             response: responseText,
             from_cache: Boolean(result.from_cache),
-            oficina: { id: oficina.id, nome: oficina.nome }
+            oficina: { id: oficina.id, nome: oficina.nome, slug: oficina.slug }
         });
     } catch (error) {
         console.error('[CHAT-PUBLIC] erro:', String(error?.message || error));

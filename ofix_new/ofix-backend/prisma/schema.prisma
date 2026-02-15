@@ -30,6 +30,10 @@ model User {
 model Oficina {
   id                    String               @id @default(uuid())
   nome                  String
+  // Slug publico para URLs (ex: /chat/oficina-do-ze). Opcional para manter compatibilidade.
+  slug                  String?              @unique
+  // Flag para desativar a oficina sem deletar dados (necessario para chat-public).
+  isActive              Boolean              @default(true)
   cnpj                  String?              @unique
   telefone              String?
   endereco              String?

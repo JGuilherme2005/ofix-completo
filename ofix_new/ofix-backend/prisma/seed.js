@@ -12,9 +12,15 @@ async function main() {
   // 2. Criar Oficina Matriz (se não existir)
   const oficina = await prisma.oficina.upsert({
     where: { cnpj: '00000000000100' }, // CNPJ Fictício para identificar
-    update: {},
+    update: {
+      // Mantem a seed idempotente e garante que o chat-public possa validar slug/ativo.
+      slug: 'ofix',
+      isActive: true
+    },
     create: {
       nome: 'Oficina Matriz (OFIX)',
+      slug: 'ofix',
+      isActive: true,
       cnpj: '00000000000100',
       endereco: 'Rua da Inovação, 100 - Tech City',
       telefone: '(11) 99999-9999'
