@@ -36,11 +36,22 @@ if (result.status === 0) {
 
 const combinedOutput = `${result.stdout || ''}\n${result.stderr || ''}`;
 const isP1001 = combinedOutput.includes('P1001');
+const isAdvisoryLockTimeout =
+  combinedOutput.includes('pg_advisory_lock') ||
+  combinedOutput.includes('migrate-advisory-locking') ||
+  combinedOutput.includes('Timed out trying to acquire a postgres advisory lock') ||
+  combinedOutput.includes('P1002');
 const isRenderBuild = isRender;
 
 if (isP1001 && isRenderBuild) {
   console.warn('\n[prisma-migrate-safe] P1001 durante build no Render.');
   console.warn('[prisma-migrate-safe] Build vai continuar; migracao sera aplicada no startup (npm start).');
+  process.exit(0);
+}
+
+if (isAdvisoryLockTimeout && isRenderBuild) {
+  console.warn('\n[prisma-migrate-safe] Prisma migrate travou em advisory lock (provavel pooler/pgbouncer).');
+  console.warn('[prisma-migrate-safe] Continuando sem migracao para nao travar o deploy no Render.');
   process.exit(0);
 }
 
