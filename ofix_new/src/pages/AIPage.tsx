@@ -245,6 +245,16 @@ const AIPage = () => {
     try {
       setStatusConexao('conectando');
 
+      const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeoutMs = 10000) => {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          return await fetch(url, { ...options, signal: controller.signal });
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      };
+
       // ✅ USAR HOOK useAuthHeaders
       const authHeaders = getAuthHeaders();
 
@@ -253,19 +263,19 @@ const AIPage = () => {
 
       if (warm) {
         try {
-          await fetch(`${API_BASE}/agno/warm`, {
+          await fetchWithTimeout(`${API_BASE}/agno/warm`, {
             method: 'POST',
             headers: authHeaders
-          });
+          }, 8000);
         } catch (warmError) {
           logger.warn('Falha ao aquecer Agno', { error: warmError.message });
         }
       }
 
-      const response = await fetch(`${API_BASE}/agno/status`, {
+      const response = await fetchWithTimeout(`${API_BASE}/agno/status`, {
         method: 'GET',
         headers: authHeaders
-      });
+      }, 10000);
 
       if (!response.ok) {
         setStatusConexao('erro');
@@ -275,7 +285,34 @@ const AIPage = () => {
       const data = await response.json();
       const agnoOnline = Boolean(data?.agno?.online);
 
+      const agnoHealthStatus = Number(data?.agno?.health?.status || 0) || null;
+      const isRateLimited = agnoHealthStatus === 429;
+
+      // 429 aqui significa "servico respondeu, mas esta limitado"; nao trate como offline definitivo.
+      if (isRateLimited) {
+        setStatusConexao('conectando');
+        return false;
+      }
+
       setStatusConexao(agnoOnline ? 'conectado' : 'local');
+
+      // Atualiza status da memoria quando o Agno estiver online (evita ficar preso em "Aguardando ativacao").
+      if (agnoOnline) {
+        try {
+          const memoryRes = await fetchWithTimeout(`${API_BASE}/agno/memory-status`, {
+            method: 'GET',
+            headers: authHeaders
+          }, 8000);
+
+          if (memoryRes.ok) {
+            const memoryData = await memoryRes.json();
+            setMemoriaAtiva(Boolean(memoryData?.enabled));
+          }
+        } catch (memoryError) {
+          logger.warn('Falha ao verificar memoria do Agno', { error: memoryError.message });
+        }
+      }
+
       return agnoOnline;
     } catch (error) {
       // ✅ LOGGING ESTRUTURADO
@@ -1350,7 +1387,24 @@ const AIPage = () => {
 
   // Inicializar conexão
   useEffect(() => {
-    verificarConexao();
+    let active = true;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    (async () => {
+      const online = await verificarConexao();
+
+      // Reduz falsos "Modo Local" em cold start / rate limit transient.
+      if (!online && active) {
+        retryTimer = setTimeout(() => {
+          if (active) verificarConexao({ warm: true });
+        }, 1500);
+      }
+    })();
+
+    return () => {
+      active = false;
+      if (retryTimer) clearTimeout(retryTimer);
+    };
   }, []);
 
   // Limpeza ao desmontar componente
