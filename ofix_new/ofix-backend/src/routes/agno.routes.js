@@ -56,7 +56,10 @@ const AGNO_WARM_HEALTH_TIMEOUT_MS = parsePositiveInt(process.env.AGNO_WARM_HEALT
 const AGNO_AUTO_WARMUP_ENABLED =
     String(process.env.AGNO_AUTO_WARMUP || '').trim().toLowerCase() !== 'false';
 // When waking from cold start, poll health for up to this long before giving up.
-const AGNO_WARM_MAX_WAIT_MS = parsePositiveInt(process.env.AGNO_WARM_MAX_WAIT_MS, 90000);
+// Render free tier can take >90s to wake a sleeping service; keep this generous.
+const AGNO_WARM_MAX_WAIT_MS = parsePositiveInt(process.env.AGNO_WARM_MAX_WAIT_MS, 240000);
+// Chat requests should not block too long waiting for cold-start; the frontend typically times out near ~60s.
+const AGNO_CHAT_WARM_MAX_WAIT_MS = parsePositiveInt(process.env.AGNO_CHAT_WARM_MAX_WAIT_MS, 45000);
 // Delay between warm health retries (capped in logic below).
 const AGNO_WARM_RETRY_DELAY_MS = parsePositiveInt(process.env.AGNO_WARM_RETRY_DELAY_MS, 3000);
 
@@ -745,7 +748,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
                 if (isColdStart || (!isRateLimit && (isTimeout || isServerError || isAgentNotFound || isNetworkError))) {
                     try {
                         console.warn('[AGNO_AI] Provavel cold start. Tentando aquecer e reenviar uma vez...');
-                        const warmResult = await warmAgnoService({ reason: 'chat_retry', maxWaitMs: 90000 });
+                        const warmResult = await warmAgnoService({ reason: 'chat_retry', maxWaitMs: AGNO_CHAT_WARM_MAX_WAIT_MS });
 
                         if (warmResult?.ok) {
                             responseData = await processarComAgnoAI(message, usuario_id, AGNO_DEFAULT_AGENT_ID, agentSessionId, { throwOnError: true, dependencies: { oficina_id: oficinaId, user_id: usuario_id, role: req.user?.role || null, public: false } });

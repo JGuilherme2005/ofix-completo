@@ -266,7 +266,7 @@ const AIPage = () => {
           await fetchWithTimeout(`${API_BASE}/agno/warm`, {
             method: 'POST',
             headers: authHeaders
-          }, 8000);
+          }, 120000);
         } catch (warmError) {
           logger.warn('Falha ao aquecer Agno', { error: warmError.message });
         }
