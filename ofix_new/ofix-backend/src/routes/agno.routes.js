@@ -610,8 +610,10 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
         const userId = `public_${oficinaId}_${publicSessionId}`;
         const sessionId = `of_${oficinaId}_anon_${publicSessionId}`;
 
+        // Public endpoint: never bubble upstream errors as 500 (clients tend to retry and amplify cost).
+        // We return the internal fallback message instead and let the circuit breaker protect the upstream.
         const result = await processarComAgnoAI(message, userId, AGNO_PUBLIC_AGENT_ID, sessionId, {
-            throwOnError: true,
+            throwOnError: false,
             dependencies: {
                 oficina_id: oficinaId,
                 public: true
