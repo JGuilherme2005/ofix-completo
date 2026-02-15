@@ -80,6 +80,8 @@ export default function LoginPage() {
                 ref={emailInputRef}
                 id="email"
                 type="email"
+                name="email"
+                autoComplete="email"
                 value={email}
                 onChange={handleEmailChange}
                 placeholder="seu@email.com"
@@ -95,6 +97,8 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
+                name="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Sua senha"

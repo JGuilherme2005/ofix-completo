@@ -76,32 +76,32 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                     <Label htmlFor="nomeUser">Seu Nome Completo</Label>
-                    <Input id="nomeUser" value={formData.nomeUser} onChange={handleChange} required />
+                    <Input id="nomeUser" name="nomeUser" autoComplete="name" value={formData.nomeUser} onChange={handleChange} required />
                 </div>
                 <div className="space-y-1">
                     <Label htmlFor="emailUser">Seu Email</Label>
-                    <Input id="emailUser" type="email" value={formData.emailUser} onChange={handleChange} required />
+                    <Input id="emailUser" name="emailUser" autoComplete="email" type="email" value={formData.emailUser} onChange={handleChange} required />
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                     <Label htmlFor="passwordUser">Senha</Label>
-                    <Input id="passwordUser" type="password" value={formData.passwordUser} onChange={handleChange} required />
+                    <Input id="passwordUser" name="passwordUser" autoComplete="new-password" type="password" value={formData.passwordUser} onChange={handleChange} required />
                 </div>
                 <div className="space-y-1">
                     <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-                    <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} required />
+                    <Input id="confirmPassword" name="confirmPassword" autoComplete="new-password" type="password" value={formData.confirmPassword} onChange={handleChange} required />
                 </div>
             </div>
 
             <h3 className="text-lg font-semibold text-slate-800 border-b pb-2 pt-4 mb-3">Dados da Oficina</h3>
             <div className="space-y-1">
                 <Label htmlFor="nomeOficina">Nome da Oficina</Label>
-                <Input id="nomeOficina" value={formData.nomeOficina} onChange={handleChange} required />
+                <Input id="nomeOficina" name="nomeOficina" autoComplete="organization" value={formData.nomeOficina} onChange={handleChange} required />
             </div>
              <div className="space-y-1">
                 <Label htmlFor="cnpjOficina">CNPJ da Oficina (Opcional)</Label>
-                <Input id="cnpjOficina" value={formData.cnpjOficina} onChange={handleChange} />
+                <Input id="cnpjOficina" name="cnpjOficina" value={formData.cnpjOficina} onChange={handleChange} />
             </div>
             {/* Adicionar mais campos da oficina se necessário (telefone, endereço) */}
 

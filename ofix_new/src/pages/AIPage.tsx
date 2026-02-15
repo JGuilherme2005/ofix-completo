@@ -2285,6 +2285,13 @@ const AIPage = () => {
               size="sm"
               disabled={carregando || falando}
               className={`rounded-xl ${gravando ? 'bg-red-50 border-red-300 text-red-700 hover:bg-red-100 animate-pulse' : falando ? 'bg-blue-50 border-blue-300 text-blue-400 cursor-not-allowed' : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+              aria-label={
+                gravando
+                  ? 'Parar gravação'
+                  : falando
+                  ? 'Aguardar o assistente terminar de falar'
+                  : 'Gravar mensagem de voz'
+              }
               title={gravando ? 'Parar gravação (Clique ou pressione ESC)' : falando ? 'Aguarde o assistente terminar de falar' : 'Gravar mensagem de voz (Clique para começar)'}
             >
               {gravando ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -2294,6 +2301,8 @@ const AIPage = () => {
               onClick={enviarMensagem}
               disabled={!mensagem.trim() || carregando || !podeInteragir}
               className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-xl px-6"
+              aria-label={carregando ? 'Enviando mensagem' : 'Enviar mensagem'}
+              title="Enviar mensagem"
             >
               {carregando ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
