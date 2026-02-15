@@ -9,13 +9,15 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
+    "postinstall": "prisma generate",
     "start": "npm run prisma:migrate && node src/server.js",
-    "prisma:migrate": "node scripts/prisma-migrate-safe.mjs",
-    "prisma:migrate:strict": "prisma migrate deploy",
-    "prisma:migrate:safe": "node scripts/prisma-migrate-safe.mjs",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "npm run prisma:generate && node scripts/prisma-migrate-safe.mjs",
+    "prisma:migrate:strict": "npm run prisma:generate && prisma migrate deploy",
+    "prisma:migrate:safe": "npm run prisma:migrate",
     "prisma:studio": "prisma studio",
-    "seed": "prisma db seed",
-    "start:seed": "prisma db seed && node src/server.js"
+    "seed": "npm run prisma:generate && prisma db seed",
+    "start:seed": "npm run prisma:generate && prisma db seed && node src/server.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
