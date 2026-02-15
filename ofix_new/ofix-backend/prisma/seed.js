@@ -45,7 +45,10 @@ async function main() {
   })
 
   console.log(`✅ Usuário criado/atualizado: ${admin.email}`)
-  console.log(`🔑 Senha: admin123`)
+  // Never print passwords in production logs (even if it's a dev seed account).
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`🔑 Senha: admin123`)
+  }
 }
 
 main()
