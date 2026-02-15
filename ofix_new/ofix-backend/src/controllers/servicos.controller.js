@@ -26,16 +26,16 @@ class ServicosController {
       }
 
       // Validação adicional (exemplos)
-      const clienteExists = await prisma.cliente.findUnique({ where: { id: clienteId, oficinaId } });
+      const clienteExists = await prisma.cliente.findFirst({ where: { id: clienteId, oficinaId }, select: { id: true } });
       if (!clienteExists) {
         return res.status(404).json({ error: 'Cliente não encontrado nesta oficina.' });
       }
-      const veiculoExists = await prisma.veiculo.findUnique({ where: { id: veiculoId, clienteId } }); // Garante que o veículo pertence ao cliente
+      const veiculoExists = await prisma.veiculo.findFirst({ where: { id: veiculoId, clienteId, oficinaId }, select: { id: true } }); // Garante que o veículo pertence ao cliente e oficina
       if (!veiculoExists) {
         return res.status(404).json({ error: 'Veículo não encontrado ou não pertence ao cliente informado.' });
       }
       if (responsavelId) {
-        const responsavelExists = await prisma.user.findUnique({ where: { id: responsavelId, oficinaId } });
+        const responsavelExists = await prisma.user.findFirst({ where: { id: responsavelId, oficinaId }, select: { id: true } });
         if (!responsavelExists) {
           return res.status(404).json({ error: 'Usuário responsável não encontrado nesta oficina.' });
         }
@@ -151,7 +151,7 @@ class ServicosController {
         return res.status(401).json({ error: 'Oficina não identificada.' });
       }
 
-      const servico = await prisma.servico.findUnique({
+      const servico = await prisma.servico.findFirst({
         where: { id, oficinaId }, // Garante que só busca na oficina do usuário
         include: {
           cliente: true, // Exemplo: buscar todos os dados do cliente
@@ -198,7 +198,7 @@ class ServicosController {
       const { clienteId, veiculoId, responsavelId, status, ...updateData } = req.body;
 
       // Verificar se o serviço existe e pertence à oficina
-      const servicoExistente = await prisma.servico.findUnique({
+      const servicoExistente = await prisma.servico.findFirst({
         where: { id, oficinaId },
       });
       if (!servicoExistente) {
@@ -207,17 +207,17 @@ class ServicosController {
 
       // Validações opcionais para IDs, se forem alterados
       if (clienteId && clienteId !== servicoExistente.clienteId) {
-        const clienteExists = await prisma.cliente.findUnique({ where: { id: clienteId, oficinaId } });
+        const clienteExists = await prisma.cliente.findFirst({ where: { id: clienteId, oficinaId }, select: { id: true } });
         if (!clienteExists) return res.status(404).json({ error: 'Novo cliente não encontrado.' });
         updateData.clienteId = clienteId;
       }
       if (veiculoId && veiculoId !== servicoExistente.veiculoId) {
-        const veiculoExists = await prisma.veiculo.findUnique({ where: { id: veiculoId, ...(clienteId ? { clienteId } : { clienteId: servicoExistente.clienteId }) } });
+        const veiculoExists = await prisma.veiculo.findFirst({ where: { id: veiculoId, ...(clienteId ? { clienteId } : { clienteId: servicoExistente.clienteId }), oficinaId }, select: { id: true } });
         if (!veiculoExists) return res.status(404).json({ error: 'Novo veículo não encontrado ou não pertence ao cliente.' });
         updateData.veiculoId = veiculoId;
       }
       if (responsavelId && responsavelId !== servicoExistente.responsavelId) {
-        const responsavelExists = await prisma.user.findUnique({ where: { id: responsavelId, oficinaId } });
+        const responsavelExists = await prisma.user.findFirst({ where: { id: responsavelId, oficinaId }, select: { id: true } });
         if (!responsavelExists) return res.status(404).json({ error: 'Novo responsável não encontrado.' });
         updateData.responsavelId = responsavelId;
       } else if (responsavelId === null) { // Permitir desassociar responsável
@@ -240,15 +240,24 @@ class ServicosController {
       if (updateData.dataEntregaCliente) updateData.dataEntregaCliente = new Date(updateData.dataEntregaCliente);
 
 
-      const servicoAtualizado = await prisma.servico.update({
-        where: { id, oficinaId }, // Dupla checagem de segurança
+      const updateResult = await prisma.servico.updateMany({
+        where: { id, oficinaId }, // Escopo por tenant no write
         data: updateData,
+      });
+
+      if (updateResult.count === 0) {
+        return res.status(404).json({ error: 'Serviço não encontrado para atualização.' });
+      }
+
+      const servicoAtualizado = await prisma.servico.findFirst({
+        where: { id, oficinaId },
         include: {
           cliente: { select: { id: true, nomeCompleto: true } },
           veiculo: { select: { id: true, placa: true, modelo: true } },
           responsavel: { select: { id: true, nome: true } },
-        }
+        },
       });
+
       res.json(servicoAtualizado);
     } catch (error) {
       if (error.code === 'P2002' && error.meta?.target?.includes('numeroOs')) {
@@ -275,7 +284,7 @@ class ServicosController {
       }
 
       // Antes de deletar, verificar se o serviço existe e pertence à oficina
-      const servicoExistente = await prisma.servico.findUnique({
+      const servicoExistente = await prisma.servico.findFirst({
         where: { id, oficinaId },
       });
       if (!servicoExistente) {
@@ -286,7 +295,7 @@ class ServicosController {
       // ou pode ser necessário deletar manualmente entidades relacionadas dependentes se não houver cascade.
       // Por simplicidade, aqui apenas deletamos o serviço.
 
-      await prisma.servico.delete({
+      await prisma.servico.deleteMany({
         where: { id, oficinaId },
       });
       res.status(204).send(); // Sucesso sem conteúdo

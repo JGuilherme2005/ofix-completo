@@ -194,7 +194,7 @@ class AgendamentoLocalService {
     console.log('   📅 Data/Hora:', dataHora);
 
     // 4. Cria ordem de serviço (agendamento)
-    const numeroOS = await this.gerarNumeroOS();
+    const numeroOS = await this.gerarNumeroOS(cliente.oficinaId);
     
     const agendamento = await prisma.servico.create({
       data: {
@@ -320,9 +320,20 @@ Houve um problema: ${error.message}
    * Busca ou cria cliente
    */
   async buscarOuCriarCliente(nomeCliente, userId) {
-    // Busca cliente por nome aproximado
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, oficinaId: true },
+    });
+
+    const oficinaId = user?.oficinaId;
+    if (!oficinaId) {
+      throw new Error('Usuário sem oficina vinculada');
+    }
+
+    // Busca cliente por nome aproximado (escopo por oficina)
     const clientes = await prisma.cliente.findMany({
       where: {
+        oficinaId,
         nomeCompleto: {
           contains: nomeCliente,
           mode: 'insensitive'
@@ -338,18 +349,13 @@ Houve um problema: ${error.message}
       return clientes[0];
     }
 
-    // Se não encontrou, cria novo cliente
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
-
     return await prisma.cliente.create({
       data: {
         nomeCompleto: nomeCliente,
-        oficinaId: user.oficinaId,
-        telefone: '', // Pode pedir depois
-        email: '',
-        cpfCnpj: ''
+        oficinaId,
+        telefone: null, // Pode pedir depois
+        email: null,
+        cpfCnpj: null
       },
       include: {
         veiculos: true
@@ -361,10 +367,21 @@ Houve um problema: ${error.message}
    * Busca ou cria veículo
    */
   async buscarOuCriarVeiculo(modeloVeiculo, clienteId) {
+    const cliente = await prisma.cliente.findUnique({
+      where: { id: clienteId },
+      select: { id: true, oficinaId: true },
+    });
+
+    const oficinaId = cliente?.oficinaId;
+    if (!oficinaId) {
+      throw new Error('Cliente sem oficina vinculada');
+    }
+
     // Busca veículo do cliente
     const veiculos = await prisma.veiculo.findMany({
       where: {
         clienteId: clienteId,
+        oficinaId,
         modelo: {
           contains: modeloVeiculo,
           mode: 'insensitive'
@@ -377,18 +394,13 @@ Houve um problema: ${error.message}
       return veiculos[0];
     }
 
-    // Cria novo veículo
-    const cliente = await prisma.cliente.findUnique({
-      where: { id: clienteId }
-    });
-
     return await prisma.veiculo.create({
       data: {
         modelo: modeloVeiculo,
         marca: 'A definir',
-        placa: `TEMP-${Date.now().toString().slice(-4)}`, // Placa temporária
+        placa: `TEMP-${Date.now()}`, // Placa temporária
         clienteId: clienteId,
-        oficinaId: cliente.oficinaId
+        oficinaId
       }
     });
   }
@@ -396,9 +408,9 @@ Houve um problema: ${error.message}
   /**
    * Gera número único de OS
    */
-  async gerarNumeroOS() {
+  async gerarNumeroOS(oficinaId) {
     const ano = new Date().getFullYear().toString().slice(-2);
-    const count = await prisma.servico.count();
+    const count = await prisma.servico.count({ where: { oficinaId } });
     return `OS${ano}${(count + 1).toString().padStart(4, '0')}`;
   }
 

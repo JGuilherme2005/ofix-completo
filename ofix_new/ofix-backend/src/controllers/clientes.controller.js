@@ -83,7 +83,7 @@ class ClientesController {
         return res.status(401).json({ error: "Oficina não identificada." });
       }
 
-      const cliente = await prisma.cliente.findUnique({
+      const cliente = await prisma.cliente.findFirst({
         where: { id, oficinaId },
       });
 
@@ -120,7 +120,7 @@ class ClientesController {
         return res.status(401).json({ error: "Oficina não identificada." });
       }
 
-      const clienteExistente = await prisma.cliente.findUnique({
+      const clienteExistente = await prisma.cliente.findFirst({
         where: { id, oficinaId },
       });
 
@@ -140,10 +140,21 @@ class ClientesController {
       if (email !== undefined) updateData.email = email;
       if (endereco !== undefined) updateData.endereco = endereco;
 
-      const clienteAtualizado = await prisma.cliente.update({
+      const updateResult = await prisma.cliente.updateMany({
         where: { id, oficinaId },
         data: updateData,
       });
+
+      if (updateResult.count === 0) {
+        return res
+          .status(404)
+          .json({ error: "Cliente não encontrado para atualização." });
+      }
+
+      const clienteAtualizado = await prisma.cliente.findFirst({
+        where: { id, oficinaId },
+      });
+
       res.json(clienteAtualizado);
     } catch (error) {
       if (error.code === "P2002" && error.meta?.target?.includes("cpfCnpj")) {
@@ -169,12 +180,9 @@ class ClientesController {
         return res.status(401).json({ error: "Oficina não identificada." });
       }
 
-      const clienteExistente = await prisma.cliente.findUnique({
+      const clienteExistente = await prisma.cliente.findFirst({
         where: { id, oficinaId },
-        include: {
-          veiculos: true,
-          servicos: true,
-        },
+        select: { id: true },
       });
 
       if (!clienteExistente) {
@@ -186,21 +194,17 @@ class ClientesController {
       // Usar transação para garantir que tudo seja excluído ou nada seja excluído
       await prisma.$transaction(async (tx) => {
         // Primeiro, excluir todos os serviços relacionados
-        if (clienteExistente.servicos.length > 0) {
-          await tx.servico.deleteMany({
-            where: { clienteId: id },
-          });
-        }
+        await tx.servico.deleteMany({
+          where: { clienteId: id, oficinaId },
+        });
 
         // Depois, excluir todos os veículos relacionados
-        if (clienteExistente.veiculos.length > 0) {
-          await tx.veiculo.deleteMany({
-            where: { clienteId: id },
-          });
-        }
+        await tx.veiculo.deleteMany({
+          where: { clienteId: id, oficinaId },
+        });
 
         // Por fim, excluir o cliente
-        await tx.cliente.delete({
+        await tx.cliente.deleteMany({
           where: { id, oficinaId },
         });
       });
@@ -253,8 +257,9 @@ class ClientesController {
         });
       }
 
-      const clienteExists = await prisma.cliente.findUnique({
+      const clienteExists = await prisma.cliente.findFirst({
         where: { id: clienteId, oficinaId },
+        select: { id: true },
       });
 
       if (!clienteExists) {
