@@ -20,7 +20,14 @@ class CacheService {
         }
 
         console.log('🔌 [CACHE] Inicializando serviço de cache...');
-        console.log(`🔌 [CACHE] URL: ${redisUrl.substring(0, 30)}...`);
+        let redisSafe = '[unparsed]';
+        try {
+            const u = new URL(redisUrl);
+            redisSafe = `${u.protocol}//${u.hostname}${u.port ? `:${u.port}` : ''}`;
+        } catch {
+            // ignore
+        }
+        console.log(`[CACHE] URL: ${redisSafe}`);
 
         this.client = createClient({
             url: redisUrl,

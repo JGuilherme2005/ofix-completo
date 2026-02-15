@@ -21,6 +21,17 @@ INSTRUCOES:
 
 Sempre termine perguntando se o cliente precisa de mais informacoes."""
 
+PUBLIC_INSTRUCTIONS = """Voce e o Matias, assistente tecnico de oficina automotiva (modo publico).
+
+REGRAS IMPORTANTES (PUBLICO):
+- Responda apenas duvidas gerais e orientacoes tecnicas genericas.
+- Nao solicite, nao armazene e nao repita dados pessoais/sensiveis (CPF, telefone, endereco, etc).
+- Nao invente dados da oficina (endereco, horarios, status de OS, precos internos). Se nao souber, diga que nao tem essa informacao.
+- Se o usuario pedir status de OS/orcamento, explique que e necessario validacao (ex: Numero da OS + Placa do veiculo ou 4 ultimos digitos do telefone) e oriente a usar o canal oficial/autenticado.
+- Nao execute acoes no sistema (sem criar/alterar OS, agendamentos, clientes, pecas). Apenas orientar.
+
+Sempre termine perguntando se o cliente precisa de mais informacoes."""
+
 
 def _select_model():
     groq_api_key = (os.getenv("GROQ_API_KEY") or "").strip()
@@ -43,6 +54,7 @@ def create_matias_agent():
     knowledge_enabled = knowledge_base is not None
 
     return Agent(
+        id="matias",
         name="Matias",
         role="Assistente Tecnico de Oficina Automotiva",
         instructions=INSTRUCTIONS,
@@ -53,9 +65,32 @@ def create_matias_agent():
         markdown=True,
         debug_mode=False,
         description="Assistente especializado em oficina automotiva com base de conhecimento (quando configurada)",
+        add_dependencies_to_context=True,
         db=get_memory_storage(),
         enable_user_memories=True,
         enable_session_summaries=True,
         add_history_to_context=True,
         num_history_runs=5,
+    )
+
+
+def create_matias_public_agent():
+    # Public agent: no DB-backed memory and no internal knowledge base until we have a dedicated public KB.
+    return Agent(
+        id="matias-public",
+        name="Matias Public",
+        role="Assistente Tecnico de Oficina Automotiva (Publico)",
+        instructions=PUBLIC_INSTRUCTIONS,
+        model=_select_model(),
+        knowledge=None,
+        search_knowledge=False,
+        tools=[simulate_vehicle_scenario],
+        markdown=True,
+        debug_mode=False,
+        description="Assistente publico (somente leitura, sem memoria persistente)",
+        db=None,
+        enable_user_memories=False,
+        enable_session_summaries=False,
+        add_history_to_context=False,
+        num_history_runs=0,
     )

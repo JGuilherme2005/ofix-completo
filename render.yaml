@@ -20,6 +20,10 @@ services:
         sync: false # Usuário deve configurar no painel
       - key: AGNO_API_URL
         value: http://matias-agno:7777
+      - key: AGNO_API_TOKEN
+        sync: false # Deve ser o MESMO valor de OS_SECURITY_KEY no servico matias-agno
+      - key: AGNO_PUBLIC_AGENT_ID
+        value: matias-public
       - key: JWT_SECRET
         sync: false # Gere uma senha segura e coloque aqui
 
@@ -33,9 +37,13 @@ services:
     envVars:
       - key: PORT
         value: 7777
+      - key: OS_SECURITY_KEY
+        sync: false # Obrigatorio em producao (AgentOS exige Authorization: Bearer <OS_SECURITY_KEY>)
       - key: OPENAI_API_KEY
         sync: false
       - key: GROQ_API_KEY
+        sync: false
+      - key: HF_TOKEN
         sync: false
       - key: OLLAMA_ENABLED
         value: true

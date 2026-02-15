@@ -15,6 +15,10 @@ class Application {
   }
 
   setupMiddlewares() {
+    // Trust proxy para obter IP real (necessario para rate limiting e logs)
+    // Precisa vir antes de qualquer middleware que use req.ip.
+    this.server.set('trust proxy', 1);
+
     // Middlewares de segurança (aplicados primeiro)
     this.server.use(securityHeaders);
     
@@ -22,10 +26,6 @@ class Application {
     if (process.env.NODE_ENV === 'production') {
       this.server.use(rateLimit);
     }
-
-    // Trust proxy para obter IP real (necessário para rate limiting)
-    this.server.set('trust proxy', 1);
-
     // --- INÍCIO DA CORREÇÃO DO CORS ---
 
     // 1. Defina quais "origens" (sites) têm permissão para acessar sua API

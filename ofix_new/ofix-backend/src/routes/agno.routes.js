@@ -1,8 +1,8 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
-import jwt from 'jsonwebtoken';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import { protectRoute } from '../middlewares/auth.middleware.js';
 
 // Importar serviÃ§os do Matias
 import ConversasService from '../services/conversas.service.js';
@@ -39,6 +39,7 @@ const AGNO_BASE_URLS = [
 const AGNO_BASE_URL = AGNO_BASE_URLS[0] || '';
 const AGNO_API_TOKEN = (process.env.AGNO_API_TOKEN || '').trim();
 const AGNO_DEFAULT_AGENT_ID = (process.env.AGNO_DEFAULT_AGENT_ID || 'matias').trim();
+const AGNO_PUBLIC_AGENT_ID = (process.env.AGNO_PUBLIC_AGENT_ID || 'matias-public').trim();
 const AGNO_IS_CONFIGURED = AGNO_BASE_URLS.length > 0;
 
 function parsePositiveInt(value, fallback) {
@@ -152,6 +153,8 @@ function shouldRetryWithNextBase(errorOrStatus) {
 
     const message = String(errorOrStatus?.message || '').toLowerCase();
     return (
+        errorOrStatus?.name === 'AbortError' ||
+        message.includes('aborted') ||
         message.includes('econnrefused') ||
         message.includes('enotfound') ||
         message.includes('timed out') ||
@@ -447,7 +450,7 @@ router.get('/config', async (req, res) => {
 });
 
 // Endpoint para aquecer o serviÃ§o Agno (Ãºtil para evitar cold starts)
-router.post('/warm', async (req, res) => {
+router.post('/warm', verificarAuth, async (req, res) => {
     try {
         console.log('ðŸ”¥ RequisiÃ§Ã£o de warming do Agno...');
 
@@ -547,75 +550,71 @@ const publicLimiter = rateLimit({
 // Endpoint pÃºblico para testar chat SEM AUTENTICAÃ‡ÃƒO (com rate limit e cache)
 router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => {
     try {
-        const { message } = req.body;
+        const message = String(req.body?.message || '').trim();
+        const oficinaId = String(req.body?.oficinaId || req.query?.oficinaId || '').trim();
+        const publicSessionId = String(req.body?.publicSessionId || req.query?.publicSessionId || '').trim();
 
-        console.log('ðŸ§ª Teste pÃºblico do chat - ConfiguraÃ§Ã£o:', {
-            agno_url: AGNO_BASE_URL || null,
-            agno_urls: AGNO_BASE_URLS,
-            configured: AGNO_IS_CONFIGURED,
-            message: message.substring(0, 50) + '...'
-        });
+        if (!oficinaId) {
+            return res.status(400).json({ success: false, error: 'oficinaId obrigatorio' });
+        }
 
-        // Se nÃ£o estÃ¡ configurado, retornar resposta de demonstraÃ§Ã£o
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(oficinaId);
+        if (!isUuid) {
+            return res.status(400).json({ success: false, error: 'oficinaId invalido' });
+        }
+
+        if (!publicSessionId) {
+            return res.status(400).json({ success: false, error: 'publicSessionId obrigatorio' });
+        }
+        if (!/^[a-zA-Z0-9_-]{8,64}$/.test(publicSessionId)) {
+            return res.status(400).json({ success: false, error: 'publicSessionId invalido' });
+        }
+
+        // Nao vaze a mensagem em logs (pode conter PII).
+        console.log('[CHAT-PUBLIC] request', { oficinaId, ip: req.ip });
+
+        // Se nao esta configurado, retornar status de indisponibilidade (feature publica).
         if (!AGNO_IS_CONFIGURED) {
-            return res.json({
-                success: true,
-                response: `ðŸ¤– **Modo DemonstraÃ§Ã£o Ativado**\n\nVocÃª disse: "${message}"\n\nðŸ“‹ **Status**: Agente Matias nÃ£o configurado no ambiente de produÃ§Ã£o.\n\nâš™ï¸ **ConfiguraÃ§Ã£o necessÃ¡ria no Render:**\n- AGNO_API_URL=https://matias-agno-r556.onrender.com\n- AGNO_DEFAULT_AGENT_ID=matias\n\nðŸ’¡ ApÃ³s configurar, o assistente conectarÃ¡ com seu agente real!`,
-                mode: 'demo',
-                agno_configured: false
+            return res.status(503).json({
+                success: false,
+                error: 'Assistente indisponivel',
+                message: 'Assistente ainda nao esta configurado neste ambiente.'
             });
         }
 
-        // Usar processarComAgnoAI para se beneficiar do cache
-        console.log('ðŸ”Œ Processando com cache habilitado...');
-
-        try {
-            const result = await processarComAgnoAI(message, 'test_user', AGNO_DEFAULT_AGENT_ID, null);
-
-            const responseTextRaw = result.response || result.content || result.message || 'Resposta do agente Matias';
-            const responseText = normalizarTextoResposta(responseTextRaw);
-
-            console.log(`âœ… Sucesso na comunicaÃ§Ã£o com Agno ${result.from_cache ? '(CACHE)' : '(API)'}`);
-
-            res.json({
-                success: true,
-                response: responseText,
-                mode: 'production',
-                agno_configured: true,
-                from_cache: result.from_cache || false,
-                metadata: result
-            });
-        } catch (agnoError) {
-            console.error('âŒ Erro ao conectar com Agno:', agnoError.message);
-
-            // FALLBACK: Resposta inteligente baseada na mensagem
-            let fallbackResponse;
-            const msgLower = message.toLowerCase();
-
-            if (msgLower.includes('serviÃ§o') || msgLower.includes('problema') || msgLower.includes('carro')) {
-                fallbackResponse = `ðŸ”§ **Assistente OFIX**\n\nVocÃª mencionou: "${message}"\n\n**Posso ajudar com:**\nâ€¢ DiagnÃ³stico de problemas automotivos\nâ€¢ InformaÃ§Ãµes sobre serviÃ§os\nâ€¢ Consulta de peÃ§as\nâ€¢ Agendamento de manutenÃ§Ã£o\n\n*âš ï¸ Agente Matias temporariamente indisponÃ­vel. Respondendo em modo local.*`;
-            } else if (msgLower.includes('preÃ§o') || msgLower.includes('valor') || msgLower.includes('custo')) {
-                fallbackResponse = `ðŸ’° **Consulta de PreÃ§os**\n\nPara "${message}":\n\n**ServiÃ§os populares:**\nâ€¢ Troca de Ã³leo: R$ 80-120\nâ€¢ RevisÃ£o completa: R$ 200-400\nâ€¢ DiagnÃ³stico: R$ 50-100\n\n*ðŸ’¡ Para valores exatos, consulte nossa equipe.*`;
-            } else {
-                fallbackResponse = `ðŸ¤– **OFIX Assistant**\n\nOlÃ¡! VocÃª disse: "${message}"\n\n**Como posso ajudar:**\nâ€¢ Problemas no veÃ­culo\nâ€¢ InformaÃ§Ãµes sobre serviÃ§os\nâ€¢ Consultas de peÃ§as\nâ€¢ Agendamentos\n\n*ðŸ”„ Tentando reconectar com agente principal...*`;
-            }
-
-            res.json({
-                success: true,
-                response: normalizarTextoResposta(fallbackResponse),
-                mode: 'fallback',
-                agno_configured: true,
-                agno_error: agnoError.message
-            });
-        }
-    } catch (mainError) {
-        console.error('âŒ Erro geral no teste pÃºblico:', mainError.message);
-        res.status(500).json({
-            error: 'Erro interno',
-            message: mainError.message,
-            agno_url: AGNO_BASE_URL || null,
-            agno_urls: AGNO_BASE_URLS
+        // Validar oficina existente (escopo obrigatorio).
+        const oficina = await prisma.oficina.findFirst({
+            where: { id: oficinaId },
+            select: { id: true, nome: true }
         });
+        if (!oficina) {
+            return res.status(404).json({ success: false, error: 'Oficina nao encontrada' });
+        }
+
+        // Namespacing evita colisao de memoria/cache entre oficinas.
+        const userId = `public_${oficinaId}_${publicSessionId}`;
+        const sessionId = `of_${oficinaId}_anon_${publicSessionId}`;
+
+        const result = await processarComAgnoAI(message, userId, AGNO_PUBLIC_AGENT_ID, sessionId, {
+            throwOnError: true,
+            dependencies: {
+                oficina_id: oficinaId,
+                public: true
+            }
+        });
+
+        const responseTextRaw = result.response || result.content || result.message || 'Resposta do assistente';
+        const responseText = normalizarTextoResposta(responseTextRaw);
+
+        return res.json({
+            success: true,
+            response: responseText,
+            from_cache: Boolean(result.from_cache),
+            oficina: { id: oficina.id, nome: oficina.nome }
+        });
+    } catch (error) {
+        console.error('[CHAT-PUBLIC] erro:', String(error?.message || error));
+        return res.status(500).json({ success: false, error: 'Erro interno' });
     }
 });
 
@@ -629,6 +628,8 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
 
         const usuario_id = req.user?.id || req.user?.userId;
         const oficinaId = req.user?.oficinaId;
+
+        const agentSessionId = `of_${oficinaId}_user_${usuario_id}`;
 
         if (!usuario_id || !oficinaId) {
             return res.status(401).json({
@@ -647,7 +648,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
         // Track activity for warmup logic (prevents constant warming due to stale lastActivity).
         lastActivity = Date.now();
 
-        console.log('ðŸ’¬ [CHAT-INTELIGENTE] Nova mensagem:', message.substring(0, 80) + '...');
+                console.log('[CHAT-INTELIGENTE] Nova mensagem (len):', message.length);
         console.log('ðŸŽ¯ Usuario ID:', usuario_id);
         console.log('ðŸŽ¯ Contexto ativo:', contexto_ativo);
 
@@ -686,7 +687,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
             console.log('ðŸ§  [AGNO_AI] Enviando para Agno AI...');
 
             try {
-                responseData = await processarComAgnoAI(message, usuario_id, 'matias', null, { throwOnError: true });
+                responseData = await processarComAgnoAI(message, usuario_id, AGNO_DEFAULT_AGENT_ID, agentSessionId, { throwOnError: true, dependencies: { oficina_id: oficinaId, user_id: usuario_id, role: req.user?.role || null, public: false } });
 
                 const duration = Date.now() - startTime;
                 console.log(`âœ… [AGNO_AI] Processado em ${duration}ms`);
@@ -726,7 +727,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
                         const warmResult = await warmAgnoService({ reason: 'chat_retry', maxWaitMs: 60000 });
 
                         if (warmResult?.ok) {
-                            responseData = await processarComAgnoAI(message, usuario_id, 'matias', null, { throwOnError: true });
+                            responseData = await processarComAgnoAI(message, usuario_id, AGNO_DEFAULT_AGENT_ID, agentSessionId, { throwOnError: true, dependencies: { oficina_id: oficinaId, user_id: usuario_id, role: req.user?.role || null, public: false } });
 
                             const retryDuration = Date.now() - startTime;
                             console.log(`✅ [AGNO_AI] Reprocessado apos warm em ${retryDuration}ms`);
@@ -2112,19 +2113,7 @@ router.get('/contexto-sistema', async (req, res) => {
 
 // Middleware para verificar autenticaÃ§Ã£o
 function verificarAuth(req, res, next) {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-
-    if (!token) {
-        return res.status(401).json({ error: 'Token de autenticaÃ§Ã£o necessÃ¡rio' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        return res.status(401).json({ error: 'Token invÃ¡lido' });
-    }
+    return protectRoute(req, res, next);
 }
 
 // Health check do agente Agno
@@ -2229,13 +2218,20 @@ router.post('/chat', verificarAuth, async (req, res) => {
         lastActivity = Date.now();
 
         // Verificar se temos user_id vÃ¡lido
-        const userId = req.user?.id || req.user?.userId || 'anonymous';
-        const agentId = agent_id || 'matias'; // Usar matias por padrÃ£o, mas permitir override
+        const userId = req.user?.id || req.user?.userId;
+        const oficinaId = req.user?.oficinaId;
+
+        if (!userId || !oficinaId) {
+            return res.status(401).json({ error: 'Usuario nao autenticado ou sem oficina vinculada' });
+        }
+
+        const sessionIdScoped = `of_${oficinaId}_user_${userId}`;
+        const agentId = AGNO_DEFAULT_AGENT_ID;
 
         console.log('ðŸ’¬ [CHAT] Nova mensagem recebida:', {
             user: req.user.email,
             user_id: userId,
-            message: message.substring(0, 100) + '...'
+            message_len: message.length
         });
 
         // â­ NOVA ARQUITETURA MULTI-AGENTE
@@ -2286,7 +2282,7 @@ router.post('/chat', verificarAuth, async (req, res) => {
             console.log('ðŸ§  [AGNO_AI] Enviando para Agno AI...');
             const startTime = Date.now();
 
-            responseData = await processarComAgnoAI(message, userId, agentId, session_id);
+            responseData = await processarComAgnoAI(message, userId, agentId, sessionIdScoped, { dependencies: { oficina_id: oficinaId, user_id: userId, role: req.user?.role || null, public: false } });
 
             const duration = Date.now() - startTime;
             console.log(`âœ… [AGNO_AI] Processado em ${duration}ms`);
@@ -2456,12 +2452,23 @@ function normalizarTextoResposta(texto) {
  * âœ… Middleware de validaÃ§Ã£o de mensagens
  */
 function validateMessage(req, res, next) {
-    const { message } = req.body;
+    const raw = req.body?.message;
+    const message = typeof raw === 'string' ? raw.trim() : '';
 
-    if (!message?.trim()) {
-        return res.status(400).json({ error: 'Mensagem obrigatÃ³ria' });
+    if (!message) {
+        return res.status(400).json({ error: 'Mensagem obrigatoria' });
     }
 
+    const maxDefault = parsePositiveInt(process.env.AGNO_MAX_MESSAGE_CHARS, 1000);
+    const maxPublic = parsePositiveInt(process.env.AGNO_PUBLIC_MAX_MESSAGE_CHARS, Math.min(500, maxDefault));
+    const max = req.path === '/chat-public' ? maxPublic : maxDefault;
+
+    if (message.length > max) {
+        return res.status(413).json({ error: 'Mensagem muito longa', max_chars: max });
+    }
+
+    // Normalize message for downstream handlers.
+    req.body.message = message;
     next();
 }
 
@@ -2777,6 +2784,14 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
             form.append('stream', 'false'); // force JSON response (non-streaming)
             form.append('session_id', sessionId);
             form.append('user_id', agnoUserId);
+
+            if (options?.dependencies && typeof options.dependencies === 'object') {
+                try {
+                    form.append('dependencies', JSON.stringify(options.dependencies));
+                } catch (_) {
+                    // ignore invalid dependencies
+                }
+            }
 
             const response = await fetch(endpoint, {
                 method: 'POST',

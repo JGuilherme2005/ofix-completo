@@ -6,23 +6,38 @@ from fastapi.middleware.cors import CORSMiddleware
 # Carregar variáveis de ambiente ANTES de importar outros módulos
 load_dotenv()
 
-from matias_agno.agents.matias import create_matias_agent
-from matias_agno.agents.matias_ollama import create_matias_ollama_agent
+from matias_agno.agents.matias import create_matias_agent, create_matias_public_agent
+from matias_agno.agents.matias_ollama import create_matias_ollama_agent, create_matias_ollama_public_agent
 from matias_agno.api import router as ofix_router, set_agent
 
 # Configuração de Agente
 use_ollama = os.getenv("OLLAMA_ENABLED", "false").lower() == "true"
 
+# Hardening: AgentOS becomes publicly accessible when OS_SECURITY_KEY is missing.
+# Fail fast unless explicitly allowed for local development.
+allow_insecure = os.getenv("ALLOW_INSECURE_AGENTOS", "false").lower() == "true"
+os_security_key = (os.getenv("OS_SECURITY_KEY") or "").strip()
+if not os_security_key:
+    if allow_insecure:
+        print("[security] WARNING: OS_SECURITY_KEY not set; AgentOS auth is DISABLED (ALLOW_INSECURE_AGENTOS=true).")
+    else:
+        raise RuntimeError(
+            "OS_SECURITY_KEY is required to run AgentOS securely. "
+            "Set OS_SECURITY_KEY (recommended) or set ALLOW_INSECURE_AGENTOS=true only for local development."
+        )
+
 if use_ollama:
     print("🔄 Modo: OLLAMA (Remoto)")
     matias = create_matias_ollama_agent()
+    matias_public = create_matias_ollama_public_agent()
 else:
     print("🔄 Modo: PREDEFINIDO (HuggingFace)")
     matias = create_matias_agent()
+    matias_public = create_matias_public_agent()
 
 # Configurar AgentOS
 agent_os = AgentOS(
-    agents=[matias],
+    agents=[matias, matias_public],
     description="OFIX - Assistente AI Especializado em Oficina Automotiva com Memória",
 )
 

@@ -52,6 +52,7 @@ def create_matias_ollama_agent():
     ollama_client = OllamaClient(host=ollama_host)
     
     return Agent(
+        id="matias",
         name="Matias (Ollama)",
         role="Assistente Técnico de Oficina Automotiva",
         instructions=INSTRUCTIONS,
@@ -73,6 +74,7 @@ def create_matias_ollama_agent():
         markdown=True,
         debug_mode=False,
         description="Assistente especializado em oficina automotiva rodando via Ollama Remoto",
+        add_dependencies_to_context=True,
         
         # Sistema de Memória (Restaurado com tabela v3)
         # O argumento correto para essa versão é 'db' (conforme código original)
@@ -80,4 +82,36 @@ def create_matias_ollama_agent():
         db=get_memory_storage(),
         add_history_to_context=True,
         num_history_runs=5,
+    )
+
+
+def create_matias_ollama_public_agent():
+    # Public agent: no DB-backed memory and no internal knowledge base until we have a dedicated public KB.
+    ollama_host = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    ollama_client = OllamaClient(host=ollama_host)
+
+    return Agent(
+        id="matias-public",
+        name="Matias Public (Ollama)",
+        role="Assistente Tecnico de Oficina Automotiva (Publico)",
+        instructions=INSTRUCTIONS,
+        model=Ollama(
+            id="qwen2.5:7b",
+            client=ollama_client,
+            options={
+                "temperature": 0.3,
+                "repeat_penalty": 1.1,
+                "top_p": 0.9,
+                "stop": ["<|im_end|>", "<|im_start|>", "<|endoftext|>"],
+            },
+        ),
+        knowledge=None,
+        search_knowledge=False,
+        tools=[simulate_vehicle_scenario],
+        markdown=True,
+        debug_mode=False,
+        description="Assistente publico (somente leitura, sem memoria persistente)",
+        db=None,
+        add_history_to_context=False,
+        num_history_runs=0,
     )
