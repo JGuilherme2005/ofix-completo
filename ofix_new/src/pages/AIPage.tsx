@@ -285,15 +285,6 @@ const AIPage = () => {
       const data = await response.json();
       const agnoOnline = Boolean(data?.agno?.online);
 
-      const agnoHealthStatus = Number(data?.agno?.health?.status || 0) || null;
-      const isRateLimited = agnoHealthStatus === 429;
-
-      // 429 aqui significa "servico respondeu, mas esta limitado"; nao trate como offline definitivo.
-      if (isRateLimited) {
-        setStatusConexao('conectando');
-        return false;
-      }
-
       setStatusConexao(agnoOnline ? 'conectado' : 'local');
 
       // Atualiza status da memoria quando o Agno estiver online (evita ficar preso em "Aguardando ativacao").
