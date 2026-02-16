@@ -241,9 +241,9 @@ const AIPage = () => {
   }, [conversas]);
 
   // Verificar status da conexão com Agno
-  const verificarConexao = async ({ warm = false } = {}) => {
+  const verificarConexao = async ({ warm = false, silent = false } = {}) => {
     try {
-      setStatusConexao('conectando');
+      if (!silent) setStatusConexao('conectando');
 
       const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeoutMs = 10000) => {
         const controller = new AbortController();
@@ -278,7 +278,8 @@ const AIPage = () => {
       }, 10000);
 
       if (!response.ok) {
-        setStatusConexao('erro');
+        if (!silent) setStatusConexao('erro');
+        else setStatusConexao('local');
         return false;
       }
 
@@ -312,8 +313,12 @@ const AIPage = () => {
         apiBase: getApiBaseUrl(),
         context: 'verificarConexao'
       });
-      setStatusConexao('erro');
-      showToast('Erro ao conectar com o agente', 'error');
+      if (!silent) {
+        setStatusConexao('erro');
+        showToast('Erro ao conectar com o agente', 'error');
+      } else {
+        setStatusConexao('local');
+      }
       return false;
     }
   };
@@ -1397,6 +1402,32 @@ const AIPage = () => {
       if (retryTimer) clearTimeout(retryTimer);
     };
   }, []);
+
+  // Se o Agno acordar logo depois de cair em "Modo Local", fazemos um polling leve (sem toasts)
+  // para voltar a "Matias Online" automaticamente, sem exigir outro clique em "Reconectar".
+  useEffect(() => {
+    if (statusConexao !== 'local') return;
+
+    let active = true;
+    let polls = 0;
+    const maxPolls = 12; // ~3 min (12 * 15s)
+    const intervalMs = 15000;
+
+    const intervalId = window.setInterval(async () => {
+      polls += 1;
+      const online = await verificarConexao({ silent: true });
+
+      if (!active) return;
+      if (online || polls >= maxPolls) {
+        window.clearInterval(intervalId);
+      }
+    }, intervalMs);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, [statusConexao]);
 
   // Limpeza ao desmontar componente
   // Atalhos de teclado
