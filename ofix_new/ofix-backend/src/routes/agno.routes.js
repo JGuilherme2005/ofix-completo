@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
@@ -416,7 +416,7 @@ async function warmAgnoService({ reason = 'manual', maxWaitMs = AGNO_WARM_MAX_WA
 }
 
 // Endpoint pÃºblico para verificar configuraÃ§Ã£o do Agno
-router.get('/config', verificarAuth, async (req, res) => {
+router.get('/config', protectRoute, async (req, res) => {
     try {
 
         const memoryEnabled = process.env.AGNO_ENABLE_MEMORY === 'true' && AGNO_IS_CONFIGURED;
@@ -425,7 +425,7 @@ router.get('/config', verificarAuth, async (req, res) => {
             configured: AGNO_IS_CONFIGURED,
             // M1-SEC-06: agno_url/agno_urls removed
             has_token: !!AGNO_API_TOKEN,
-            agent_id: AGNO_DEFAULT_AGENT_ID,
+            // M1-SEC-05: agent_id removido (info leak)
             warmed: agnoWarmed,
             memory_enabled: memoryEnabled, // â† NOVO: indica se memÃ³ria estÃ¡ ativa
             last_warming: lastWarmingAttempt ? new Date(lastWarmingAttempt).toISOString() : null,
@@ -436,13 +436,13 @@ router.get('/config', verificarAuth, async (req, res) => {
         console.error('âŒ Erro ao verificar configuraÃ§Ã£o:', error.message);
         res.status(500).json({
             error: 'Erro ao verificar configuraÃ§Ã£o',
-            ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            // M1-SEC-05: details removido (info leak)
         });
     }
 });
 
 // Endpoint para aquecer o serviÃ§o Agno (Ãºtil para evitar cold starts)
-router.post('/warm', verificarAuth, async (req, res) => {
+router.post('/warm', protectRoute, warmLimiter, async (req, res) => {
     try {
         console.log('ðŸ”¥ RequisiÃ§Ã£o de warming do Agno...');
 
@@ -459,13 +459,13 @@ router.post('/warm', verificarAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erro ao aquecer serviÃ§o',
-            ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            // M1-SEC-05: details removido (info leak)
         });
     }
 });
 
 // Endpoint autenticado para status consolidado (backend + Agno health)
-router.get('/status', verificarAuth, async (req, res) => {
+router.get('/status', protectRoute, async (req, res) => {
     const base = {
         success: true,
         backend: { ok: true },
@@ -473,7 +473,7 @@ router.get('/status', verificarAuth, async (req, res) => {
             configured: AGNO_IS_CONFIGURED,
             online: false,
             status: AGNO_IS_CONFIGURED ? 'unknown' : 'not_configured',
-            agent_id: AGNO_DEFAULT_AGENT_ID,
+            // M1-SEC-05: agent_id removido (info leak)
             warmed: agnoWarmed,
             last_warming: lastWarmingAttempt ? new Date(lastWarmingAttempt).toISOString() : null,
             last_activity: lastActivity ? new Date(lastActivity).toISOString() : null,
@@ -528,6 +528,16 @@ const publicLimiter = rateLimit({
 });
 
 // Endpoint pÃºblico para testar chat SEM AUTENTICAÃ‡ÃƒO (com rate limit e cache)
+
+// M1-SEC-05: Rate limiter para /warm (previne spam de warming)
+const warmLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 2,
+    message: { error: 'Warm muito frequente. Aguarde 1 minuto.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req, res) => ipKeyGenerator(req, res),
+});
 router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => {
     try {
         const message = String(req.body?.message || '').trim();
@@ -619,7 +629,7 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
 // ðŸ¤– CHAT INTELIGENTE - PROCESSAMENTO DE LINGUAGEM NATURAL
 // ============================================================
 
-router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res) => {
+router.post('/chat-inteligente', protectRoute, validateMessage, async (req, res) => {
     try {
         const { message, contexto_ativo } = req.body;
 
@@ -828,7 +838,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
         return res.status(500).json({
             success: false,
             error: 'Erro ao processar mensagem',
-            ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            // M1-SEC-05: details removido (info leak)
         });
     }
 });
@@ -837,7 +847,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
 // ðŸ“œ HISTÃ“RICO DE CONVERSAS
 // ============================================================
 
-router.get('/historico-conversa', verificarAuth, async (req, res) => {
+router.get('/historico-conversa', protectRoute, async (req, res) => {
     try {
         const requestUserId = req.user?.id || req.user?.userId;
         const requestOficinaId = req.user?.oficinaId;
@@ -894,7 +904,7 @@ router.get('/historico-conversa', verificarAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erro ao recuperar historico',
-            ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            // M1-SEC-05: details removido (info leak)
         });
     }
 });
@@ -1835,7 +1845,7 @@ ${dados.email ? `**Email:** ${dados.email}` : '? Email (opcional)'}
 // ============================================================
 
 // Endpoint para o Agno consultar Ordens de ServiÃ§o
-router.post('/consultar-os', verificarAuth, async (req, res) => {
+router.post('/consultar-os', protectRoute, async (req, res) => {
     try {
         const { veiculo, proprietario, status, periodo } = req.body;
         const oficinaId = req.user?.oficinaId;
@@ -1881,7 +1891,7 @@ router.post('/consultar-os', verificarAuth, async (req, res) => {
 });
 
 // Endpoint para o Agno agendar serviÃ§os
-router.post('/agendar-servico', verificarAuth, async (req, res) => {
+router.post('/agendar-servico', protectRoute, async (req, res) => {
     try {
         const { cliente, veiculo, servico, data_hora, descricao } = req.body;
         const oficinaId = req.user?.oficinaId;
@@ -1939,7 +1949,7 @@ router.post('/agendar-servico', verificarAuth, async (req, res) => {
 });
 
 // Endpoint para o Agno consultar estatÃ­sticas
-router.get('/estatisticas', verificarAuth, async (req, res) => {
+router.get('/estatisticas', protectRoute, async (req, res) => {
     try {
         const { periodo = '30_dias' } = req.query;
         const oficinaId = req.user?.oficinaId;
@@ -1980,7 +1990,7 @@ router.get('/estatisticas', verificarAuth, async (req, res) => {
 });
 
 // Endpoint para o Agno salvar conversas
-router.post('/salvar-conversa', verificarAuth, async (req, res) => {
+router.post('/salvar-conversa', protectRoute, async (req, res) => {
     try {
         const { usuario_id, mensagem, resposta, contexto } = req.body;
         const requestUserId = req.user?.id || req.user?.userId;
@@ -2034,13 +2044,13 @@ router.post('/salvar-conversa', verificarAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erro ao salvar conversa',
-            ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            // M1-SEC-05: details removido (info leak)
         });
     }
 });
 
 // Endpoint para o Agno recuperar histÃ³rico de conversas
-router.get('/historico-conversas/:usuario_id', verificarAuth, async (req, res) => {
+router.get('/historico-conversas/:usuario_id', protectRoute, async (req, res) => {
     try {
         const { usuario_id } = req.params;
         const { limite = 10 } = req.query;
@@ -2082,13 +2092,13 @@ router.get('/historico-conversas/:usuario_id', verificarAuth, async (req, res) =
         res.status(500).json({
             success: false,
             error: 'Erro ao recuperar historico',
-            ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            // M1-SEC-05: details removido (info leak)
         });
     }
 });
 
 // Endpoint para fornecer contexto do sistema ao Agno
-router.get('/contexto-sistema', verificarAuth, async (req, res) => {
+router.get('/contexto-sistema', protectRoute, async (req, res) => {
     try {
         const contexto = {
             sistema: "OFIX - Sistema de Oficina Automotiva",
@@ -2126,12 +2136,10 @@ router.get('/contexto-sistema', verificarAuth, async (req, res) => {
 });
 
 // Middleware para verificar autenticaÃ§Ã£o
-function verificarAuth(req, res, next) {
-    return protectRoute(req, res, next);
-}
+// M1-SEC-06: verificarAuth removido — usa protectRoute diretamente.
 
 // Health check do agente Agno
-  router.get('/health', verificarAuth, async (req, res) => {
+  router.get('/health', protectRoute, async (req, res) => {
       try {
           console.log('ðŸ” Verificando status do agente Agno...');
   
@@ -2173,7 +2181,7 @@ function verificarAuth(req, res, next) {
 });
 
 // Listar agentes disponÃ­veis
-router.get('/agents', verificarAuth, async (req, res) => {
+router.get('/agents', protectRoute, async (req, res) => {
     try {
         console.log('ðŸ“‹ Listando agentes disponÃ­veis...');
 
@@ -2215,13 +2223,13 @@ router.get('/agents', verificarAuth, async (req, res) => {
         console.error('âŒ Erro ao conectar para listar agentes:', error.message);
         res.status(500).json({
             error: 'Erro interno do servidor',
-            ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            // M1-SEC-05: details removido (info leak)
         });
     }
 });
 
 // Chat com o agente Agno
-router.post('/chat', verificarAuth, async (req, res) => {
+router.post('/chat', protectRoute, async (req, res) => {
     try {
         const { message, agent_id, session_id, contexto_ativo } = req.body;
 
@@ -2326,7 +2334,7 @@ router.post('/chat', verificarAuth, async (req, res) => {
         console.error('âŒ [CHAT] Erro geral:', error);
         res.status(500).json({
             error: 'Erro interno do servidor',
-            ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            // M1-SEC-05: details removido (info leak)
         });
     }
 });
@@ -2490,7 +2498,7 @@ function validateMessage(req, res, next) {
  * ðŸ§  GET /api/agno/memories/:userId
  * Recupera memÃ³rias de um usuÃ¡rio especÃ­fico
  */
-router.get('/memories/:userId', verificarAuth, async (req, res) => {
+router.get('/memories/:userId', protectRoute, async (req, res) => {
     try {
         const { userId } = req.params;
 
@@ -2562,7 +2570,7 @@ router.get('/memories/:userId', verificarAuth, async (req, res) => {
  * ðŸ—‘ï¸ DELETE /api/agno/memories/:userId
  * Limpa as memÃ³rias de um usuÃ¡rio (LGPD/GDPR compliance)
  */
-router.delete('/memories/:userId', verificarAuth, async (req, res) => {
+router.delete('/memories/:userId', protectRoute, async (req, res) => {
     try {
         const { userId } = req.params;
 
@@ -2657,7 +2665,7 @@ router.delete('/memories/:userId', verificarAuth, async (req, res) => {
  * ðŸ“Š GET /api/agno/memory-status
  * Verifica se o sistema de memÃ³ria estÃ¡ ativo e funcionando
  */
-router.get('/memory-status', verificarAuth, async (req, res) => {
+router.get('/memory-status', protectRoute, async (req, res) => {
     try {
         // Verificar se Agno AI estÃ¡ configurado
         const isConfigured = AGNO_IS_CONFIGURED;
