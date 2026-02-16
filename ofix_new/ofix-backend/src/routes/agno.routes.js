@@ -415,6 +415,16 @@ async function warmAgnoService({ reason = 'manual', maxWaitMs = AGNO_WARM_MAX_WA
     return { ok: true, reason, health, warm_run: warmRunResult, attempts, waited_ms };
 }
 
+// M1-SEC-05: Rate limiter para /warm (previne spam de warming)
+const warmLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 2,
+    message: { error: 'Warm muito frequente. Aguarde 1 minuto.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req, res) => ipKeyGenerator(req, res),
+});
+
 // Endpoint pÃºblico para verificar configuraÃ§Ã£o do Agno
 router.get('/config', protectRoute, async (req, res) => {
     try {
@@ -529,15 +539,6 @@ const publicLimiter = rateLimit({
 
 // Endpoint pÃºblico para testar chat SEM AUTENTICAÃ‡ÃƒO (com rate limit e cache)
 
-// M1-SEC-05: Rate limiter para /warm (previne spam de warming)
-const warmLimiter = rateLimit({
-    windowMs: 60 * 1000,
-    max: 2,
-    message: { error: 'Warm muito frequente. Aguarde 1 minuto.' },
-    standardHeaders: true,
-    legacyHeaders: false,
-    keyGenerator: (req, res) => ipKeyGenerator(req, res),
-});
 router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => {
     try {
         const message = String(req.body?.message || '').trim();
