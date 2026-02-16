@@ -3,10 +3,14 @@ API personalizada para integração com o frontend Ofix.
 Expõe endpoints compatíveis com o contrato esperado pelo useChatAPI.js
 """
 
-from fastapi import APIRouter, HTTPException
+import os
+
+from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import logging
+
+from matias_agno.storage.cleanup import run_cleanup
 
 logger = logging.getLogger(__name__)
 
@@ -94,3 +98,48 @@ async def historico_conversa(usuario_id: str = "default"):
     # Por enquanto, retornamos vazio
     # O Agno gerencia a memória automaticamente via db
     return HistoricoResponse(mensagens=[])
+
+
+# ── M3-AI-04: Memory cleanup endpoint (called by Cron Job) ──────────────────
+
+def _verify_cleanup_token(authorization: str | None) -> None:
+    """
+    Validates the Bearer token against OS_SECURITY_KEY (same key used by
+    AgentOS auth).  This ensures only the backend / cron can trigger cleanup.
+    """
+    expected = (os.getenv("OS_SECURITY_KEY") or "").strip()
+    if not expected:
+        raise HTTPException(status_code=503, detail="OS_SECURITY_KEY not configured")
+
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+
+    token = authorization.removeprefix("Bearer ").strip()
+    if token != expected:
+        raise HTTPException(status_code=403, detail="Invalid token")
+
+
+@router.post("/cleanup-memories")
+async def cleanup_memories(
+    dry_run: bool = False,
+    authorization: Optional[str] = Header(None),
+):
+    """
+    Purge expired Agno sessions & memories based on TTL policy.
+
+    - Authenticated agent rows older than ``AGNO_AUTH_MEMORY_TTL_DAYS`` (default 30)
+    - Public agent rows older than ``AGNO_PUBLIC_MEMORY_TTL_HOURS`` (default 1)
+
+    Protected by ``OS_SECURITY_KEY`` Bearer token (same as AgentOS).
+    Intended to be called by a Render / Railway Cron Job.
+
+    Query param ``dry_run=true`` counts without deleting.
+    """
+    _verify_cleanup_token(authorization)
+
+    result = run_cleanup(dry_run=dry_run)
+
+    if not result.ok:
+        raise HTTPException(status_code=500, detail=result.to_dict())
+
+    return result.to_dict()

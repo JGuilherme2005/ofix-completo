@@ -1,3 +1,10 @@
+"""
+matias_ollama.py — Ollama variant of the Matias agent.
+
+M3-AI-04: Re-uses INSTRUCTIONS / PUBLIC_INSTRUCTIONS from matias.py
+(single source of truth). Fixed public agent using wrong prompt.
+"""
+
 import os
 from agno.agent import Agent
 from agno.models.ollama import Ollama
@@ -6,39 +13,8 @@ from matias_agno.knowledge.base import get_knowledge_base
 from matias_agno.tools.simulate import simulate_vehicle_scenario
 from matias_agno.storage.memory import get_memory_storage
 
-# Instruções do agente (Mesmas do Matias original)
-INSTRUCTIONS = """Você é o Matias, assistente técnico especializado em oficina automotiva.
-
-INSTRUÇÕES:
-- Seja técnico mas didático
-- Use sua base de conhecimento quando estiver configurada (diagnósticos, preços, procedimentos e especificações)
-- Se a base de conhecimento não estiver configurada, responda com conhecimento geral e sinalize quando algo pode variar por veículo/ano/motor.
-- **IMPORTANTE: Se a busca retornar a informação técnica solicitada (ex: torques, especificações), RESPONDA DIRETAMENTE, mesmo que não tenha o ano/modelo exato, mas alerte que pode variar.**
-- **IMPORTANTE: Use a ferramenta simulate_vehicle_scenario quando detectar perguntas hipotéticas ou preditivas, como:**
-  - "E se eu..." (ex: "E se eu dirigir com o erro X?")
-  - "O que acontece se..." (ex: "O que acontece se eu não trocar o óleo?")
-  - "Qual o risco de..." (ex: "Qual o risco de ignorar o problema?")
-  - "Posso continuar dirigindo com..." (ex: "Posso dirigir com P0171?")
-- Pergunte sobre modelo e ano APENAS se a informação for crucial e não estiver nos documentos encontrados.
-- Lembre-se de informações anteriores do cliente (histórico de conversas)
-- Se o cliente já mencionou o veículo, não pergunte novamente
-
-MEMÓRIA:
-- Sempre lembre do modelo e ano do veículo do cliente
-- Mantenha histórico de problemas reportados
-- Faça referência a conversas anteriores quando relevante
-- Personalize recomendações baseadas no histórico
-
-ESPECIALIDADES:
-- Diagnóstico de problemas automotivos
-- Manutenção preventiva e corretiva
-- Orçamentos e preços de serviços
-- Interpretação de códigos de erro
-- Especificações técnicas de veículos
-- **NOVO: Simulação preditiva de cenários ("e se?")**
-
-Sempre termine perguntando se o cliente precisa de mais informações."""
-
+# ── Single source of truth for prompts (M3-AI-01) ────────────────────────────
+from matias_agno.agents.matias import INSTRUCTIONS, PUBLIC_INSTRUCTIONS
 
 from ollama import Client as OllamaClient
 
@@ -86,7 +62,7 @@ def create_matias_ollama_agent():
 
 
 def create_matias_ollama_public_agent():
-    # Public agent: no DB-backed memory and no internal knowledge base until we have a dedicated public KB.
+    """Public agent (Ollama): no memory, no knowledge, read-only orientation."""
     ollama_host = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     ollama_client = OllamaClient(host=ollama_host)
 
@@ -94,7 +70,7 @@ def create_matias_ollama_public_agent():
         id="matias-public",
         name="Matias Public (Ollama)",
         role="Assistente Tecnico de Oficina Automotiva (Publico)",
-        instructions=INSTRUCTIONS,
+        instructions=PUBLIC_INSTRUCTIONS,
         model=Ollama(
             id="qwen2.5:7b",
             client=ollama_client,
@@ -110,8 +86,12 @@ def create_matias_ollama_public_agent():
         tools=[simulate_vehicle_scenario],
         markdown=True,
         debug_mode=False,
-        description="Assistente publico (somente leitura, sem memoria persistente)",
+        description="Assistente publico (somente leitura, sem memoria persistente, sem tenant)",
+        # Public: completely stateless — no DB, no memory, no history.
+        add_dependencies_to_context=False,
         db=None,
+        enable_user_memories=False,
+        enable_session_summaries=False,
         add_history_to_context=False,
         num_history_runs=0,
     )
