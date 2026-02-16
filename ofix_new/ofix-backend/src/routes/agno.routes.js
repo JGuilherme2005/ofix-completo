@@ -4,6 +4,7 @@ import FormData from 'form-data';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { protectRoute } from '../middlewares/auth.middleware.js';
 import { sendSafeError } from '../lib/safe-error.js';
+import { safeLog, safeError, devLog, redactPII } from '../lib/sanitize-log.js';
 
 // Importar serviÃ§os do Matias
 import ConversasService from '../services/conversas.service.js';
@@ -43,6 +44,11 @@ const AGNO_DEFAULT_AGENT_ID = (process.env.AGNO_DEFAULT_AGENT_ID || 'matias').tr
 const AGNO_PUBLIC_AGENT_ID = (process.env.AGNO_PUBLIC_AGENT_ID || 'matias-public').trim();
 const AGNO_IS_CONFIGURED = AGNO_BASE_URLS.length > 0;
 
+// M1-SEC-01: Warn if token is missing in production (ponta-a-ponta auth).
+if (process.env.NODE_ENV === 'production' && AGNO_IS_CONFIGURED && !AGNO_API_TOKEN) {
+    console.warn('[SEC] AGNO_API_TOKEN is empty in production — requests to Matias will be unauthenticated!');
+}
+
 function parsePositiveInt(value, fallback) {
     const parsed = Number.parseInt(String(value ?? ''), 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -77,7 +83,7 @@ function ensureDatabaseConfigured(res) {
         return true;
     }
 
-    console.error('[AGNO] DATABASE_URL nao configurada para consultas locais');
+    safeError('[AGNO] DATABASE_URL nao configurada para consultas locais');
     res.status(503).json({
         success: false,
         error: 'Banco de dados nao configurado',
@@ -104,11 +110,11 @@ function checkCircuitBreaker() {
         const now = Date.now();
         if (now < circuitBreakerOpenUntil) {
             const remainingSeconds = Math.ceil((circuitBreakerOpenUntil - now) / 1000);
-            console.log(`ðŸš« [CIRCUIT BREAKER] Agno AI bloqueado por ${remainingSeconds}s (rate limit)`);
+            safeLog(`ðŸš« [CIRCUIT BREAKER] Agno AI bloqueado por ${remainingSeconds}s (rate limit)`);
             return false; // Bloqueado
         } else {
             // Cooldown expirou, resetar
-            console.log('âœ… [CIRCUIT BREAKER] Cooldown expirado, reativando Agno AI');
+            safeLog('âœ… [CIRCUIT BREAKER] Cooldown expirado, reativando Agno AI');
             circuitBreakerOpen = false;
             circuitBreakerOpenUntil = null;
         }
@@ -119,7 +125,7 @@ function checkCircuitBreaker() {
 function openCircuitBreaker() {
     circuitBreakerOpen = true;
     circuitBreakerOpenUntil = Date.now() + CIRCUIT_BREAKER_COOLDOWN;
-    console.log(`ðŸš« [CIRCUIT BREAKER] Agno AI bloqueado por ${CIRCUIT_BREAKER_COOLDOWN / 1000}s (rate limit detectado)`);
+    safeLog(`ðŸš« [CIRCUIT BREAKER] Agno AI bloqueado por ${CIRCUIT_BREAKER_COOLDOWN / 1000}s (rate limit detectado)`);
 }
 
 // Registro de context e knowledge para o Agno
@@ -443,7 +449,7 @@ router.get('/config', protectRoute, async (req, res) => {
             status: AGNO_IS_CONFIGURED ? 'configured' : 'not_configured'
         });
     } catch (error) {
-        console.error('âŒ Erro ao verificar configuraÃ§Ã£o:', error.message);
+        safeError('âŒ Erro ao verificar configuraÃ§Ã£o:', error.message);
         res.status(500).json({
             error: 'Erro ao verificar configuraÃ§Ã£o',
             // M1-SEC-05: details removido (info leak)
@@ -454,7 +460,7 @@ router.get('/config', protectRoute, async (req, res) => {
 // Endpoint para aquecer o serviÃ§o Agno (Ãºtil para evitar cold starts)
 router.post('/warm', protectRoute, warmLimiter, async (req, res) => {
     try {
-        console.log('ðŸ”¥ RequisiÃ§Ã£o de warming do Agno...');
+        devLog('ðŸ”¥ RequisiÃ§Ã£o de warming do Agno...');
 
         const result = await warmAgnoService({ reason: 'manual' });
 
@@ -465,7 +471,7 @@ router.post('/warm', protectRoute, warmLimiter, async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (error) {
-        console.error('âŒ Erro ao aquecer Agno:', error.message);
+        safeError('âŒ Erro ao aquecer Agno:', error.message);
         res.status(500).json({
             success: false,
             error: 'Erro ao aquecer serviÃ§o',
@@ -529,7 +535,7 @@ const publicLimiter = rateLimit({
         return ipKeyGenerator(req, res);
     },
     handler: (req, res) => {
-        console.log(`â›” [RATE-LIMIT] Bloqueado IP: ${req.ip}`);
+        safeLog(`â›” [RATE-LIMIT] Bloqueado IP: ${req.ip}`);
         res.status(429).json({
             error: 'Muitas requisiÃ§Ãµes deste IP',
             retry_after: '15 minutos'
@@ -572,7 +578,7 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
         }
 
         // Nao vaze a mensagem em logs (pode conter PII).
-        console.log('[CHAT-PUBLIC] request', { oficinaRef: oficinaRef, ip: req.ip });
+        safeLog('[CHAT-PUBLIC] request', { oficinaRef: oficinaRef, ip: req.ip });
 
         // Se nao esta configurado, retornar status de indisponibilidade (feature publica).
         if (!AGNO_IS_CONFIGURED) {
@@ -621,7 +627,7 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
             oficina: { id: oficina.id, nome: oficina.nome, slug: oficina.slug }
         });
     } catch (error) {
-        console.error('[CHAT-PUBLIC] erro:', String(error?.message || error));
+        safeError('[CHAT-PUBLIC] erro:', String(error?.message || error));
         return res.status(500).json({ success: false, error: 'Erro interno' });
     }
 });
@@ -656,13 +662,13 @@ router.post('/chat-inteligente', protectRoute, validateMessage, async (req, res)
         // Track activity for warmup logic (prevents constant warming due to stale lastActivity).
         lastActivity = Date.now();
 
-                console.log('[CHAT-INTELIGENTE] Nova mensagem (len):', message.length);
-        console.log('ðŸŽ¯ Usuario ID:', usuario_id);
-        console.log('ðŸŽ¯ Contexto ativo:', contexto_ativo);
+                devLog('[CHAT-INTELIGENTE] Nova mensagem (len):', message.length);
+        devLog('ðŸŽ¯ Usuario ID:', usuario_id);
+        devLog('ðŸŽ¯ Contexto ativo:', contexto_ativo);
 
         // â­ NOVA ARQUITETURA: Usar MessageClassifier
         const classification = MessageClassifier.classify(message);
-        console.log('ðŸŽ¯ [CLASSIFIER] Resultado:', {
+        devLog('ðŸŽ¯ [CLASSIFIER] Resultado:', {
             processor: classification.processor,
             type: classification.type,
             subtype: classification.subtype,
@@ -675,12 +681,12 @@ router.post('/chat-inteligente', protectRoute, validateMessage, async (req, res)
 
         if (classification.processor === 'BACKEND_LOCAL') {
             // âš¡ PROCESSA LOCALMENTE (rÃ¡pido, confiÃ¡vel)
-            console.log('âš¡ [BACKEND_LOCAL] Processando localmente...');
+            devLog('âš¡ [BACKEND_LOCAL] Processando localmente...');
 
             responseData = await processarLocal(message, classification, usuario_id, contexto_ativo, req, oficinaId);
 
             const duration = Date.now() - startTime;
-            console.log(`âœ… [BACKEND_LOCAL] Processado em ${duration}ms`);
+            devLog(`âœ… [BACKEND_LOCAL] Processado em ${duration}ms`);
 
             // Adiciona metadata
             responseData.metadata = {
@@ -692,13 +698,13 @@ router.post('/chat-inteligente', protectRoute, validateMessage, async (req, res)
 
         } else {
             // ðŸ§  ENVIA PARA AGNO AI (inteligente, conversacional)
-            console.log('ðŸ§  [AGNO_AI] Enviando para Agno AI...');
+            devLog('ðŸ§  [AGNO_AI] Enviando para Agno AI...');
 
             try {
                 responseData = await processarComAgnoAI(message, usuario_id, AGNO_DEFAULT_AGENT_ID, agentSessionId, { throwOnError: true, dependencies: { oficina_id: oficinaId, user_id: usuario_id, role: req.user?.role || null, public: false } });
 
                 const duration = Date.now() - startTime;
-                console.log(`âœ… [AGNO_AI] Processado em ${duration}ms`);
+                devLog(`âœ… [AGNO_AI] Processado em ${duration}ms`);
 
                 // Adiciona metadata
                 if (responseData.metadata) {
@@ -726,7 +732,7 @@ router.post('/chat-inteligente', protectRoute, validateMessage, async (req, res)
                 const isColdStart = Boolean(agnoError?.is_cold_start) || (statusCode === 429 && !isRateLimit);
                 const isTimeoutOrRateLimit = isTimeout || isRateLimit || isColdStart;
                 const errorType = isTimeoutOrRateLimit ? 'â±ï¸ Timeout/Rate Limit' : 'âŒ Erro';
-                console.error(`   âš ï¸ Agno falhou (${errorType}), usando fallback:`, errorMessage);
+                safeError(`   âš ï¸ Agno falhou (${errorType}), usando fallback:`, errorMessage);
 
                 const isServerError = Number.isFinite(statusCode) && statusCode >= 500;
                 const isAgentNotFound = statusCode === 404 && errorMessageLower.includes('agent not found');
@@ -742,7 +748,7 @@ router.post('/chat-inteligente', protectRoute, validateMessage, async (req, res)
                             responseData = await processarComAgnoAI(message, usuario_id, AGNO_DEFAULT_AGENT_ID, agentSessionId, { throwOnError: true, dependencies: { oficina_id: oficinaId, user_id: usuario_id, role: req.user?.role || null, public: false } });
 
                             const retryDuration = Date.now() - startTime;
-                            console.log(`✅ [AGNO_AI] Reprocessado apos warm em ${retryDuration}ms`);
+                            devLog(`✅ [AGNO_AI] Reprocessado apos warm em ${retryDuration}ms`);
 
                             responseData.metadata = {
                                 ...responseData.metadata,
@@ -822,10 +828,10 @@ router.post('/chat-inteligente', protectRoute, validateMessage, async (req, res)
                     }),
                     timestamp: new Date()
                 });
-                console.log('âœ… Mensagem salva no histÃ³rico');
+                devLog('âœ… Mensagem salva no histÃ³rico');
             }
         } catch (saveError) {
-            console.error('âš ï¸ Erro ao salvar conversa (nÃ£o crÃ­tico):', saveError.message);
+            safeError('âš ï¸ Erro ao salvar conversa (nÃ£o crÃ­tico):', saveError.message);
         }
 
         // 4ï¸âƒ£ RETORNAR RESPOSTA
@@ -835,7 +841,7 @@ router.post('/chat-inteligente', protectRoute, validateMessage, async (req, res)
         });
 
     } catch (error) {
-        console.error('âŒ Erro no chat inteligente:', error);
+        safeError('âŒ Erro no chat inteligente:', error);
         return res.status(500).json({
             success: false,
             error: 'Erro ao processar mensagem',
@@ -864,7 +870,7 @@ router.get('/historico-conversa', protectRoute, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Usuário sem oficina vinculada' });
         }
 
-        console.log('📖 Buscando historico para usuario:', requestUserId, '@ oficina:', requestOficinaId);
+        devLog('📖 Buscando historico para usuario:', requestUserId, '@ oficina:', requestOficinaId);
 
         const session = await prisma.chatSession.findFirst({
             where: { oficinaId: requestOficinaId, userId: String(requestUserId) },
@@ -892,7 +898,7 @@ router.get('/historico-conversa', protectRoute, async (req, res) => {
             timestamp: msg.createdAt
         }));
 
-        console.log(`✅ Histórico retornado: ${mensagensFormatadas.length} mensagens`);
+        devLog(`✅ Histórico retornado: ${mensagensFormatadas.length} mensagens`);
 
         res.json({
             success: true,
@@ -901,7 +907,7 @@ router.get('/historico-conversa', protectRoute, async (req, res) => {
             conversa_id: session.id
         });
     } catch (error) {
-        console.error('? Erro no historico:', error);
+        safeError('? Erro no historico:', error);
         res.status(500).json({
             success: false,
             error: 'Erro ao recuperar historico',
@@ -916,17 +922,17 @@ router.get('/historico-conversa', protectRoute, async (req, res) => {
 
 async function processarAgendamento(mensagem, usuario_id, cliente_selecionado = null) {
     try {
-        console.log('ðŸ” DEBUG AGENDAMENTO:');
-        console.log('   - Mensagem recebida:', mensagem);
-        console.log('   - Usuario ID:', usuario_id);
-        console.log('   - Cliente selecionado:', cliente_selecionado);
+        devLog('ðŸ” DEBUG AGENDAMENTO:');
+        devLog('   - Mensagem recebida:', mensagem);
+        devLog('   - Usuario ID:', usuario_id);
+        devLog('   - Cliente selecionado:', cliente_selecionado);
 
         // VerificaÃ§Ã£o especÃ­fica para quando cliente estÃ¡ selecionado e mensagem Ã© "agendar"
         const mensagemNormalizada = mensagem ? mensagem.trim().toLowerCase() : '';
-        console.log('   - Mensagem normalizada:', mensagemNormalizada);
+        devLog('   - Mensagem normalizada:', mensagemNormalizada);
 
         if (cliente_selecionado && (mensagemNormalizada === 'agendar' || mensagemNormalizada === 'agende' || mensagemNormalizada === 'agendar serviÃ§o')) {
-            console.log('   âœ… Cliente selecionado e mensagem de agendamento detectada');
+            devLog('   âœ… Cliente selecionado e mensagem de agendamento detectada');
             return {
                 success: false,
                 response: `ðŸ“‹ **Agendamento para ${cliente_selecionado.nomeCompleto}**\n\n` +
@@ -954,12 +960,12 @@ async function processarAgendamento(mensagem, usuario_id, cliente_selecionado = 
                 select: { oficinaId: true }
             });
             oficinaId = usuario?.oficinaId;
-            console.log('   ðŸ¢ Oficina ID:', oficinaId);
+            devLog('   ðŸ¢ Oficina ID:', oficinaId);
         }
 
         // 1. EXTRAIR ENTIDADES
         const entidades = NLPService.extrairEntidadesAgendamento(mensagem);
-        console.log('   ðŸ“‹ Entidades:', JSON.stringify(entidades, null, 2));
+        devLog('   ðŸ“‹ Entidades:', JSON.stringify(entidades, null, 2));
 
         // 2. VALIDAR DADOS NECESSÃRIOS
         // SE HOUVER CLIENTE SELECIONADO, NÃƒO VALIDAR A NECESSIDADE DO CLIENTE
@@ -1185,8 +1191,8 @@ async function processarAgendamento(mensagem, usuario_id, cliente_selecionado = 
                 take: 5
             });
 
-            console.log('   ðŸ“‹ Clientes recentes encontrados:', clientesRecentes.length);
-            console.log('   ðŸ¢ Filtrado por oficinaId:', oficinaId || 'SEM FILTRO');
+            devLog('   ðŸ“‹ Clientes recentes encontrados:', clientesRecentes.length);
+            devLog('   ðŸ¢ Filtrado por oficinaId:', oficinaId || 'SEM FILTRO');
 
             if (clientesRecentes.length > 0) {
                 return {
@@ -1246,7 +1252,7 @@ async function processarAgendamento(mensagem, usuario_id, cliente_selecionado = 
             // Se tem apenas 1 veÃ­culo, usar automaticamente
             if (cliente.veiculos.length === 1) {
                 veiculo = cliente.veiculos[0];
-                console.log(`   âœ… Ãšnico veÃ­culo do cliente selecionado automaticamente: ${veiculo.marca} ${veiculo.modelo}`);
+                devLog(`   âœ… Ãšnico veÃ­culo do cliente selecionado automaticamente: ${veiculo.marca} ${veiculo.modelo}`);
             } else {
                 // Formatar opÃ§Ãµes para seleÃ§Ã£o no frontend
                 const options = cliente.veiculos.map((v) => ({
@@ -1358,7 +1364,7 @@ async function processarAgendamento(mensagem, usuario_id, cliente_selecionado = 
         };
 
     } catch (error) {
-        console.error('âŒ Erro em processarAgendamento:', error);
+        safeError('âŒ Erro em processarAgendamento:', error);
         return {
             success: false,
             response: `âŒ **Erro ao processar agendamento**\n\n${error.message}\n\nðŸ’¡ Por favor, tente novamente ou contate o suporte.`,
@@ -1374,7 +1380,7 @@ async function processarAgendamento(mensagem, usuario_id, cliente_selecionado = 
 async function processarConsultaOS(mensagem, oficinaId = null) {
     try {
         const dados = NLPService.extrairDadosConsultaOS(mensagem);
-        console.log('   ?? Dados para consulta OS:', dados);
+        devLog('   ?? Dados para consulta OS:', dados);
 
         if (!oficinaId) {
             return {
@@ -1456,7 +1462,7 @@ async function processarConsultaOS(mensagem, oficinaId = null) {
         };
 
     } catch (error) {
-        console.error('? Erro em processarConsultaOS:', error);
+        safeError('? Erro em processarConsultaOS:', error);
         return {
             success: false,
             response: 'Erro ao consultar ordens de servico',
@@ -1511,7 +1517,7 @@ async function processarEstatisticas(mensagem, oficinaId = null) {
             stats
         };
     } catch (error) {
-        console.error('? Erro em processarEstatisticas:', error);
+        safeError('? Erro em processarEstatisticas:', error);
         return {
             success: false,
             response: '? Erro ao buscar estatisticas',
@@ -1525,9 +1531,9 @@ async function processarEstatisticas(mensagem, oficinaId = null) {
 
 async function processarConsultaCliente(mensagem, contexto_ativo = null, usuario_id = null, oficinaId = null) {
     try {
-        console.log('?? DEBUG: processarConsultaCliente - Mensagem recebida:', mensagem);
-        console.log('?? DEBUG: processarConsultaCliente - Contexto ativo:', contexto_ativo);
-        console.log('?? DEBUG: processarConsultaCliente - Usuario ID:', usuario_id);
+        devLog('?? DEBUG: processarConsultaCliente - Mensagem recebida:', mensagem);
+        devLog('?? DEBUG: processarConsultaCliente - Contexto ativo:', contexto_ativo);
+        devLog('?? DEBUG: processarConsultaCliente - Usuario ID:', usuario_id);
 
         if (!oficinaId && usuario_id) {
             const usuario = await prisma.user.findUnique({
@@ -1546,10 +1552,10 @@ async function processarConsultaCliente(mensagem, contexto_ativo = null, usuario
         }
 
         const mensagemTrimmed = mensagem.trim();
-        console.log('?? DEBUG: Mensagem apos trim:', mensagemTrimmed);
+        devLog('?? DEBUG: Mensagem apos trim:', mensagemTrimmed);
 
         if (mensagemTrimmed.match(/^\d+$/)) {
-            console.log('?? DEBUG: Detectado numero, tentando selecao de cliente');
+            devLog('?? DEBUG: Detectado numero, tentando selecao de cliente');
             const numeroDigitado = parseInt(mensagemTrimmed);
 
             if (usuario_id) {
@@ -1557,11 +1563,11 @@ async function processarConsultaCliente(mensagem, contexto_ativo = null, usuario
 
                 if (dadosCache) {
                     const clientes = dadosCache.clientes;
-                    console.log('?? DEBUG: Clientes no cache:', clientes.length);
+                    devLog('?? DEBUG: Clientes no cache:', clientes.length);
 
                     if (numeroDigitado >= 1 && numeroDigitado <= clientes.length) {
                         const clienteSelecionado = clientes[numeroDigitado - 1];
-                        console.log('?? DEBUG: Cliente selecionado:', clienteSelecionado.nomeCompleto);
+                        devLog('?? DEBUG: Cliente selecionado:', clienteSelecionado.nomeCompleto);
 
                         await CacheService.delete(`contexto_cliente:${usuario_id}`);
 
@@ -1582,7 +1588,7 @@ Veiculos: ${clienteSelecionado.veiculos && clienteSelecionado.veiculos.length > 
                             cliente_id: clienteSelecionado.id
                         };
                     } else {
-                        console.log('?? DEBUG: Numero fora do intervalo:', numeroDigitado);
+                        devLog('?? DEBUG: Numero fora do intervalo:', numeroDigitado);
                         return {
                             success: false,
                             response: `? **Numero invalido:** ${numeroDigitado}
@@ -1592,11 +1598,11 @@ Por favor, escolha um numero entre 1 e ${clientes.length}.`,
                         };
                     }
                 } else {
-                    console.log('?? DEBUG: Cache expirado ou nao encontrado para o usuario:', usuario_id);
+                    devLog('?? DEBUG: Cache expirado ou nao encontrado para o usuario:', usuario_id);
                     await CacheService.delete(`contexto_cliente:${usuario_id}`);
                 }
             } else {
-                console.log('?? DEBUG: Nenhum cache encontrado para o usuario ou usuario nao informado');
+                devLog('?? DEBUG: Nenhum cache encontrado para o usuario ou usuario nao informado');
             }
         }
 
@@ -1606,14 +1612,14 @@ Por favor, escolha um numero entre 1 e ${clientes.length}.`,
 
         if (matchNome) {
             termoBusca = matchNome[1].trim();
-            console.log('?? DEBUG: Termo de busca extra?do do padr?o:', termoBusca);
+            devLog('?? DEBUG: Termo de busca extra?do do padr?o:', termoBusca);
         } else {
             termoBusca = mensagem.trim();
-            console.log('?? DEBUG: Termo de busca usando mensagem completa:', termoBusca);
+            devLog('?? DEBUG: Termo de busca usando mensagem completa:', termoBusca);
         }
 
         if (!termoBusca || termoBusca.length < 2) {
-            console.log('?? DEBUG: Termo de busca invalido ou muito curto');
+            devLog('?? DEBUG: Termo de busca invalido ou muito curto');
             return {
                 success: false,
                 response: '? Informe o nome, telefone ou CPF do cliente para consultar.',
@@ -1621,7 +1627,7 @@ Por favor, escolha um numero entre 1 e ${clientes.length}.`,
             };
         }
 
-        console.log('?? DEBUG: Iniciando busca no banco de dados para:', termoBusca);
+        devLog('?? DEBUG: Iniciando busca no banco de dados para:', termoBusca);
 
         const clientes = await prisma.cliente.findMany({
             where: {
@@ -1636,13 +1642,13 @@ Por favor, escolha um numero entre 1 e ${clientes.length}.`,
             take: 10
         });
 
-        console.log('?? DEBUG: Resultado da busca - encontrados:', clientes.length, 'clientes');
+        devLog('?? DEBUG: Resultado da busca - encontrados:', clientes.length, 'clientes');
         if (clientes.length > 0) {
-            console.log('?? DEBUG: Clientes encontrados:', clientes.map(c => c.nomeCompleto));
+            devLog('?? DEBUG: Clientes encontrados:', clientes.map(c => c.nomeCompleto));
         }
 
         if (clientes.length === 0) {
-            console.log('?? DEBUG: Nenhum cliente encontrado para o termo de busca:', termoBusca);
+            devLog('?? DEBUG: Nenhum cliente encontrado para o termo de busca:', termoBusca);
             return {
                 success: false,
                 response: `? Nenhum cliente encontrado para "${termoBusca}".
@@ -1657,7 +1663,7 @@ Tente informar nome completo, telefone ou CPF.`,
                 clientes: clientes,
                 timestamp: Date.now()
             }, 600);
-            console.log('?? DEBUG: Clientes armazenados no cache para usuario:', usuario_id);
+            devLog('?? DEBUG: Clientes armazenados no cache para usuario:', usuario_id);
         }
 
         let resposta = 'Clientes encontrados:\n\n';
@@ -1691,7 +1697,7 @@ Tente informar nome completo, telefone ou CPF.`,
             contexto_ativo: 'buscar_cliente'
         };
     } catch (error) {
-        console.error('? Erro em processarConsultaCliente:', error.message);
+        safeError('? Erro em processarConsultaCliente:', error.message);
         return {
             success: false,
             response: '? Erro ao consultar cliente',
@@ -1707,13 +1713,13 @@ async function processarConversaGeral(mensagem, usuario_id = null) {
     // ðŸ¤– Se Agno estiver configurado, SEMPRE tentar chamar
     if (AGNO_IS_CONFIGURED) {
         try {
-            console.log('   ðŸ¤– Chamando Agno AI para conversa geral');
+            devLog('   ðŸ¤– Chamando Agno AI para conversa geral');
             const agnoResponse = await chamarAgnoAI(mensagem, usuario_id, 'CONVERSA_GERAL', null);
             return agnoResponse;
         } catch (agnoError) {
             const isTimeout = agnoError.message.includes('timeout');
             const errorType = isTimeout ? 'â±ï¸ Timeout' : 'âŒ Erro';
-            console.error(`   âš ï¸ Agno falhou (${errorType}), usando fallback:`, agnoError.message);
+            safeError(`   âš ï¸ Agno falhou (${errorType}), usando fallback:`, agnoError.message);
 
             // Fallback: resposta genÃ©rica com informaÃ§Ã£o sobre o erro
             const fallbackMessage = isTimeout
@@ -1765,7 +1771,7 @@ async function processarCadastroCliente(mensagem, usuario_id, oficinaId = null) 
 
         const dados = NLPService.extrairDadosCliente(mensagem);
 
-        console.log('   ?? Dados extra?dos:', dados);
+        devLog('   ?? Dados extra?dos:', dados);
 
         if (!dados.nome || dados.nome.length < 3) {
             return {
@@ -1833,7 +1839,7 @@ ${dados.email ? `**Email:** ${dados.email}` : '? Email (opcional)'}
         };
 
     } catch (error) {
-        console.error('? Erro ao processar cadastro:', error);
+        safeError('? Erro ao processar cadastro:', error);
         return {
             success: false,
             response: 'Erro ao cadastrar cliente. Tente novamente ou cadastre manualmente na tela de clientes.',
@@ -1862,7 +1868,7 @@ router.post('/consultar-os', protectRoute, async (req, res) => {
             return;
         }
 
-        console.log('?? Agno consultando OS:', { veiculo, proprietario, status, periodo, oficinaId });
+        devLog('?? Agno consultando OS:', { veiculo, proprietario, status, periodo, oficinaId });
 
         const resultados = await ConsultasOSService.consultarOS(oficinaId, {
             veiculo,
@@ -1879,7 +1885,7 @@ router.post('/consultar-os', protectRoute, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('? Erro na consulta OS:', error);
+        safeError('? Erro na consulta OS:', error);
         const response = {
             success: false,
             error: 'Erro ao consultar ordens de servico'
@@ -1915,7 +1921,7 @@ router.post('/agendar-servico', protectRoute, async (req, res) => {
             });
         }
 
-        console.log('📅 Agno agendando servico:', { cliente, veiculo, servico, data_hora, oficinaId });
+        devLog('📅 Agno agendando servico:', { cliente, veiculo, servico, data_hora, oficinaId });
 
         const agendamento = await AgendamentosService.criarAgendamento({
             oficinaId,
@@ -1937,7 +1943,7 @@ router.post('/agendar-servico', protectRoute, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('? Erro no agendamento:', error);
+        safeError('? Erro no agendamento:', error);
         const response = {
             success: false,
             error: 'Erro ao agendar servico'
@@ -1966,7 +1972,7 @@ router.get('/estatisticas', protectRoute, async (req, res) => {
             return;
         }
 
-        console.log('?? Agno consultando estatisticas:', { periodo, oficinaId });
+        devLog('?? Agno consultando estatisticas:', { periodo, oficinaId });
 
         const stats = await ConsultasOSService.obterEstatisticas(oficinaId, periodo);
 
@@ -1978,7 +1984,7 @@ router.get('/estatisticas', protectRoute, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('? Erro nas estatisticas:', error);
+        safeError('? Erro nas estatisticas:', error);
         const response = {
             success: false,
             error: 'Erro ao consultar estatisticas'
@@ -2023,7 +2029,7 @@ router.post('/salvar-conversa', protectRoute, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Usuário sem oficina vinculada' });
         }
 
-        console.log('📝 Agno salvando conversa:', { oficina: requestOficinaId, usuario_id: effectiveUserId, mensagem: mensagem?.substring(0, 50) });
+        devLog('📝 Agno salvando conversa:', { oficina: requestOficinaId, usuario_id: effectiveUserId, mensagem: mensagem?.substring(0, 50) });
 
         const conversa = await ConversasService.salvarConversa({
             oficinaId: requestOficinaId,
@@ -2041,7 +2047,7 @@ router.post('/salvar-conversa', protectRoute, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('? Erro ao salvar conversa:', error);
+        safeError('? Erro ao salvar conversa:', error);
         res.status(500).json({
             success: false,
             error: 'Erro ao salvar conversa',
@@ -2076,7 +2082,7 @@ router.get('/historico-conversas/:usuario_id', protectRoute, async (req, res) =>
             return res.status(400).json({ success: false, error: 'Usuário sem oficina vinculada' });
         }
 
-        console.log('📖 Agno recuperando historico:', { oficina: requestOficinaId, usuario_id: requestUserId, limite });
+        devLog('📖 Agno recuperando historico:', { oficina: requestOficinaId, usuario_id: requestUserId, limite });
 
         const historico = await ConversasService.obterHistorico(requestOficinaId, String(requestUserId), parseInt(limite));
 
@@ -2089,7 +2095,7 @@ router.get('/historico-conversas/:usuario_id', protectRoute, async (req, res) =>
         });
 
     } catch (error) {
-        console.error('? Erro no historico:', error);
+        safeError('? Erro no historico:', error);
         res.status(500).json({
             success: false,
             error: 'Erro ao recuperar historico',
@@ -2128,7 +2134,7 @@ router.get('/contexto-sistema', protectRoute, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('âŒ Erro no contexto:', error);
+        safeError('âŒ Erro no contexto:', error);
         res.status(500).json({
             success: false,
             error: 'Erro ao obter contexto do sistema'
@@ -2142,7 +2148,7 @@ router.get('/contexto-sistema', protectRoute, async (req, res) => {
 // Health check do agente Agno
   router.get('/health', protectRoute, async (req, res) => {
       try {
-          console.log('ðŸ” Verificando status do agente Agno...');
+          devLog('ðŸ” Verificando status do agente Agno...');
   
           if (!AGNO_IS_CONFIGURED) {
               return res.status(503).json({
@@ -2155,7 +2161,7 @@ router.get('/contexto-sistema', protectRoute, async (req, res) => {
           const health = await fetchAgnoHealth({ timeoutMs: AGNO_HEALTH_TIMEOUT_MS });
   
           if (health.ok) {
-              console.log('âœ… Agente Agno online:', health.data);
+              devLog('âœ… Agente Agno online:', health.data);
   
               res.json({
                   status: 'online',
@@ -2164,7 +2170,7 @@ router.get('/contexto-sistema', protectRoute, async (req, res) => {
                   timestamp: new Date().toISOString()
               });
           } else {
-              console.log('âš ï¸ Agente Agno retornou erro:', health.status);
+              devLog('âš ï¸ Agente Agno retornou erro:', health.status);
               res.status(503).json({
                   status: 'erro',
                   message: 'Agente nÃ£o disponÃ­vel',
@@ -2172,7 +2178,7 @@ router.get('/contexto-sistema', protectRoute, async (req, res) => {
               });
           }
       } catch (error) {
-          console.error('âŒ Erro ao conectar com agente Agno:', error.message);
+          safeError('âŒ Erro ao conectar com agente Agno:', error.message);
           res.status(503).json({
             status: 'erro',
             message: 'ServiÃ§o temporariamente indisponÃ­vel',
@@ -2184,7 +2190,7 @@ router.get('/contexto-sistema', protectRoute, async (req, res) => {
 // Listar agentes disponÃ­veis
 router.get('/agents', protectRoute, async (req, res) => {
     try {
-        console.log('ðŸ“‹ Listando agentes disponÃ­veis...');
+        devLog('ðŸ“‹ Listando agentes disponÃ­veis...');
 
         if (!AGNO_IS_CONFIGURED) {
             return res.status(503).json({
@@ -2203,7 +2209,7 @@ router.get('/agents', protectRoute, async (req, res) => {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('ðŸ“‹ Agentes encontrados:', data.length);
+            devLog('ðŸ“‹ Agentes encontrados:', data.length);
 
             res.json({
                 success: true,
@@ -2214,14 +2220,14 @@ router.get('/agents', protectRoute, async (req, res) => {
             });
         } else {
             const errorData = await response.text();
-            console.error('âŒ Erro ao listar agentes:', response.status, errorData);
+            safeError('âŒ Erro ao listar agentes:', response.status, errorData);
             res.status(response.status).json({
                 error: 'Erro ao listar agentes',
                 details: errorData
             });
         }
     } catch (error) {
-        console.error('âŒ Erro ao conectar para listar agentes:', error.message);
+        safeError('âŒ Erro ao conectar para listar agentes:', error.message);
         res.status(500).json({
             error: 'Erro interno do servidor',
             // M1-SEC-05: details removido (info leak)
@@ -2230,9 +2236,10 @@ router.get('/agents', protectRoute, async (req, res) => {
 });
 
 // Chat com o agente Agno
-router.post('/chat', protectRoute, async (req, res) => {
+router.post('/chat', protectRoute, validateMessage, async (req, res) => {
     try {
-        const { message, agent_id, session_id, contexto_ativo } = req.body;
+        // M1-SEC-07: agent_id and session_id are always server-generated (never trust client).
+        const { message, contexto_ativo } = req.body;
 
         if (!message) {
             return res.status(400).json({ error: 'Mensagem Ã© obrigatÃ³ria' });
@@ -2251,7 +2258,7 @@ router.post('/chat', protectRoute, async (req, res) => {
         const sessionIdScoped = `of_${oficinaId}_user_${userId}`;
         const agentId = AGNO_DEFAULT_AGENT_ID;
 
-        console.log('ðŸ’¬ [CHAT] Nova mensagem recebida:', {
+        devLog('ðŸ’¬ [CHAT] Nova mensagem recebida:', {
             user: req.user.email,
             user_id: userId,
             message_len: message.length
@@ -2260,7 +2267,7 @@ router.post('/chat', protectRoute, async (req, res) => {
         // â­ NOVA ARQUITETURA MULTI-AGENTE
         // 1ï¸âƒ£ CLASSIFICA A MENSAGEM
         const classification = MessageClassifier.classify(message);
-        console.log('ðŸŽ¯ [CLASSIFIER] Resultado:', {
+        devLog('ðŸŽ¯ [CLASSIFIER] Resultado:', {
             processor: classification.processor,
             type: classification.type,
             subtype: classification.subtype,
@@ -2273,13 +2280,13 @@ router.post('/chat', protectRoute, async (req, res) => {
 
         if (classification.processor === 'BACKEND_LOCAL') {
             // âš¡ PROCESSA LOCALMENTE (rÃ¡pido, confiÃ¡vel)
-            console.log('âš¡ [BACKEND_LOCAL] Processando localmente...');
+            devLog('âš¡ [BACKEND_LOCAL] Processando localmente...');
             const startTime = Date.now();
 
             responseData = await processarLocal(message, classification, userId, contexto_ativo, req, oficinaId);
 
             const duration = Date.now() - startTime;
-            console.log(`âœ… [BACKEND_LOCAL] Processado em ${duration}ms`);
+            devLog(`âœ… [BACKEND_LOCAL] Processado em ${duration}ms`);
 
             // Adiciona metadata
             responseData.metadata = {
@@ -2302,13 +2309,13 @@ router.post('/chat', protectRoute, async (req, res) => {
 
         } else {
             // ðŸ§  ENVIA PARA AGNO AI (inteligente, conversacional)
-            console.log('ðŸ§  [AGNO_AI] Enviando para Agno AI...');
+            devLog('ðŸ§  [AGNO_AI] Enviando para Agno AI...');
             const startTime = Date.now();
 
             responseData = await processarComAgnoAI(message, userId, agentId, sessionIdScoped, { dependencies: { oficina_id: oficinaId, user_id: userId, role: req.user?.role || null, public: false } });
 
             const duration = Date.now() - startTime;
-            console.log(`âœ… [AGNO_AI] Processado em ${duration}ms`);
+            devLog(`âœ… [AGNO_AI] Processado em ${duration}ms`);
 
             // Adiciona metadata
             if (responseData.metadata) {
@@ -2332,7 +2339,7 @@ router.post('/chat', protectRoute, async (req, res) => {
         }
 
     } catch (error) {
-        console.error('âŒ [CHAT] Erro geral:', error);
+        safeError('âŒ [CHAT] Erro geral:', error);
         res.status(500).json({
             error: 'Erro interno do servidor',
             // M1-SEC-05: details removido (info leak)
@@ -2371,11 +2378,11 @@ async function processarLocal(message, classification, userId, contexto_ativo, r
 
             default:
                 // Fallback: envia para Agno AI
-                console.log('âš ï¸ [BACKEND_LOCAL] Tipo nÃ£o reconhecido, enviando para Agno AI');
+                devLog('âš ï¸ [BACKEND_LOCAL] Tipo nÃ£o reconhecido, enviando para Agno AI');
                 return await processarComAgnoAI(message, userId, AGNO_DEFAULT_AGENT_ID, null, { dependencies: { oficina_id: oficinaId, user_id: userId, public: false } });
         }
     } catch (error) {
-        console.error('âŒ [BACKEND_LOCAL] Erro:', error);
+        safeError('âŒ [BACKEND_LOCAL] Erro:', error);
         // Em caso de erro, tenta Agno AI como fallback
         return await processarComAgnoAI(message, userId, AGNO_DEFAULT_AGENT_ID, null, { dependencies: { oficina_id: oficinaId, user_id: userId, public: false } });
     }
@@ -2385,7 +2392,7 @@ async function processarLocal(message, classification, userId, contexto_ativo, r
  * Processa aÃ§Ãµes estruturadas localmente
  */
 async function processarAcaoLocal(message, actionType, userId, contexto_ativo, oficinaId) {
-    console.log(`ðŸ”§ [ACAO_LOCAL] Processando: ${actionType}`);
+    devLog(`ðŸ”§ [ACAO_LOCAL] Processando: ${actionType}`);
 
     try {
         switch (actionType) {
@@ -2415,11 +2422,11 @@ async function processarAcaoLocal(message, actionType, userId, contexto_ativo, o
 
             default:
                 // AÃ§Ã£o nÃ£o implementada, envia para Agno AI
-                console.log(`âš ï¸ [ACAO_LOCAL] AÃ§Ã£o ${actionType} nÃ£o implementada, enviando para Agno AI`);
+                devLog(`âš ï¸ [ACAO_LOCAL] AÃ§Ã£o ${actionType} nÃ£o implementada, enviando para Agno AI`);
                 return await processarComAgnoAI(message, userId, AGNO_DEFAULT_AGENT_ID, null, { dependencies: { oficina_id: oficinaId, user_id: userId, public: false } });
         }
     } catch (error) {
-        console.error(`âŒ [ACAO_LOCAL] Erro ao processar ${actionType}:`, error);
+        safeError(`âŒ [ACAO_LOCAL] Erro ao processar ${actionType}:`, error);
         // Em caso de erro, tenta Agno AI como fallback
         return await processarComAgnoAI(message, userId, AGNO_DEFAULT_AGENT_ID, null, { dependencies: { oficina_id: oficinaId, user_id: userId, public: false } });
     }
@@ -2432,17 +2439,7 @@ function getCacheKey(message, userId) {
     return `${userId}:${message.toLowerCase().trim().substring(0, 100)}`;
 }
 
-/**
- * ðŸ§¹ Sanitiza dados para logs (LGPD compliance)
- */
-function sanitizeForLog(text) {
-    if (!text) return '';
-    return String(text)
-        .replace(/\d{3}\.\d{3}\.\d{3}-\d{2}/g, 'CPF***')
-        .replace(/\(\d{2}\)\s?\d{4,5}-\d{4}/g, 'TEL***')
-        .replace(/\d{11}/g, 'TEL***')
-        .substring(0, 150);
-}
+// M1-SEC-09: sanitizeForLog removed -- use redactPII/safeLog/devLog from sanitize-log.js
 
 function normalizarTextoResposta(texto) {
     if (!texto || typeof texto !== 'string') return texto;
@@ -2514,7 +2511,7 @@ router.get('/memories/:userId', protectRoute, async (req, res) => {
         }
 
         const agnoUserId = `user_${userId}`;
-        console.log(`ðŸ” [MEMÃ“RIA] Buscando memÃ³rias para: ${agnoUserId}`);
+        devLog(`ðŸ” [MEMÃ“RIA] Buscando memÃ³rias para: ${agnoUserId}`);
 
         // Verificar se Agno AI estÃ¡ configurado
         if (!AGNO_IS_CONFIGURED) {
@@ -2545,7 +2542,7 @@ router.get('/memories/:userId', protectRoute, async (req, res) => {
         const memories = data.data || data.memories || data.results || [];
         const meta = data.meta || null;
 
-        console.log(`âœ… [MEMÃ“RIA] ${memories.length} memÃ³rias encontradas para user_${userId}`);
+        devLog(`âœ… [MEMÃ“RIA] ${memories.length} memÃ³rias encontradas para user_${userId}`);
 
         return res.json({
             success: true,
@@ -2558,7 +2555,7 @@ router.get('/memories/:userId', protectRoute, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('âŒ [MEMÃ“RIA] Erro ao buscar memÃ³rias:', error);
+        safeError('âŒ [MEMÃ“RIA] Erro ao buscar memÃ³rias:', error);
         return res.status(500).json({
             success: false,
             error: 'Erro ao buscar memÃ³rias do assistente',
@@ -2586,7 +2583,7 @@ router.delete('/memories/:userId', protectRoute, async (req, res) => {
         }
 
         const agnoUserId = `user_${userId}`;
-        console.log(`ðŸ—‘ï¸ [MEMÃ“RIA] Excluindo memÃ³rias para: ${agnoUserId}`);
+        devLog(`ðŸ—‘ï¸ [MEMÃ“RIA] Excluindo memÃ³rias para: ${agnoUserId}`);
 
         // Verificar se Agno AI estÃ¡ configurado
         if (!AGNO_IS_CONFIGURED) {
@@ -2641,7 +2638,7 @@ router.delete('/memories/:userId', protectRoute, async (req, res) => {
             throw new Error(`Falha ao excluir memorias (HTTP ${response.status}): ${errorText.substring(0, 200)}`);
         }
 
-        console.log(`âœ… [MEMÃ“RIA] MemÃ³rias excluÃ­das com sucesso: ${memoryIds.length} para user_${userId}`);
+        devLog(`âœ… [MEMÃ“RIA] MemÃ³rias excluÃ­das com sucesso: ${memoryIds.length} para user_${userId}`);
 
         return res.json({
             success: true,
@@ -2653,7 +2650,7 @@ router.delete('/memories/:userId', protectRoute, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('âŒ [MEMÃ“RIA] Erro ao excluir memÃ³rias:', error);
+        safeError('âŒ [MEMÃ“RIA] Erro ao excluir memÃ³rias:', error);
         return res.status(500).json({
             success: false,
             error: 'Erro ao excluir memÃ³rias',
@@ -2693,7 +2690,7 @@ router.get('/memory-status', protectRoute, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('âŒ [MEMÃ“RIA] Erro ao verificar status:', error);
+        safeError('âŒ [MEMÃ“RIA] Erro ao verificar status:', error);
         return res.json({
             enabled: false,
             status: 'error',
@@ -2714,24 +2711,24 @@ if (AGNO_IS_CONFIGURED && AGNO_AUTO_WARMUP_ENABLED) {
 
             // Aquecer apenas se inativo por mais de 8 minutos
             if (inactiveTime > 8 * 60 * 1000) {
-                console.log(`ðŸ”¥ [AUTO-WARMUP] Inativo ${inactiveMinutes}min - aquecendo...`);
+                devLog(`ðŸ”¥ [AUTO-WARMUP] Inativo ${inactiveMinutes}min - aquecendo...`);
                 const result = await warmAgnoService({ reason: 'auto' });
 
                 if (result.ok) {
-                    console.log('âœ… [AUTO-WARMUP] Agno AI aquecido com sucesso');
+                    devLog('âœ… [AUTO-WARMUP] Agno AI aquecido com sucesso');
                     agnoWarmed = true;
                 } else {
                     console.warn('âš ï¸ [AUTO-WARMUP] Agno AI nÃ£o respondeu:', result?.health?.status || result?.health?.error);
                 }
             } else {
-                console.log(`âœ… [AUTO-WARMUP] Ativo (${inactiveMinutes}min) - warm-up desnecessÃ¡rio`);
+                devLog(`âœ… [AUTO-WARMUP] Ativo (${inactiveMinutes}min) - warm-up desnecessÃ¡rio`);
             }
         } catch (error) {
             console.warn('âš ï¸ [AUTO-WARMUP] Erro ao aquecer:', error.message);
         }
     }, WARMUP_INTERVAL);
 
-    console.log('🔥 [AUTO-WARMUP] Sistema INTELIGENTE ativado (economia 50%)');
+    devLog('🔥 [AUTO-WARMUP] Sistema INTELIGENTE ativado (economia 50%)');
 }
 
 /**
@@ -2750,7 +2747,7 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
     const cachedResponse = await CacheService.get(cacheKey);
 
     if (cachedResponse) {
-        console.log('⚡ [CACHE] HIT - Retornando resposta cacheada');
+        safeLog('⚡ [CACHE] HIT - Retornando resposta cacheada');
         return {
             ...cachedResponse,
             from_cache: true,
@@ -2762,7 +2759,7 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
         };
     }
 
-    console.log('💨 [CACHE] MISS - Consultando Agno AI...');
+    safeLog('💨 [CACHE] MISS - Consultando Agno AI...');
 
     if (!AGNO_IS_CONFIGURED) {
         return {
@@ -2798,7 +2795,7 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
         try {
             // AgentOS: POST /agents/{agent_id}/runs (multipart/form-data)
             const endpoint = `${baseUrl}/agents/${encodeURIComponent(resolvedAgentId)}/runs`;
-            console.log(`🚀 [AGNO] Executando agent=${resolvedAgentId} url=${endpoint} timeout_ms=${requestedTimeoutMs}`);
+            safeLog(`🚀 [AGNO] Executando agent=${resolvedAgentId} url=${endpoint} timeout_ms=${requestedTimeoutMs}`);
 
             const form = new FormData();
             form.append('message', message);
@@ -2919,7 +2916,7 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
             };
 
             await CacheService.set(cacheKey, finalResponse, 86400);
-            console.log('💾 [CACHE] Resposta salva no Redis (TTL 24h)');
+            safeLog('💾 [CACHE] Resposta salva no Redis (TTL 24h)');
 
             return finalResponse;
         } catch (error) {
@@ -2952,7 +2949,7 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
         };
     }
 
-    console.error('❌ [AGNO] Erro na requisicao:', lastError?.message || 'Erro desconhecido');
+    safeError('❌ [AGNO] Erro na requisicao:', lastError?.message || 'Erro desconhecido');
 
     if (throwOnError && lastError) {
         throw lastError;
