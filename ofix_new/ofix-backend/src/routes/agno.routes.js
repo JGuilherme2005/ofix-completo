@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
@@ -863,6 +863,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
 router.get('/historico-conversa', verificarAuth, async (req, res) => {
     try {
         const requestUserId = req.user?.id || req.user?.userId;
+        const requestOficinaId = req.user?.oficinaId;
 
         if (!requestUserId) {
             return res.status(401).json({
@@ -871,22 +872,24 @@ router.get('/historico-conversa', verificarAuth, async (req, res) => {
             });
         }
 
-        console.log('?? Buscando historico para usuario:', requestUserId);
+        if (!requestOficinaId) {
+            return res.status(400).json({ success: false, error: 'Usuário sem oficina vinculada' });
+        }
 
-        const usuarioIdInt = parseInt(String(requestUserId).replace(/-/g, '').substring(0, 9), 16) % 2147483647;
+        console.log('📖 Buscando historico para usuario:', requestUserId, '@ oficina:', requestOficinaId);
 
-        const conversa = await prisma.conversaMatias.findFirst({
-            where: { userId: usuarioIdInt },
+        const session = await prisma.chatSession.findFirst({
+            where: { oficinaId: requestOficinaId, userId: String(requestUserId) },
             orderBy: { createdAt: 'desc' },
             include: {
-                mensagens: {
+                messages: {
                     orderBy: { createdAt: 'asc' },
                     take: 50
                 }
             }
         });
 
-        if (!conversa || conversa.mensagens.length === 0) {
+        if (!session || session.messages.length === 0) {
             return res.json({
                 success: true,
                 mensagens: [],
@@ -894,20 +897,20 @@ router.get('/historico-conversa', verificarAuth, async (req, res) => {
             });
         }
 
-        const mensagensFormatadas = conversa.mensagens.map(msg => ({
+        const mensagensFormatadas = session.messages.map(msg => ({
             id: msg.id,
-            tipo_remetente: msg.tipo,
-            conteudo: msg.conteudo,
+            tipo_remetente: msg.role === 'user' ? 'user' : 'matias',
+            conteudo: msg.content,
             timestamp: msg.createdAt
         }));
 
-        console.log(`? Hist?rico retornado: ${mensagensFormatadas.length} mensagens`);
+        console.log(`✅ Histórico retornado: ${mensagensFormatadas.length} mensagens`);
 
         res.json({
             success: true,
             mensagens: mensagensFormatadas,
             total: mensagensFormatadas.length,
-            conversa_id: conversa.id
+            conversa_id: session.id
         });
     } catch (error) {
         console.error('? Erro no historico:', error);
@@ -1313,12 +1316,13 @@ async function processarAgendamento(mensagem, usuario_id, cliente_selecionado = 
             };
         }
 
-        // 6. VERIFICAR DISPONIBILIDADE
+        // 6. VERIFICAR DISPONIBILIDADE (scoped by oficina)
         const conflito = await prisma.agendamento.findFirst({
             where: {
+                oficinaId,
                 dataHora: dataHora,
                 status: {
-                    not: 'CANCELADO'
+                    not: 'CANCELED'
                 }
             },
             include: {
@@ -1337,12 +1341,15 @@ async function processarAgendamento(mensagem, usuario_id, cliente_selecionado = 
 
         // 7. CRIAR AGENDAMENTO! âœ…
         const agendamento = await AgendamentosService.criarAgendamento({
+            oficinaId,
             clienteId: cliente.id,
             veiculoId: veiculo.id,
-            tipoServico: entidades.servico || 'ServiÃ§o Geral',
             dataHora: dataHora,
-            descricao: `Agendamento via IA: ${mensagem}`,
-            status: 'AGENDADO'
+            tipo: entidades.urgente ? 'urgente' : 'normal',
+            status: 'CONFIRMED',
+            origem: 'AI_CHAT',
+            observacoes: `Agendamento via IA: ${mensagem}`,
+            criadoPor: usuario_id || 'matias'
         });
 
         // 8. CONFIRMAR COM DETALHES
@@ -1870,12 +1877,11 @@ router.post('/consultar-os', verificarAuth, async (req, res) => {
 
         console.log('?? Agno consultando OS:', { veiculo, proprietario, status, periodo, oficinaId });
 
-        const resultados = await ConsultasOSService.consultarOS({
+        const resultados = await ConsultasOSService.consultarOS(oficinaId, {
             veiculo,
             proprietario,
             status,
-            periodo,
-            oficinaId
+            periodo
         });
 
         res.json({
@@ -1922,16 +1928,18 @@ router.post('/agendar-servico', verificarAuth, async (req, res) => {
             });
         }
 
-        console.log('?? Agno agendando servico:', { cliente, veiculo, servico, data_hora, oficinaId });
+        console.log('📅 Agno agendando servico:', { cliente, veiculo, servico, data_hora, oficinaId });
 
         const agendamento = await AgendamentosService.criarAgendamento({
+            oficinaId,
             clienteId: cliente.id,
             veiculoId: veiculo.id,
-            tipoServico: servico,
             dataHora: new Date(data_hora),
-            descricao,
-            status: 'AGUARDANDO',
-            oficinaId
+            tipo: 'normal',
+            status: 'PENDING',
+            origem: 'AI_CHAT',
+            observacoes: descricao || `Serviço ${servico} agendado via Agno`,
+            criadoPor: req.user?.id || 'matias'
         });
 
         res.json({
@@ -1973,7 +1981,7 @@ router.get('/estatisticas', verificarAuth, async (req, res) => {
 
         console.log('?? Agno consultando estatisticas:', { periodo, oficinaId });
 
-        const stats = await ConsultasOSService.obterEstatisticas(periodo, oficinaId);
+        const stats = await ConsultasOSService.obterEstatisticas(oficinaId, periodo);
 
         res.json({
             success: true,
@@ -2023,9 +2031,15 @@ router.post('/salvar-conversa', verificarAuth, async (req, res) => {
             });
         }
 
-        console.log('?? Agno salvando conversa:', { usuario_id: effectiveUserId, mensagem: mensagem?.substring(0, 50) });
+        const requestOficinaId = req.user?.oficinaId;
+        if (!requestOficinaId) {
+            return res.status(400).json({ success: false, error: 'Usuário sem oficina vinculada' });
+        }
+
+        console.log('📝 Agno salvando conversa:', { oficina: requestOficinaId, usuario_id: effectiveUserId, mensagem: mensagem?.substring(0, 50) });
 
         const conversa = await ConversasService.salvarConversa({
+            oficinaId: requestOficinaId,
             usuarioId: effectiveUserId,
             pergunta: mensagem,
             resposta: resposta || '',
@@ -2035,7 +2049,7 @@ router.post('/salvar-conversa', verificarAuth, async (req, res) => {
 
         res.json({
             success: true,
-            conversa_id: conversa.id,
+            conversa_id: conversa.sessionId,
             timestamp: new Date().toISOString()
         });
 
@@ -2070,9 +2084,14 @@ router.get('/historico-conversas/:usuario_id', verificarAuth, async (req, res) =
             });
         }
 
-        console.log('?? Agno recuperando historico:', { usuario_id: requestUserId, limite });
+        const requestOficinaId = req.user?.oficinaId;
+        if (!requestOficinaId) {
+            return res.status(400).json({ success: false, error: 'Usuário sem oficina vinculada' });
+        }
 
-        const historico = await ConversasService.obterHistorico(String(requestUserId), parseInt(limite));
+        console.log('📖 Agno recuperando historico:', { oficina: requestOficinaId, usuario_id: requestUserId, limite });
+
+        const historico = await ConversasService.obterHistorico(requestOficinaId, String(requestUserId), parseInt(limite));
 
         res.json({
             success: true,

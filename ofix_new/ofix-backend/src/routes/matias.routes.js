@@ -9,32 +9,38 @@ const router = express.Router();
 // Salvar mensagem na conversa
 router.post('/conversas/mensagem', protectRoute, async (req, res) => {
   try {
-    const { userId, conversaId, tipo, conteudo, metadata = {} } = req.body;
-    
-    // Verificar se a conversa existe, se não criar uma nova
-    let conversa;
-    if (conversaId) {
-      conversa = await prisma.conversaMatias.findUnique({
-        where: { id: conversaId }
+    const oficinaId = req.user?.oficinaId;
+    const userId = req.user?.id || req.user?.userId;
+    const { sessionId, role, content, metadata = {} } = req.body;
+
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
+
+    // Buscar sessão existente ou criar nova
+    let session;
+    if (sessionId) {
+      session = await prisma.chatSession.findFirst({
+        where: { id: sessionId, oficinaId }
       });
     }
-    
-    if (!conversa) {
-      conversa = await prisma.conversaMatias.create({
+
+    if (!session) {
+      session = await prisma.chatSession.create({
         data: {
-          userId: parseInt(userId),
-          titulo: `Conversa ${new Date().toLocaleDateString()}`,
-          ativa: true
+          oficinaId,
+          userId: String(userId),
+          titulo: `Conversa ${new Date().toLocaleDateString('pt-BR')}`,
+          status: 'OPEN',
+          isPublic: false,
         }
       });
     }
 
     // Salvar a mensagem
-    const mensagem = await prisma.mensagemMatias.create({
+    const mensagem = await prisma.chatMessage.create({
       data: {
-        conversaId: conversa.id,
-        tipo, // 'user' ou 'matias'  
-        conteudo,
+        sessionId: session.id,
+        role: role || 'user',
+        content,
         metadata
       }
     });
@@ -42,7 +48,9 @@ router.post('/conversas/mensagem', protectRoute, async (req, res) => {
     res.json({
       success: true,
       mensagem,
-      conversaId: conversa.id
+      sessionId: session.id,
+      // Compat com call sites antigos
+      conversaId: session.id
     });
   } catch (error) {
     res.status(500).json({
@@ -57,26 +65,35 @@ router.get('/conversas/historico/:userId', protectRoute, async (req, res) => {
   try {
     const { userId } = req.params;
     const { limite = 10 } = req.query;
+    const oficinaId = req.user?.oficinaId;
 
-    const conversas = await prisma.conversaMatias.findMany({
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
+
+    // Segurança: só permite ver próprio histórico (ou admin no futuro)
+    const requestUserId = req.user?.id || req.user?.userId;
+    if (String(userId) !== String(requestUserId)) {
+      return res.status(403).json({ error: 'Acesso não autorizado' });
+    }
+
+    const sessions = await prisma.chatSession.findMany({
       where: {
-        userId: parseInt(userId),
-        ativa: true
+        oficinaId,
+        userId: String(userId),
       },
       include: {
-        mensagens: {
+        messages: {
           orderBy: { createdAt: 'desc' },
           take: 1 // Última mensagem para preview
         },
         _count: {
-          select: { mensagens: true }
+          select: { messages: true }
         }
       },
       orderBy: { updatedAt: 'desc' },
       take: parseInt(limite)
     });
 
-    res.json(conversas);
+    res.json(sessions);
   } catch (error) {
     res.status(500).json({
       error: 'Erro ao buscar histórico',
@@ -85,15 +102,24 @@ router.get('/conversas/historico/:userId', protectRoute, async (req, res) => {
   }
 });
 
-// Buscar mensagens de uma conversa específica
-router.get('/conversas/:conversaId/mensagens', protectRoute, async (req, res) => {
+// Buscar mensagens de uma sessão específica
+router.get('/conversas/:sessionId/mensagens', protectRoute, async (req, res) => {
   try {
-    const { conversaId } = req.params;
+    const { sessionId } = req.params;
+    const oficinaId = req.user?.oficinaId;
 
-    const mensagens = await prisma.mensagemMatias.findMany({
-      where: {
-        conversaId: parseInt(conversaId)
-      },
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
+
+    // Verificar que a sessão pertence à oficina do usuário
+    const session = await prisma.chatSession.findFirst({
+      where: { id: sessionId, oficinaId }
+    });
+    if (!session) {
+      return res.status(404).json({ error: 'Sessão não encontrada' });
+    }
+
+    const mensagens = await prisma.chatMessage.findMany({
+      where: { sessionId },
       orderBy: { createdAt: 'asc' }
     });
 
@@ -112,15 +138,19 @@ router.get('/conversas/:conversaId/mensagens', protectRoute, async (req, res) =>
 router.get('/agendamentos/disponibilidade', protectRoute, async (req, res) => {
   try {
     const { data, tipo = 'normal' } = req.query;
-    
-    // Buscar agendamentos já marcados para a data
+    const oficinaId = req.user?.oficinaId;
+
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
+
+    // Buscar agendamentos já marcados para a data (scoped por oficina)
     const agendamentosExistentes = await prisma.agendamento.findMany({
       where: {
+        oficinaId,
         dataHora: {
           gte: new Date(`${data}T00:00:00`),
           lt: new Date(`${data}T23:59:59`)
         },
-        status: 'confirmado'
+        status: { in: ['PENDING', 'CONFIRMED'] }
       }
     });
 
@@ -156,17 +186,24 @@ router.get('/agendamentos/disponibilidade', protectRoute, async (req, res) => {
 router.post('/agendamentos', protectRoute, async (req, res) => {
   try {
     const { servicoId, clienteId, veiculoId, dataHora, tipo, observacoes } = req.body;
+    const oficinaId = req.user?.oficinaId;
+    const userId = req.user?.id || req.user?.userId;
+
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
+    if (!clienteId) return res.status(400).json({ error: 'clienteId é obrigatório' });
 
     const agendamento = await prisma.agendamento.create({
       data: {
-        servicoId: parseInt(servicoId),
-        clienteId: parseInt(clienteId),
-        veiculoId: veiculoId ? parseInt(veiculoId) : null,
+        oficinaId,
+        clienteId: String(clienteId),
+        veiculoId: veiculoId ? String(veiculoId) : null,
+        servicoId: servicoId ? String(servicoId) : null,
         dataHora: new Date(dataHora),
-        tipo,
-        status: 'confirmado',
+        tipo: tipo || 'normal',
+        status: 'CONFIRMED',
+        origem: 'AI_CHAT',
         observacoes,
-        criadoPor: 'matias_ia'
+        criadoPor: String(userId) || 'matias_ia'
       }
     });
 
@@ -188,9 +225,11 @@ router.post('/agendamentos', protectRoute, async (req, res) => {
 router.get('/servicos/count', protectRoute, async (req, res) => {
   try {
     const { status } = req.query;
-    
+    const oficinaId = req.user?.oficinaId;
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
+
     const count = await prisma.servico.count({
-      where: status ? { status } : {}
+      where: status ? { oficinaId, status } : { oficinaId }
     });
 
     res.json({ count });
@@ -206,13 +245,17 @@ router.get('/servicos/count', protectRoute, async (req, res) => {
 router.get('/servicos/:servicoId/procedimentos', protectRoute, async (req, res) => {
   try {
     const { servicoId } = req.params;
+    const oficinaId = req.user?.oficinaId;
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
 
-    const procedimentos = await prisma.procedimentoServico.findMany({
-      where: {
-        servicoId: parseInt(servicoId)
-      },
+    // Verificar que o serviço pertence à oficina
+    const servico = await prisma.servico.findFirst({ where: { id: servicoId, oficinaId } });
+    if (!servico) return res.status(404).json({ error: 'Serviço não encontrado' });
+
+    const procedimentos = await prisma.procedimentoPadraoServico.findMany({
+      where: { servicoId },
       include: {
-        procedimento: true
+        procedimentoPadrao: true
       }
     });
 
@@ -229,14 +272,15 @@ router.get('/servicos/:servicoId/procedimentos', protectRoute, async (req, res) 
 router.get('/veiculos', protectRoute, async (req, res) => {
   try {
     const { placa } = req.query;
+    const oficinaId = req.user?.oficinaId;
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
 
-    const veiculos = await prisma.veiculo.findMany({
-      where: placa ? {
-        placa: {
-          contains: placa.toUpperCase()
-        }
-      } : {}
-    });
+    const where = { oficinaId };
+    if (placa) {
+      where.placa = { contains: placa.toUpperCase() };
+    }
+
+    const veiculos = await prisma.veiculo.findMany({ where });
 
     res.json(veiculos);
   } catch (error) {

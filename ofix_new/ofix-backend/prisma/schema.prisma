@@ -1,30 +1,34 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   // Deixe o Prisma escolher o engine "native" do ambiente de build (Render usa OpenSSL 3).
-  binaryTargets = ["native"]
+  binaryTargets   = ["native"]
   previewFeatures = ["relationJoins"]
 }
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("DATABASE_URL")
-  directUrl    = env("DIRECT_DATABASE_URL")
-  relationMode = "prisma"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+  // relationMode removido: agora usa o default "foreignKeys" do PostgreSQL.
+  // FKs reais são enforced no banco (M2-DB-05).
   // Configurações para resolver prepared statements em ambientes cloud
   // Use ?pgbouncer=true na DATABASE_URL
 }
 
 model User {
-  id        String    @id @default(uuid())
-  nome      String
-  email     String    @unique
-  password  String
-  role      UserRole  @default(ADMIN)
-  oficinaId String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  oficina   Oficina?  @relation(fields: [oficinaId], references: [id])
-  servicos  Servico[]
+  id           String        @id @default(uuid())
+  nome         String
+  email        String        @unique
+  password     String
+  role         UserRole      @default(ADMIN)
+  oficinaId    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  oficina      Oficina?      @relation(fields: [oficinaId], references: [id])
+  servicos     Servico[]
+  chatSessions ChatSession[]
+
+  @@index([oficinaId])
 }
 
 model Oficina {
@@ -48,29 +52,33 @@ model Oficina {
   procedimentosPadrao   ProcedimentoPadrao[]
   mensagensPadrao       MensagemPadrao[]
   transacoesFinanceiras Financeiro[]
+  chatSessions          ChatSession[]
+  agendamentos          Agendamento[]
 }
 
 model Cliente {
-  id           String    @id @default(uuid())
+  id           String        @id @default(uuid())
   nomeCompleto String
   cpfCnpj      String?
   telefone     String?
   email        String?
   endereco     String?
   oficinaId    String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  oficina      Oficina   @relation(fields: [oficinaId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  oficina      Oficina       @relation(fields: [oficinaId], references: [id])
   veiculos     Veiculo[]
   servicos     Servico[]
+  agendamentos Agendamento[]
 
   @@unique([oficinaId, cpfCnpj])
   @@unique([oficinaId, email])
   @@index([oficinaId, nomeCompleto])
+  @@index([oficinaId, createdAt])
 }
 
 model Veiculo {
-  id            String    @id @default(uuid())
+  id            String        @id @default(uuid())
   placa         String
   marca         String
   modelo        String
@@ -81,11 +89,12 @@ model Veiculo {
   kmAtual       Int?
   clienteId     String
   oficinaId     String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  cliente       Cliente   @relation(fields: [clienteId], references: [id])
-  oficina       Oficina   @relation(fields: [oficinaId], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  cliente       Cliente       @relation(fields: [clienteId], references: [id])
+  oficina       Oficina       @relation(fields: [oficinaId], references: [id])
   servicos      Servico[]
+  agendamentos  Agendamento[]
 
   @@unique([oficinaId, placa])
   @@unique([oficinaId, chassi])
@@ -122,9 +131,13 @@ model Servico {
   itensPeca           ItemServicoPeca[]
   procedimentos       ProcedimentoPadraoServico[]
   mensagens           MensagemServico[]
+  agendamentos        Agendamento[]
+  financeiros         Financeiro[]
 
   @@unique([oficinaId, numeroOs])
   @@index([oficinaId, status, dataEntrada])
+  @@index([oficinaId, clienteId])
+  @@index([oficinaId, veiculoId])
 }
 
 model Peca {
@@ -150,6 +163,7 @@ model Peca {
 
   @@unique([oficinaId, codigoInterno])
   @@index([oficinaId, nome])
+  @@index([oficinaId, fornecedorId])
 }
 
 model Fornecedor {
@@ -256,6 +270,11 @@ model Financeiro {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   oficina   Oficina  @relation(fields: [oficinaId], references: [id])
+  servico   Servico? @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+
+  @@index([oficinaId, data])
+  @@index([oficinaId, tipo])
+  @@index([servicoId])
 }
 
 enum UserRole {
@@ -273,49 +292,72 @@ enum ServiceStatus {
   CANCELADO
 }
 
-// 🤖 MODELOS PARA SISTEMA MATIAS (ASSISTENTE IA)
+// =============================================================================
+// 🤖 MODELOS MATIAS (ASSISTENTE IA) — UUID + Multi-tenant (Milestone 2)
+// =============================================================================
 
-model ConversaMatias {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  titulo    String
-  ativa     Boolean  @default(true)
+/// Sessão de chat entre um usuário (ou anônimo) e o assistente Matias.
+/// Substitui o legado ConversaMatias (Int, sem oficinaId).
+model ChatSession {
+  id        String   @id @default(uuid())
+  titulo    String?
+  status    String   @default("OPEN") // OPEN, CLOSED, ARCHIVED
+  isPublic  Boolean  @default(false) // true = sessão do chat público
+  oficinaId String
+  userId    String? // null = sessão anônima (chat público)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // Relacionamentos
-  mensagens MensagemMatias[]
-  
-  @@map("conversas_matias")
+
+  oficina  Oficina       @relation(fields: [oficinaId], references: [id], onDelete: Cascade)
+  user     User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messages ChatMessage[]
+
+  @@index([oficinaId, createdAt])
+  @@index([oficinaId, userId])
+  @@index([oficinaId, status])
+  @@map("chat_sessions")
 }
 
-model MensagemMatias {
-  id         Int      @id @default(autoincrement())
-  conversaId Int
-  tipo       String   // 'user' ou 'matias'
-  conteudo   String
-  metadata   Json?    // Dados extras como timestamp, ações sugeridas, etc
-  createdAt  DateTime @default(now())
-  
-  // Relacionamentos
-  conversa ConversaMatias @relation(fields: [conversaId], references: [id], onDelete: Cascade)
-  
-  @@map("mensagens_matias")
+/// Mensagem individual dentro de uma ChatSession.
+/// Substitui o legado MensagemMatias (Int, sem oficinaId).
+model ChatMessage {
+  id        String   @id @default(uuid())
+  sessionId String
+  role      String // "user", "assistant", "system"
+  content   String
+  metadata  Json? // tokens usados, model, tool calls, etc.
+  createdAt DateTime @default(now())
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("chat_messages")
 }
 
+/// Agendamento de serviço com isolamento por oficina.
+/// Substitui o legado Agendamento (Int, sem oficinaId, sem FKs).
 model Agendamento {
-  id           Int      @id @default(autoincrement())
-  servicoId    Int?
-  clienteId    Int
-  veiculoId    Int?
-  dataHora     DateTime
-  tipo         String   // 'urgente', 'normal', 'programado', 'especial'
-  status       String   @default("confirmado") // 'confirmado', 'cancelado', 'reagendado'
-  observacoes  String?
-  criadoPor    String?  // Para identificar se foi criado pelo Matias
-  canceladoPor String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  @@map("agendamentos")
+  id          String   @id @default(uuid())
+  oficinaId   String
+  clienteId   String
+  veiculoId   String?
+  servicoId   String?
+  dataHora    DateTime
+  tipo        String   @default("normal") // urgente, normal, programado, especial
+  status      String   @default("PENDING") // PENDING, CONFIRMED, CANCELED, COMPLETED
+  origem      String   @default("MANUAL") // MANUAL, AI_CHAT, WHATSAPP
+  observacoes String?
+  criadoPor   String? // userId ou "matias" se criado pela IA
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  oficina Oficina  @relation(fields: [oficinaId], references: [id], onDelete: Cascade)
+  cliente Cliente  @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  veiculo Veiculo? @relation(fields: [veiculoId], references: [id], onDelete: SetNull)
+  servico Servico? @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+
+  @@index([oficinaId, dataHora])
+  @@index([oficinaId, status])
+  @@index([oficinaId, clienteId])
+  @@map("agendamentos_v2")
 }
