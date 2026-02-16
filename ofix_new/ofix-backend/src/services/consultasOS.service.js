@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../config/database.js';
 
 // ============================================================================
 // ConsultasOS Service — Milestone 2 (multi-tenancy + field fixes)

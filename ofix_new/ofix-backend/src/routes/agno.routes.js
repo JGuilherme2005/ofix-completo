@@ -1064,7 +1064,7 @@ async function processarAgendamento(mensagem, usuario_id, cliente_selecionado = 
         // Se houver um cliente selecionado previamente, usÃ¡-lo
         if (cliente_selecionado) {
             cliente = await prisma.cliente.findFirst({
-                where: { id: cliente_selecionado.id },
+                where: { id: cliente_selecionado.id, ...(oficinaId && { oficinaId }) },
                 include: {
                     veiculos: true
                 }
@@ -1121,7 +1121,8 @@ async function processarAgendamento(mensagem, usuario_id, cliente_selecionado = 
         } else if (entidades.placa) {
             const veiculo = await prisma.veiculo.findFirst({
                 where: {
-                    placa: entidades.placa
+                    placa: entidades.placa,
+                    ...(oficinaId && { oficinaId })
                 },
                 include: {
                     cliente: {
@@ -1487,16 +1488,14 @@ async function processarEstatisticas(mensagem, oficinaId = null) {
             };
         }
 
-        const stats = await ConsultasOSService.obterResumoOfficina('hoje', oficinaId);
+        const stats = await ConsultasOSService.obterResumoDiario(oficinaId);
 
         return {
             success: true,
             response: `?? **Estat?sticas de Hoje**
 
-? **Ordens de Servi?o:** ${stats.total_os || 0}
-? **Agendamentos:** ${stats.agendamentos || 0}
-? **Clientes Atendidos:** ${stats.clientes || 0}
-? **Receita:** R$ ${(stats.receita || 0).toFixed(2)}`,
+? **Ordens de Servi?o:** ${stats.os_abertas || 0}
+? **Agendamentos:** ${stats.agendamentos || 0}`,
             tipo: 'estatisticas',
             stats
         };
