@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { protectRoute } from '../middlewares/auth.middleware.js';
+import { sendSafeError } from '../lib/safe-error.js';
 
 // Importar serviÃ§os do Matias
 import ConversasService from '../services/conversas.service.js';
@@ -415,29 +416,17 @@ async function warmAgnoService({ reason = 'manual', maxWaitMs = AGNO_WARM_MAX_WA
 }
 
 // Endpoint pÃºblico para verificar configuraÃ§Ã£o do Agno
-router.get('/config', async (req, res) => {
+router.get('/config', verificarAuth, async (req, res) => {
     try {
-        console.log('ðŸ”§ Verificando configuraÃ§Ã£o do Agno...');
 
         const memoryEnabled = process.env.AGNO_ENABLE_MEMORY === 'true' && AGNO_IS_CONFIGURED;
 
         res.json({
             configured: AGNO_IS_CONFIGURED,
-            agno_url: AGNO_BASE_URL || null,
-            agno_urls: AGNO_BASE_URLS,
+            // M1-SEC-06: agno_url/agno_urls removed
             has_token: !!AGNO_API_TOKEN,
             agent_id: AGNO_DEFAULT_AGENT_ID,
             warmed: agnoWarmed,
-            timeouts: {
-                run_timeout_ms: AGNO_RUN_TIMEOUT_MS,
-                health_timeout_ms: AGNO_HEALTH_TIMEOUT_MS,
-                warm_health_timeout_ms: AGNO_WARM_HEALTH_TIMEOUT_MS
-            },
-            warm_run: {
-                enabled: AGNO_WARM_RUN_ENABLED,
-                agent_id: AGNO_WARM_RUN_AGENT_ID,
-                timeout_ms: AGNO_WARM_RUN_TIMEOUT_MS
-            },
             memory_enabled: memoryEnabled, // â† NOVO: indica se memÃ³ria estÃ¡ ativa
             last_warming: lastWarmingAttempt ? new Date(lastWarmingAttempt).toISOString() : null,
             timestamp: new Date().toISOString(),
@@ -447,7 +436,7 @@ router.get('/config', async (req, res) => {
         console.error('âŒ Erro ao verificar configuraÃ§Ã£o:', error.message);
         res.status(500).json({
             error: 'Erro ao verificar configuraÃ§Ã£o',
-            message: error.message
+            ...(process.env.NODE_ENV === 'development' && { details: error.message })
         });
     }
 });
@@ -462,11 +451,7 @@ router.post('/warm', verificarAuth, async (req, res) => {
         res.json({
             success: result.ok,
             warmed: agnoWarmed,
-            agno_url: AGNO_BASE_URL || null,
-            agno_urls: AGNO_BASE_URLS,
             message: result.ok ? 'ServiÃ§o Agno aquecido com sucesso' : 'Falha ao aquecer serviÃ§o Agno',
-            health: result.health,
-            warm_run: result.warm_run,
             timestamp: new Date().toISOString()
         });
     } catch (error) {
@@ -474,7 +459,7 @@ router.post('/warm', verificarAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erro ao aquecer serviÃ§o',
-            message: error.message
+            ...(process.env.NODE_ENV === 'development' && { details: error.message })
         });
     }
 });
@@ -488,17 +473,10 @@ router.get('/status', verificarAuth, async (req, res) => {
             configured: AGNO_IS_CONFIGURED,
             online: false,
             status: AGNO_IS_CONFIGURED ? 'unknown' : 'not_configured',
-            agno_url: AGNO_BASE_URL || null,
-            agno_urls: AGNO_BASE_URLS,
             agent_id: AGNO_DEFAULT_AGENT_ID,
             warmed: agnoWarmed,
             last_warming: lastWarmingAttempt ? new Date(lastWarmingAttempt).toISOString() : null,
             last_activity: lastActivity ? new Date(lastActivity).toISOString() : null,
-            timeouts: {
-                run_timeout_ms: AGNO_RUN_TIMEOUT_MS,
-                health_timeout_ms: AGNO_HEALTH_TIMEOUT_MS,
-                warm_health_timeout_ms: AGNO_WARM_HEALTH_TIMEOUT_MS
-            },
             circuit_breaker: {
                 open: circuitBreakerOpen,
                 open_until: circuitBreakerOpenUntil ? new Date(circuitBreakerOpenUntil).toISOString() : null
@@ -519,8 +497,7 @@ router.get('/status', verificarAuth, async (req, res) => {
             ...base.agno,
             online: health.ok,
             status: health.ok ? 'online' : 'offline',
-            active_base_url: health.base_url || null,
-            health
+
         }
     });
 });
@@ -851,7 +828,7 @@ router.post('/chat-inteligente', verificarAuth, validateMessage, async (req, res
         return res.status(500).json({
             success: false,
             error: 'Erro ao processar mensagem',
-            message: error.message
+            ...(process.env.NODE_ENV === 'development' && { details: error.message })
         });
     }
 });
@@ -917,7 +894,7 @@ router.get('/historico-conversa', verificarAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erro ao recuperar historico',
-            message: error.message
+            ...(process.env.NODE_ENV === 'development' && { details: error.message })
         });
     }
 });
@@ -2058,7 +2035,7 @@ router.post('/salvar-conversa', verificarAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erro ao salvar conversa',
-            message: error.message
+            ...(process.env.NODE_ENV === 'development' && { details: error.message })
         });
     }
 });
@@ -2106,13 +2083,13 @@ router.get('/historico-conversas/:usuario_id', verificarAuth, async (req, res) =
         res.status(500).json({
             success: false,
             error: 'Erro ao recuperar historico',
-            message: error.message
+            ...(process.env.NODE_ENV === 'development' && { details: error.message })
         });
     }
 });
 
 // Endpoint para fornecer contexto do sistema ao Agno
-router.get('/contexto-sistema', async (req, res) => {
+router.get('/contexto-sistema', verificarAuth, async (req, res) => {
     try {
         const contexto = {
             sistema: "OFIX - Sistema de Oficina Automotiva",
@@ -2127,13 +2104,6 @@ router.get('/contexto-sistema', async (req, res) => {
                 "Buscar peÃ§as no estoque com preÃ§os atualizados",
                 "Acompanhar status de serviÃ§os em andamento"
             ],
-            funcoes_disponivel: {
-                "consultar_os": "/agno/consultar-os",
-                "agendar_servico": "/agno/agendar-servico",
-                "obter_estatisticas": "/agno/estatisticas",
-                "salvar_conversa": "/agno/salvar-conversa",
-                "historico": "/agno/historico-conversas/:usuario_id"
-            },
             exemplos_uso: {
                 consulta_os: "Mostrar todas as ordens de serviÃ§o do Gol 2020 prata",
                 agendamento: "Agendar revisÃ£o para o Civic do JoÃ£o na prÃ³xima segunda Ã s 14h",
@@ -2246,7 +2216,7 @@ router.get('/agents', verificarAuth, async (req, res) => {
         console.error('âŒ Erro ao conectar para listar agentes:', error.message);
         res.status(500).json({
             error: 'Erro interno do servidor',
-            message: error.message
+            ...(process.env.NODE_ENV === 'development' && { details: error.message })
         });
     }
 });
@@ -2357,7 +2327,7 @@ router.post('/chat', verificarAuth, async (req, res) => {
         console.error('âŒ [CHAT] Erro geral:', error);
         res.status(500).json({
             error: 'Erro interno do servidor',
-            message: error.message
+            ...(process.env.NODE_ENV === 'development' && { details: error.message })
         });
     }
 });
@@ -2688,7 +2658,7 @@ router.delete('/memories/:userId', verificarAuth, async (req, res) => {
  * ðŸ“Š GET /api/agno/memory-status
  * Verifica se o sistema de memÃ³ria estÃ¡ ativo e funcionando
  */
-router.get('/memory-status', async (req, res) => {
+router.get('/memory-status', verificarAuth, async (req, res) => {
     try {
         // Verificar se Agno AI estÃ¡ configurado
         const isConfigured = AGNO_IS_CONFIGURED;
@@ -2707,9 +2677,7 @@ router.get('/memory-status', async (req, res) => {
         return res.json({
             enabled: isOnline,
             status: isOnline ? 'active' : 'unavailable',
-            agno_url: health.base_url || AGNO_BASE_URL || null,
-            agno_urls: AGNO_BASE_URLS,
-            health,
+            // M1-SEC-06: URLs and health details removed
             message: isOnline
                 ? 'Sistema de memÃ³ria ativo - Matias lembra das suas conversas'
                 : 'Sistema temporariamente indisponÃ­vel',

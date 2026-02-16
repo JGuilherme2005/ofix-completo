@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import './lib/startup-guards.js'; // M1-SEC-01: fail-fast on missing env vars
 import dns from 'node:dns';
 import app from './app.js';
 

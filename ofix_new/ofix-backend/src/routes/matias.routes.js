@@ -1,6 +1,7 @@
-import express from 'express';
+﻿import express from 'express';
 import prisma from '../config/database.js';
 import { protectRoute } from '../middlewares/auth.middleware.js';
+import { sendSafeError } from '../lib/safe-error.js';
 
 const router = express.Router();
 
@@ -53,10 +54,7 @@ router.post('/conversas/mensagem', protectRoute, async (req, res) => {
       conversaId: session.id
     });
   } catch (error) {
-    res.status(500).json({
-      error: 'Erro ao salvar mensagem',
-      details: error.message
-    });
+    sendSafeError(res, 500, 'Erro ao salvar mensagem', error);
   }
 });
 
@@ -95,10 +93,7 @@ router.get('/conversas/historico/:userId', protectRoute, async (req, res) => {
 
     res.json(sessions);
   } catch (error) {
-    res.status(500).json({
-      error: 'Erro ao buscar histórico',
-      details: error.message
-    });
+    sendSafeError(res, 500, 'Erro ao buscar histórico', error);
   }
 });
 
@@ -125,10 +120,7 @@ router.get('/conversas/:sessionId/mensagens', protectRoute, async (req, res) => 
 
     res.json(mensagens);
   } catch (error) {
-    res.status(500).json({
-      error: 'Erro ao buscar mensagens',
-      details: error.message
-    });
+    sendSafeError(res, 500, 'Erro ao buscar mensagens', error);
   }
 });
 
@@ -175,10 +167,7 @@ router.get('/agendamentos/disponibilidade', protectRoute, async (req, res) => {
         new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0] : null
     });
   } catch (error) {
-    res.status(500).json({
-      error: 'Erro ao verificar disponibilidade',
-      details: error.message
-    });
+    sendSafeError(res, 500, 'Erro ao verificar disponibilidade', error);
   }
 });
 
@@ -212,10 +201,7 @@ router.post('/agendamentos', protectRoute, async (req, res) => {
       agendamento
     });
   } catch (error) {
-    res.status(500).json({
-      error: 'Erro ao criar agendamento',
-      details: error.message
-    });
+    sendSafeError(res, 500, 'Erro ao criar agendamento', error);
   }
 });
 
@@ -234,10 +220,7 @@ router.get('/servicos/count', protectRoute, async (req, res) => {
 
     res.json({ count });
   } catch (error) {
-    res.status(500).json({
-      error: 'Erro ao contar serviços',
-      details: error.message
-    });
+    sendSafeError(res, 500, 'Erro ao contar serviços', error);
   }
 });
 
@@ -261,10 +244,7 @@ router.get('/servicos/:servicoId/procedimentos', protectRoute, async (req, res) 
 
     res.json(procedimentos);
   } catch (error) {
-    res.status(500).json({
-      error: 'Erro ao buscar procedimentos',
-      details: error.message
-    });
+    sendSafeError(res, 500, 'Erro ao buscar procedimentos', error);
   }
 });
 
@@ -284,10 +264,7 @@ router.get('/veiculos', protectRoute, async (req, res) => {
 
     res.json(veiculos);
   } catch (error) {
-    res.status(500).json({
-      error: 'Erro ao buscar veículos',
-      details: error.message
-    });
+    sendSafeError(res, 500, 'Erro ao buscar veículos', error);
   }
 });
 

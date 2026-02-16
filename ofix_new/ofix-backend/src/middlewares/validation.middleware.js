@@ -83,13 +83,10 @@ export const validators = {
   placa: (placa) => {
     if (!placa) return false;
     const placaLimpa = placa.replace(/[-\s]/g, "").toUpperCase();
-    console.log("Validando placa:", placa, "Placa limpa:", placaLimpa); // Debug log
 
     // Formato brasileiro: ABC1234 ou ABC-1234 ou ABC1D23 (Mercosul)
     const placaRegex = /^[A-Z]{3}[\d]{4}$|^[A-Z]{3}[\d][A-Z][\d]{2}$/;
-    const isValid = placaRegex.test(placaLimpa);
-    console.log("Placa válida:", isValid); // Debug log
-    return isValid;
+    return placaRegex.test(placaLimpa);
   },
 
   uuid: (id) => {
@@ -137,27 +134,17 @@ export function validateVeiculoData(req, res, next) {
   const { placa, marca, modelo, anoFabricacao } = req.body;
   const errors = [];
 
-  console.log("Validando dados do veículo:", {
-    placa,
-    marca,
-    modelo,
-    anoFabricacao,
-  }); // Debug log
-
   if (!placa || !validators.placa(placa)) {
-    console.log("Erro na validação da placa:", placa); // Debug log
     errors.push(
       "Placa é obrigatória e deve ter formato válido (ABC-1234 ou ABC1D23)"
     );
   }
 
   if (!marca || marca.trim().length < 2) {
-    console.log("Erro na validação da marca:", marca); // Debug log
     errors.push("Marca é obrigatória e deve ter pelo menos 2 caracteres");
   }
 
   if (!modelo || modelo.trim().length < 2) {
-    console.log("Erro na validação do modelo:", modelo); // Debug log
     errors.push("Modelo é obrigatório e deve ter pelo menos 2 caracteres");
   }
 
@@ -165,19 +152,16 @@ export function validateVeiculoData(req, res, next) {
     anoFabricacao &&
     (anoFabricacao < 1900 || anoFabricacao > new Date().getFullYear() + 1)
   ) {
-    console.log("Erro na validação do ano:", anoFabricacao); // Debug log
     errors.push("Ano de fabricação deve estar entre 1900 e o próximo ano");
   }
 
   if (errors.length > 0) {
-    console.log("Erros de validação encontrados:", errors); // Debug log
     return res.status(400).json({
       error: "Dados inválidos",
       details: errors,
     });
   }
 
-  console.log("Validação passou com sucesso"); // Debug log
   next();
 }
 

@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import routes from './routes/index.js';
-import agnoRoutes from './routes/agno.routes.js';
 import { securityHeaders, rateLimit } from './middlewares/security.middleware.js';
 import { sanitizeInput } from './middlewares/validation.middleware.js';
 
@@ -96,9 +95,9 @@ class Application {
 
     // --- FIM DA CORREÇÃO DO CORS ---
 
-    // Middleware para parsing JSON com limite de tamanho
-    this.server.use(express.json({ limit: '10mb' }));
-    this.server.use(express.urlencoded({ extended: true, limit: '10mb' }));
+    // Middleware para parsing JSON com limite de tamanho (reduzido de 10mb — M1-SEC-04)
+    this.server.use(express.json({ limit: '1mb' }));
+    this.server.use(express.urlencoded({ extended: true, limit: '1mb' }));
     
     // Middleware de sanitização de entrada
     this.server.use(sanitizeInput);
@@ -124,7 +123,7 @@ class Application {
     });
 
     this.server.use('/api', routes);
-    this.server.use('/agno', agnoRoutes);
+    // M1-SEC-10: removed duplicate /agno mount — use /api/agno/* exclusively.
     this.server.get('/', (req, res) => {
       res.json({ message: 'Bem-vindo à API OFIX!' });
     });
@@ -132,14 +131,24 @@ class Application {
 
   setupErrorHandler() {
     this.server.use((err, req, res, next) => {
-      console.error(err.stack);
       if (res.headersSent) {
         return next(err);
       }
-      res.status(err.status || 500).json({
+
+      const isDev = process.env.NODE_ENV === 'development';
+
+      // Only log full stack in dev; in prod, log a one-liner to avoid PII/secret leaks.
+      if (isDev) {
+        console.error(err.stack);
+      } else {
+        console.error(`[ERROR] ${req.method} ${req.path} — ${err.message || 'unknown'}`);
+      }
+
+      const status = err.status || 500;
+      res.status(status).json({
         error: {
-          message: err.message || 'Ocorreu um erro interno no servidor.',
-          ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+          message: isDev ? (err.message || 'Erro interno.') : 'Ocorreu um erro interno no servidor.',
+          ...(isDev && { stack: err.stack }),
         },
       });
     });
