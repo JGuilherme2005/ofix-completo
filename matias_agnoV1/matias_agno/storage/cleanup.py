@@ -121,47 +121,64 @@ def run_cleanup(*, dry_run: bool = False) -> CleanupResult:
         engine = sqlalchemy.create_engine(db_url, pool_pre_ping=True)
 
         with engine.begin() as conn:
+            # Check if tables exist yet (Agno creates them lazily on first conversation).
+            existing = set()
+            for tbl in (sessions_table, memories_table):
+                check = sqlalchemy.text(
+                    "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
+                    "WHERE table_name = :tbl)"
+                )
+                if conn.execute(check, {"tbl": tbl}).scalar():
+                    existing.add(tbl)
+
+            if not existing:
+                logger.info("[cleanup] Tables not yet created by Agno — nothing to clean.")
+                engine.dispose()
+                return result
+
             # ── Sessions ─────────────────────────────────────────────────
 
-            # 1a) Public sessions older than PUBLIC_MEMORY_TTL_HOURS
-            q = sqlalchemy.text(
-                f"{verb} FROM {sessions_table} "
-                f"WHERE agent_id = :pub_agent AND updated_at < :pub_cutoff"
-                f"{returning}"
-            )
-            rows = conn.execute(q, {"pub_agent": PUBLIC_AGENT_ID, "pub_cutoff": public_cutoff})
-            result.sessions_public_deleted = rows.rowcount if not dry_run else (rows.scalar() or 0)
+            if sessions_table in existing:
+                # 1a) Public sessions older than PUBLIC_MEMORY_TTL_HOURS
+                q = sqlalchemy.text(
+                    f"{verb} FROM {sessions_table} "
+                    f"WHERE agent_id = :pub_agent AND updated_at < :pub_cutoff"
+                    f"{returning}"
+                )
+                rows = conn.execute(q, {"pub_agent": PUBLIC_AGENT_ID, "pub_cutoff": public_cutoff})
+                result.sessions_public_deleted = rows.rowcount if not dry_run else (rows.scalar() or 0)
 
-            # 1b) Auth sessions older than AUTH_MEMORY_TTL_DAYS
-            q = sqlalchemy.text(
-                f"{verb} FROM {sessions_table} "
-                f"WHERE (agent_id IS NULL OR agent_id != :pub_agent) "
-                f"AND updated_at < :auth_cutoff"
-                f"{returning}"
-            )
-            rows = conn.execute(q, {"pub_agent": PUBLIC_AGENT_ID, "auth_cutoff": auth_cutoff})
-            result.sessions_auth_deleted = rows.rowcount if not dry_run else (rows.scalar() or 0)
+                # 1b) Auth sessions older than AUTH_MEMORY_TTL_DAYS
+                q = sqlalchemy.text(
+                    f"{verb} FROM {sessions_table} "
+                    f"WHERE (agent_id IS NULL OR agent_id != :pub_agent) "
+                    f"AND updated_at < :auth_cutoff"
+                    f"{returning}"
+                )
+                rows = conn.execute(q, {"pub_agent": PUBLIC_AGENT_ID, "auth_cutoff": auth_cutoff})
+                result.sessions_auth_deleted = rows.rowcount if not dry_run else (rows.scalar() or 0)
 
             # ── Memories ─────────────────────────────────────────────────
 
-            # 2a) Public memories (should rarely exist — public agent has memory OFF)
-            q = sqlalchemy.text(
-                f"{verb} FROM {memories_table} "
-                f"WHERE agent_id = :pub_agent AND updated_at < :pub_cutoff"
-                f"{returning}"
-            )
-            rows = conn.execute(q, {"pub_agent": PUBLIC_AGENT_ID, "pub_cutoff": public_cutoff})
-            result.memories_public_deleted = rows.rowcount if not dry_run else (rows.scalar() or 0)
+            if memories_table in existing:
+                # 2a) Public memories (should rarely exist — public agent has memory OFF)
+                q = sqlalchemy.text(
+                    f"{verb} FROM {memories_table} "
+                    f"WHERE agent_id = :pub_agent AND updated_at < :pub_cutoff"
+                    f"{returning}"
+                )
+                rows = conn.execute(q, {"pub_agent": PUBLIC_AGENT_ID, "pub_cutoff": public_cutoff})
+                result.memories_public_deleted = rows.rowcount if not dry_run else (rows.scalar() or 0)
 
-            # 2b) Auth memories older than AUTH_MEMORY_TTL_DAYS
-            q = sqlalchemy.text(
-                f"{verb} FROM {memories_table} "
-                f"WHERE (agent_id IS NULL OR agent_id != :pub_agent) "
-                f"AND updated_at < :auth_cutoff"
-                f"{returning}"
-            )
-            rows = conn.execute(q, {"pub_agent": PUBLIC_AGENT_ID, "auth_cutoff": auth_cutoff})
-            result.memories_auth_deleted = rows.rowcount if not dry_run else (rows.scalar() or 0)
+                # 2b) Auth memories older than AUTH_MEMORY_TTL_DAYS
+                q = sqlalchemy.text(
+                    f"{verb} FROM {memories_table} "
+                    f"WHERE (agent_id IS NULL OR agent_id != :pub_agent) "
+                    f"AND updated_at < :auth_cutoff"
+                    f"{returning}"
+                )
+                rows = conn.execute(q, {"pub_agent": PUBLIC_AGENT_ID, "auth_cutoff": auth_cutoff})
+                result.memories_auth_deleted = rows.rowcount if not dry_run else (rows.scalar() or 0)
 
         engine.dispose()
 
