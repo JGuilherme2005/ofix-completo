@@ -417,9 +417,9 @@ async function warmAgnoService({ reason = 'manual', maxWaitMs = AGNO_WARM_MAX_WA
 
 // M1-SEC-05: Rate limiter para /warm (previne spam de warming)
 const warmLimiter = rateLimit({
-    windowMs: 60 * 1000,
+    windowMs: 5 * 60 * 1000, // 5 minutos
     max: 2,
-    message: { error: 'Warm muito frequente. Aguarde 1 minuto.' },
+    message: { error: 'Warm muito frequente. Aguarde 5 minutos.' },
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req, res) => ipKeyGenerator(req, res),
@@ -2885,6 +2885,21 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
                 data.response ||
                 data.message ||
                 "Nao entendi.";
+
+
+            // M3-AI-03 FIX: Detect guardrail rejection in 200 responses.
+            // AgentOS may return the guardrail message as normal content (HTTP 200).
+            const rawLower = String(respostaTextoRaw || '').toLowerCase();
+            const isGuardrailContent = /jailbreak|prompt.?inject|input.?check/i.test(rawLower);
+            if (isGuardrailContent) {
+                console.warn('[AGNO] Guardrail message detected in 200 response -- replacing with PT-BR safe message');
+                return {
+                    response: 'Desculpe, nao consigo processar essa solicitacao. Posso ajudar com duvidas sobre manutencao automotiva ou servicos da oficina.',
+                    conteudo: 'Desculpe, nao consigo processar essa solicitacao. Posso ajudar com duvidas sobre manutencao automotiva ou servicos da oficina.',
+                    metadata: { model: 'guardrail-blocked', guardrail: true, usage: { total_tokens: 0 } }
+                };
+            }
+
 
             const respostaTexto = normalizarTextoResposta(respostaTextoRaw);
             const finalResponse = {

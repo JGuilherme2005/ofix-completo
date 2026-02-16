@@ -14,7 +14,7 @@ from matias_agno.tools.simulate import simulate_vehicle_scenario
 from matias_agno.storage.memory import get_memory_storage
 
 # ── Single source of truth for prompts (M3-AI-01) ────────────────────────────
-from matias_agno.agents.matias import INSTRUCTIONS, PUBLIC_INSTRUCTIONS
+from matias_agno.agents.matias import INSTRUCTIONS, PUBLIC_INSTRUCTIONS, _pi_guardrail
 
 from ollama import Client as OllamaClient
 

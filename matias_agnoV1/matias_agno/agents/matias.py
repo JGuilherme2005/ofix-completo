@@ -13,8 +13,38 @@ from agno.models.huggingface import HuggingFace
 
 try:
     from agno.guardrails import PromptInjectionGuardrail
-    _pi_guardrail = PromptInjectionGuardrail()
-    print("[matias] PromptInjectionGuardrail loaded")
+    from agno.exceptions import CheckTrigger, InputCheckError
+    from agno.run.agent import RunInput
+
+    # Custom guardrail that returns a PT-BR message instead of the default English one.
+    class _PIGuardrailPTBR(PromptInjectionGuardrail):
+        """Wrapper that overrides the rejection message to Portuguese."""
+
+        _REJECTION_MSG = (
+            "Desculpe, nao consigo processar essa solicitacao. "
+            "Posso ajudar com duvidas sobre manutencao automotiva ou servicos da oficina."
+        )
+
+        def check(self, run_input: RunInput) -> None:
+            try:
+                super().check(run_input)
+            except InputCheckError:
+                raise InputCheckError(
+                    self._REJECTION_MSG,
+                    check_trigger=CheckTrigger.INPUT_NOT_ALLOWED,
+                )
+
+        async def async_check(self, run_input: RunInput) -> None:
+            try:
+                await super().async_check(run_input)
+            except InputCheckError:
+                raise InputCheckError(
+                    self._REJECTION_MSG,
+                    check_trigger=CheckTrigger.INPUT_NOT_ALLOWED,
+                )
+
+    _pi_guardrail = _PIGuardrailPTBR()
+    print("[matias] PromptInjectionGuardrail (PT-BR) loaded")
 except Exception as _guard_err:
     _pi_guardrail = None
     print(f"[matias] PromptInjectionGuardrail unavailable: {_guard_err}")
