@@ -47,6 +47,8 @@ def create_matias_ollama_agent():
         search_knowledge=knowledge_enabled,  # Habilita busca automatica apenas quando configurada
         
         tools=[simulate_vehicle_scenario],
+        # M3-AI-03: PromptInjectionGuardrail blocks jailbreak/injection attempts.
+        pre_hooks=[_pi_guardrail] if _pi_guardrail else [],
         markdown=True,
         debug_mode=False,
         description="Assistente especializado em oficina automotiva rodando via Ollama Remoto",
@@ -84,6 +86,8 @@ def create_matias_ollama_public_agent():
         knowledge=None,
         search_knowledge=False,
         tools=[simulate_vehicle_scenario],
+        # M3-AI-03: PromptInjectionGuardrail — also on public Ollama agent.
+        pre_hooks=[_pi_guardrail] if _pi_guardrail else [],
         markdown=True,
         debug_mode=False,
         description="Assistente publico (somente leitura, sem memoria persistente, sem tenant)",

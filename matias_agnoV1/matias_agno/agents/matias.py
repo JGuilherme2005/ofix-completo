@@ -11,6 +11,14 @@ from agno.agent import Agent
 from agno.models.groq import Groq
 from agno.models.huggingface import HuggingFace
 
+try:
+    from agno.guardrails import PromptInjectionGuardrail
+    _pi_guardrail = PromptInjectionGuardrail()
+    print("[matias] PromptInjectionGuardrail loaded")
+except Exception as _guard_err:
+    _pi_guardrail = None
+    print(f"[matias] PromptInjectionGuardrail unavailable: {_guard_err}")
+
 from matias_agno.knowledge.base import get_knowledge_base
 from matias_agno.storage.memory import get_memory_storage
 from matias_agno.tools.simulate import simulate_vehicle_scenario
@@ -164,6 +172,8 @@ def create_matias_agent():
         knowledge=knowledge_base,
         search_knowledge=knowledge_enabled,
         tools=[simulate_vehicle_scenario],
+        # M3-AI-03: PromptInjectionGuardrail blocks jailbreak/injection attempts.
+        pre_hooks=[_pi_guardrail] if _pi_guardrail else [],
         markdown=True,
         debug_mode=False,
         description=(
@@ -192,6 +202,8 @@ def create_matias_public_agent():
         knowledge=None,
         search_knowledge=False,
         tools=[simulate_vehicle_scenario],
+        # M3-AI-03: PromptInjectionGuardrail — also on public agent.
+        pre_hooks=[_pi_guardrail] if _pi_guardrail else [],
         markdown=True,
         debug_mode=False,
         description="Assistente publico (somente leitura, sem memoria persistente, sem tenant)",

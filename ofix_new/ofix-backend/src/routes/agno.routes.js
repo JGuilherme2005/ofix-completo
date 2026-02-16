@@ -677,7 +677,7 @@ router.post('/chat-inteligente', protectRoute, validateMessage, async (req, res)
             // âš¡ PROCESSA LOCALMENTE (rÃ¡pido, confiÃ¡vel)
             console.log('âš¡ [BACKEND_LOCAL] Processando localmente...');
 
-            responseData = await processarLocal(message, classification, usuario_id, contexto_ativo, req);
+            responseData = await processarLocal(message, classification, usuario_id, contexto_ativo, req, oficinaId);
 
             const duration = Date.now() - startTime;
             console.log(`âœ… [BACKEND_LOCAL] Processado em ${duration}ms`);
@@ -2276,7 +2276,7 @@ router.post('/chat', protectRoute, async (req, res) => {
             console.log('âš¡ [BACKEND_LOCAL] Processando localmente...');
             const startTime = Date.now();
 
-            responseData = await processarLocal(message, classification, userId, contexto_ativo, req);
+            responseData = await processarLocal(message, classification, userId, contexto_ativo, req, oficinaId);
 
             const duration = Date.now() - startTime;
             console.log(`âœ… [BACKEND_LOCAL] Processado em ${duration}ms`);
@@ -2347,7 +2347,7 @@ router.post('/chat', protectRoute, async (req, res) => {
 /**
  * Processa mensagem localmente (SEM Agno AI)
  */
-async function processarLocal(message, classification, userId, contexto_ativo, req) {
+async function processarLocal(message, classification, userId, contexto_ativo, req, oficinaId) {
     try {
         switch (classification.type) {
             case 'GREETING':
@@ -2372,12 +2372,12 @@ async function processarLocal(message, classification, userId, contexto_ativo, r
             default:
                 // Fallback: envia para Agno AI
                 console.log('âš ï¸ [BACKEND_LOCAL] Tipo nÃ£o reconhecido, enviando para Agno AI');
-                return await processarComAgnoAI(message, userId);
+                return await processarComAgnoAI(message, userId, AGNO_DEFAULT_AGENT_ID, null, { dependencies: { oficina_id: oficinaId, user_id: userId, public: false } });
         }
     } catch (error) {
         console.error('âŒ [BACKEND_LOCAL] Erro:', error);
         // Em caso de erro, tenta Agno AI como fallback
-        return await processarComAgnoAI(message, userId);
+        return await processarComAgnoAI(message, userId, AGNO_DEFAULT_AGENT_ID, null, { dependencies: { oficina_id: oficinaId, user_id: userId, public: false } });
     }
 }
 
@@ -2416,12 +2416,12 @@ async function processarAcaoLocal(message, actionType, userId, contexto_ativo, o
             default:
                 // AÃ§Ã£o nÃ£o implementada, envia para Agno AI
                 console.log(`âš ï¸ [ACAO_LOCAL] AÃ§Ã£o ${actionType} nÃ£o implementada, enviando para Agno AI`);
-                return await processarComAgnoAI(message, userId);
+                return await processarComAgnoAI(message, userId, AGNO_DEFAULT_AGENT_ID, null, { dependencies: { oficina_id: oficinaId, user_id: userId, public: false } });
         }
     } catch (error) {
         console.error(`âŒ [ACAO_LOCAL] Erro ao processar ${actionType}:`, error);
         // Em caso de erro, tenta Agno AI como fallback
-        return await processarComAgnoAI(message, userId);
+        return await processarComAgnoAI(message, userId, AGNO_DEFAULT_AGENT_ID, null, { dependencies: { oficina_id: oficinaId, user_id: userId, public: false } });
     }
 }
 
@@ -2851,6 +2851,17 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
                 httpError.is_rate_limit = Boolean(isRateLimit);
                 httpError.is_cold_start = Boolean(isColdStart);
 
+                // M3-AI-03: Detect guardrail rejection (PromptInjectionGuardrail).
+                // AgentOS returns 422 with "InputCheckError" when guardrail blocks the input.
+                const isGuardrailBlock = response.status === 422 || /input.?check|guardrail|prompt.?inject/i.test(errorTextLower);
+                httpError.is_guardrail_block = Boolean(isGuardrailBlock);
+                if (isGuardrailBlock) {
+                    console.warn('[AGNO] Guardrail blocked input (prompt injection detected)');
+                    const guardrailError = new Error('Guardrail blocked');
+                    guardrailError.is_guardrail_block = true;
+                    throw guardrailError;
+                }
+
                 if (httpError.is_rate_limit) {
                     openCircuitBreaker();
                 }
@@ -2914,6 +2925,16 @@ async function processarComAgnoAI(message, userId, agentId = AGNO_DEFAULT_AGENT_
     if (lastError) {
         lastError.is_timeout = Boolean(isTimeout);
         lastError.base_url = lastErrorUrl;
+    }
+
+
+    // M3-AI-03: Return safe message if guardrail blocked the input (do not retry/fallback).
+    if (lastError?.is_guardrail_block) {
+        return {
+            response: 'Desculpe, nao consigo processar essa solicitacao. Posso ajudar com duvidas sobre manutencao automotiva ou servicos da oficina.',
+            conteudo: 'Desculpe, nao consigo processar essa solicitacao. Posso ajudar com duvidas sobre manutencao automotiva ou servicos da oficina.',
+            metadata: { model: 'guardrail-blocked', guardrail: true, usage: { total_tokens: 0 } }
+        };
     }
 
     console.error('❌ [AGNO] Erro na requisicao:', lastError?.message || 'Erro desconhecido');
