@@ -1,6 +1,21 @@
+import os
+
+import lancedb
 from agno.tools import tool
 from agno.knowledge.embedder.fastembed import FastEmbedEmbedder
-from matias_agno.knowledge.base import get_lancedb_connection, TABLE_NAME
+
+# Reuse the same env vars as knowledge/base.py
+_LANCEDB_URI = os.getenv("LANCEDB_URI", "db://ofx-rbf7i6").strip()
+_LANCEDB_API_KEY = os.getenv("LANCEDB_API_KEY", "").strip()
+_LANCEDB_TABLE = os.getenv("LANCEDB_TABLE", "conhecimento_oficina_v5_completo").strip()
+
+
+def _get_lancedb_connection():
+    """Open a LanceDB connection (cloud or local)."""
+    kwargs = {"uri": _LANCEDB_URI}
+    if _LANCEDB_API_KEY:
+        kwargs["api_key"] = _LANCEDB_API_KEY
+    return lancedb.connect(**kwargs)
 
 @tool
 def buscar_conhecimento(query: str) -> str:
@@ -20,8 +35,8 @@ def buscar_conhecimento(query: str) -> str:
         Informações relevantes encontradas nos documentos da oficina
     """
     try:
-        db_lance = get_lancedb_connection()
-        table = db_lance.open_table(TABLE_NAME)
+        db_lance = _get_lancedb_connection()
+        table = db_lance.open_table(_LANCEDB_TABLE)
         
         # --- BUSCA HÍBRIDA (Vetorial + Palavra-chave) ---
         # Tenta usar busca híbrida para melhor precisão (requer índice FTS)

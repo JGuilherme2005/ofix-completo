@@ -52,7 +52,15 @@ except Exception as _guard_err:
 from matias_agno.knowledge.base import get_knowledge_base
 from matias_agno.storage.memory import get_memory_storage
 from matias_agno.tools.simulate import simulate_vehicle_scenario
-from matias_agno.tools.search import buscar_conhecimento
+
+# M3-AI-07: buscar_conhecimento — optional, depends on LanceDB runtime availability.
+try:
+    from matias_agno.tools.search import buscar_conhecimento
+    _kb_tool = buscar_conhecimento
+    print("[matias] buscar_conhecimento tool loaded")
+except Exception as _kb_err:
+    _kb_tool = None
+    print(f"[matias] buscar_conhecimento tool unavailable: {_kb_err}")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INSTRUCTIONS — agente autenticado (interno da oficina)
@@ -194,6 +202,10 @@ def create_matias_agent():
     knowledge_base = get_knowledge_base()
     knowledge_enabled = knowledge_base is not None
 
+    _tools = [simulate_vehicle_scenario]
+    if _kb_tool:
+        _tools.append(_kb_tool)
+
     return Agent(
         id="matias",
         name="Matias",
@@ -202,7 +214,7 @@ def create_matias_agent():
         model=_select_model(),
         knowledge=knowledge_base,
         search_knowledge=knowledge_enabled,
-        tools=[simulate_vehicle_scenario, buscar_conhecimento],
+        tools=_tools,
         # M3-AI-03: PromptInjectionGuardrail blocks jailbreak/injection attempts.
         pre_hooks=[_pi_guardrail] if _pi_guardrail else [],
         markdown=True,
