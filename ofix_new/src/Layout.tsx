@@ -75,25 +75,17 @@ const USER_ROLES = {
 const HeaderBranding = () => (
     <div className="flex items-center gap-4">
         <div className="relative flex-shrink-0">
-            <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/25">
-                <Wrench className="w-5.5 h-5.5 text-white" />
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/25">
+                <Wrench className="w-6 h-6 text-white" />
             </div>
-            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-900"></div>
+            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-900"></div>
         </div>
         <div>
-            <h1 className="text-2xl font-extrabold tracking-tight leading-none">
-                <span className="text-blue-600 dark:text-blue-400">P</span>
-                <span className="text-slate-400 dark:text-slate-500 text-lg font-bold">.</span>
-                <span className="text-blue-600 dark:text-blue-400">I</span>
-                <span className="text-slate-400 dark:text-slate-500 text-lg font-bold">.</span>
-                <span className="text-blue-600 dark:text-blue-400">S</span>
-                <span className="text-slate-400 dark:text-slate-500 text-lg font-bold">.</span>
-                <span className="text-blue-600 dark:text-blue-400">T</span>
-                <span className="text-slate-400 dark:text-slate-500 text-lg font-bold">.</span>
-                <span className="text-blue-600 dark:text-blue-400">A</span>
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none">
+                P.I.S.T.A
             </h1>
-            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 tracking-wide">
-                Plataforma Inteligente · <span className="text-slate-500 dark:text-slate-400 font-semibold">Automecânica</span>
+            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-1 max-w-[220px]">
+                Plataforma Inteligente para Simplificar a Tarefa da Automecânica
             </p>
         </div>
     </div>
@@ -289,7 +281,7 @@ export default function Layout() {
 
                 {/* Header Global — Glassmorphism */}
                 <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 z-header flex-shrink-0 sticky top-0">
-                    <div className="flex items-center justify-between h-14 px-4 md:px-6">
+                    <div className="flex items-center justify-between h-16 px-4 md:px-6">
                         {/* Esquerda: Trigger mobile + Branding */}
                         <div className="flex items-center gap-3">
                             <SidebarTrigger className="md:hidden hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-lg transition-colors duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center" />
@@ -461,7 +453,7 @@ export default function Layout() {
                 {/* Container com Sidebar + Conteúdo */}
                 <div className="flex flex-1 min-h-0 overflow-hidden">
                     {/* Sidebar — Design moderno */}
-                    <Sidebar className="border-r border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 z-sidebar w-64 flex-shrink-0 fixed h-[calc(100dvh-3.5rem)] top-14 left-0 hidden md:flex md:flex-col" role="navigation" aria-label="Menu principal">
+                    <Sidebar className="border-r border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 z-sidebar w-64 flex-shrink-0 fixed h-[calc(100dvh-4rem)] top-16 left-0 hidden md:flex md:flex-col" role="navigation" aria-label="Menu principal">
                         <SidebarContent className="px-3 pt-4 flex-1 overflow-y-auto">
                             {/* Menu de navegação */}
                             <SidebarGroup>
