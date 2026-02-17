@@ -19,7 +19,7 @@ import {
   Lightbulb
 } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true }) => {
   const [formData, setFormData] = useState({
@@ -96,20 +96,9 @@ const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true })
         symptoms: validSymptoms
       };
 
-      const response = await fetch('/api/ai/diagnosis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: JSON.stringify(diagnosisData)
-      });
+      const response = await apiClient.post('/ai/diagnosis', diagnosisData);
 
-      if (!response.ok) {
-        throw new Error('Falha na análise de diagnóstico');
-      }
-
-      const result = await response.json();
+      const result = response.data;
       setDiagnosis(result);
       
       if (onDiagnosisComplete) {

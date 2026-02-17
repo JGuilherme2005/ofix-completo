@@ -1,18 +1,17 @@
 // @ts-nocheck
 import { useState, useEffect, useCallback } from 'react';
 import logger from '../../utils/logger';
-import { getApiBaseUrl } from '../../utils/api';
+import apiClient from '../../services/api';
 
 interface MemoryManagerOptions {
   userId?: string;
-  getAuthHeaders: () => Record<string, string>;
   showToast: (msg: string, type?: string) => void;
 }
 
 /**
  * Hook para gerenciamento de memórias do Matias (LanceDB).
  */
-export function useMemoryManager({ userId, getAuthHeaders, showToast }: MemoryManagerOptions) {
+export function useMemoryManager({ userId, showToast }: MemoryManagerOptions) {
   const [memoriaAtiva, setMemoriaAtiva] = useState(false);
   const [memorias, setMemorias] = useState<any[]>([]);
   const [loadingMemorias, setLoadingMemorias] = useState(false);
@@ -22,45 +21,31 @@ export function useMemoryManager({ userId, getAuthHeaders, showToast }: MemoryMa
   useEffect(() => {
     const verificarMemoria = async () => {
       try {
-        const authHeaders = getAuthHeaders();
-        const API_BASE = getApiBaseUrl();
-        const response = await fetch(`${API_BASE}/api/agno/memory-status`, {
-          headers: authHeaders,
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setMemoriaAtiva(data.enabled || false);
-          if (data.enabled) logger.info('Sistema de memória ativo', { status: data.status });
-        }
+        const { data } = await apiClient.get('/agno/memory-status');
+        setMemoriaAtiva(data.enabled || false);
+        if (data.enabled) logger.info('Sistema de memória ativo', { status: data.status });
       } catch (error) {
         logger.warn('Não foi possível verificar sistema de memória', { error: error.message });
       }
     };
     verificarMemoria();
-  }, [getAuthHeaders]);
+  }, []);
 
   // Carregar memórias do usuário
   const carregarMemorias = useCallback(async () => {
     if (!userId || !memoriaAtiva) return;
     setLoadingMemorias(true);
     try {
-      const authHeaders = getAuthHeaders();
-      const API_BASE = getApiBaseUrl();
-      const response = await fetch(`${API_BASE}/api/agno/memories/${userId}`, {
-        headers: authHeaders,
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setMemorias(data.memories || []);
-        logger.info('Memórias carregadas', { total: data.total });
-      }
+      const { data } = await apiClient.get(`/agno/memories/${userId}`);
+      setMemorias(data.memories || []);
+      logger.info('Memórias carregadas', { total: data.total });
     } catch (error) {
       logger.error('Erro ao carregar memórias', { error: error.message });
       showToast('Erro ao carregar memórias', 'error');
     } finally {
       setLoadingMemorias(false);
     }
-  }, [userId, memoriaAtiva, getAuthHeaders, showToast]);
+  }, [userId, memoriaAtiva, showToast]);
 
   // Excluir todas as memórias (LGPD)
   const excluirMemorias = useCallback(async () => {
@@ -73,24 +58,15 @@ export function useMemoryManager({ userId, getAuthHeaders, showToast }: MemoryMa
     if (!confirmacao) return;
 
     try {
-      const authHeaders = getAuthHeaders();
-      const API_BASE = getApiBaseUrl();
-      const response = await fetch(`${API_BASE}/api/agno/memories/${userId}`, {
-        method: 'DELETE',
-        headers: authHeaders,
-      });
-      if (response.ok) {
-        setMemorias([]);
-        showToast('Memórias excluídas com sucesso', 'success');
-        logger.info('Memórias excluídas pelo usuário', { userId });
-      } else {
-        throw new Error('Falha ao excluir memórias');
-      }
+      await apiClient.delete(`/agno/memories/${userId}`);
+      setMemorias([]);
+      showToast('Memórias excluídas com sucesso', 'success');
+      logger.info('Memórias excluídas pelo usuário', { userId });
     } catch (error) {
       logger.error('Erro ao excluir memórias', { error: error.message });
       showToast('Erro ao excluir memórias', 'error');
     }
-  }, [userId, getAuthHeaders, showToast]);
+  }, [userId, showToast]);
 
   // Carregar quando painel é aberto
   useEffect(() => {

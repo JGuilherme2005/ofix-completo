@@ -19,7 +19,7 @@ import {
   Download,
   Brain
 } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 /**
  * Dashboard para gestão de provedores de IA
@@ -41,17 +41,10 @@ const AIProviderDashboard = ({ className = '' }) => {
   const loadProviderStatus = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/ai/providers/status', {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setProviders(data.providers);
-        setCurrentProvider(data.currentProvider);
-      }
+      const response = await apiClient.get('/ai/providers/status');
+      const data = response.data;
+      setProviders(data.providers);
+      setCurrentProvider(data.currentProvider);
     } catch (error) {
       console.error('Erro ao carregar status dos provedores:', error);
     } finally {
@@ -61,16 +54,8 @@ const AIProviderDashboard = ({ className = '' }) => {
 
   const loadOllamaModels = async () => {
     try {
-      const response = await fetch('/api/ai/models/ollama/list', {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setOllamaModels(data);
-      }
+      const response = await apiClient.get('/ai/models/ollama/list');
+      setOllamaModels(response.data);
     } catch (error) {
       console.warn('Ollama não disponível');
     }
@@ -79,19 +64,12 @@ const AIProviderDashboard = ({ className = '' }) => {
   const testProvider = async (providerName) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/ai/providers/test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: JSON.stringify({
-          provider: providerName,
-          prompt: testPrompt
-        })
+      const response = await apiClient.post('/ai/providers/test', {
+        provider: providerName,
+        prompt: testPrompt
       });
       
-      const result = await response.json();
+      const result = response.data;
       setTestResults(prev => ({
         ...prev,
         [providerName]: result
@@ -109,19 +87,12 @@ const AIProviderDashboard = ({ className = '' }) => {
   const compareAllProviders = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/ai/providers/compare', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: JSON.stringify({
-          prompt: testPrompt,
-          providers: ['ollama', 'huggingface']
-        })
+      const response = await apiClient.post('/ai/providers/compare', {
+        prompt: testPrompt,
+        providers: ['ollama', 'huggingface']
       });
       
-      const result = await response.json();
+      const result = response.data;
       setTestResults(result.results);
     } catch (error) {
       console.error('Erro na comparação:', error);
@@ -132,16 +103,9 @@ const AIProviderDashboard = ({ className = '' }) => {
 
   const installOllamaModel = async (modelName) => {
     try {
-      const response = await fetch('/api/ai/models/ollama/install', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: JSON.stringify({ modelName })
-      });
+      const response = await apiClient.post('/ai/models/ollama/install', { modelName });
       
-      const result = await response.json();
+      const result = response.data;
       toast.success(result.message);
       
       // Recarregar lista após alguns segundos

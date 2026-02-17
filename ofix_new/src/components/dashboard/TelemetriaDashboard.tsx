@@ -9,7 +9,7 @@ import {
   Brain,
   MessageSquare
 } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 /**
  * Dashboard de Telemetria de IA (Versão Simplificada)
@@ -31,22 +31,14 @@ const TelemetriaDashboard = () => {
     
     try {
       const [iaResponse, automacaoResponse, alertasResponse] = await Promise.all([
-        fetch(`/api/telemetria/ia/dashboard?periodo=${periodo}`, {
-          headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        }),
-        fetch(`/api/telemetria/automacao/dashboard?periodo=${periodo}`, {
-          headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        }),
-        fetch('/api/telemetria/alertas', {
-          headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        })
+        apiClient.get('/telemetria/ia/dashboard', { params: { periodo } }),
+        apiClient.get('/telemetria/automacao/dashboard', { params: { periodo } }),
+        apiClient.get('/telemetria/alertas')
       ]);
 
-      const [iaData, automacaoData, alertasData] = await Promise.all([
-        iaResponse.json(),
-        automacaoResponse.json(),
-        alertasResponse.json()
-      ]);
+      const iaData = iaResponse.data;
+      const automacaoData = automacaoResponse.data;
+      const alertasData = alertasResponse.data;
 
       if (iaData.success) setDadosIA(iaData.data);
       if (automacaoData.success) setDadosAutomacao(automacaoData.data);

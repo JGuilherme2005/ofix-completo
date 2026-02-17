@@ -13,7 +13,7 @@ import {
   TrendingUp,
   TrendingDown
 } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 /**
  * Sistema de Feedback e Avaliação do Assistente Virtual
@@ -75,20 +75,11 @@ const FeedbackDashboard = ({ className = '' }) => {
   const submitFeedback = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/ai/feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: JSON.stringify(newFeedback)
-      });
+      const response = await apiClient.post('/ai/feedback', newFeedback);
 
-      if (response.ok) {
-        const result = await response.json();
-        setFeedbacks(prev => [result, ...prev]);
-        setNewFeedback({ rating: 0, comment: '', category: 'geral' });
-      }
+      const result = response.data;
+      setFeedbacks(prev => [result, ...prev]);
+      setNewFeedback({ rating: 0, comment: '', category: 'geral' });
     } catch (error) {
       // console.error('Erro ao enviar feedback:', error);
     } finally {

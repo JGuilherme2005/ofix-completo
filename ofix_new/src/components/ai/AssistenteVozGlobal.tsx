@@ -2,7 +2,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Volume2, X, CheckCircle, AlertCircle } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 /**
  * Assistente de Voz Global - Ícone flutuante para comandos de voz
@@ -105,15 +105,11 @@ const AssistenteVozGlobal = ({ onComandoExecutado }) => {
       formData.append('audio', audioBlob, 'comando.webm');
 
       // Chamar API
-      const response = await fetch('/api/patio/comando-por-voz', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-
-      if (!response.ok) {
+      let data;
+      try {
+        const response = await apiClient.post('/patio/comando-por-voz', formData);
+        data = response.data;
+      } catch {
         // Fallback: simular comando interpretado
         const comandoDemo = {
           acao: 'mover_status',
@@ -128,7 +124,6 @@ const AssistenteVozGlobal = ({ onComandoExecutado }) => {
         return;
       }
 
-      const data = await response.json();
       console.log('✅ Comando interpretado:', data);
       
       setUltimoComando(data);

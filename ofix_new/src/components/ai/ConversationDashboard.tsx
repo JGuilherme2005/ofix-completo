@@ -12,7 +12,7 @@ import {
   Download,
   RefreshCw
 } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 /**
  * Dashboard de Conversas do Assistente Virtual
@@ -35,16 +35,8 @@ const ConversationDashboard = ({ className = '' }) => {
   const loadMetrics = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/ai/analytics/metrics', {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setMetrics(data);
-      }
+      const response = await apiClient.get('/ai/analytics/metrics');
+      setMetrics(response.data);
     } catch (error) {
       // console.error('Erro ao carregar métricas:', error);
     } finally {
@@ -54,16 +46,8 @@ const ConversationDashboard = ({ className = '' }) => {
 
   const loadConversations = async () => {
     try {
-      const response = await fetch('/api/ai/conversations', {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setConversations(data);
-      }
+      const response = await apiClient.get('/ai/conversations');
+      setConversations(response.data);
     } catch (error) {
       // console.error('Erro ao carregar conversas:', error);
     }

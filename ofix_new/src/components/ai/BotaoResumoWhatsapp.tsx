@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Copy, ExternalLink, CheckCircle, AlertCircle, Loader } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 /**
  * Botão para Gerar Resumo WhatsApp
@@ -27,31 +27,13 @@ const BotaoResumoWhatsapp = ({ osId, dadosOS, onResumoGerado }) => {
       console.log('📱 Gerando resumo WhatsApp para OS:', osId);
 
       // Chamar API
-      const response = await fetch(`/api/ai/os/${osId}/resumo-whatsapp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: JSON.stringify(dadosOS || {})
-      });
-
-      if (!response.ok) {
+      try {
+        const response = await apiClient.post(`/ai/os/${osId}/resumo-whatsapp`, dadosOS || {});
+        setResumo(response.data);
+      } catch {
         // Fallback para rota de teste
-        const testResponse = await fetch('/api/ai/test/resumo-whatsapp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (!testResponse.ok) {
-          throw new Error('Erro ao gerar resumo');
-        }
-        
-        const testData = await testResponse.json();
-        setResumo(testData);
-      } else {
-        const data = await response.json();
-        setResumo(data);
+        const testResponse = await apiClient.post('/ai/test/resumo-whatsapp');
+        setResumo(testResponse.data);
       }
 
       setMostrarModal(true);

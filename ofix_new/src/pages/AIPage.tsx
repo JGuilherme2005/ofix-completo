@@ -18,10 +18,9 @@ import ClienteModal from '../components/clientes/ClienteModal';
 import logger from '../utils/logger';
 import { validarMensagem } from '../utils/messageValidator';
 import { useToast } from '../components/ui/toast';
-import { useAuthHeaders } from '../hooks/useAuthHeaders';
 import { AI_CONFIG } from '../constants/aiPageConfig';
 import { enrichMessage } from '../utils/nlp/queryParser';
-import { getApiBaseUrl } from '../utils/api';
+import apiClient from '../services/api';
 
 // ✅ Design System
 import '../styles/matias-design-system.css';
@@ -50,7 +49,6 @@ import ActionsCard from '../components/chat/ActionsCard';
 const AIPage = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
-  const { getAuthHeaders } = useAuthHeaders();
   const isAdmin = user?.role === 'admin';
 
   // ── Hooks extraídos ────────────────────────
@@ -58,11 +56,9 @@ const AIPage = () => {
   const voice = useVoiceControl({ showToast });
   const memory = useMemoryManager({
     userId: user?.id,
-    getAuthHeaders,
     showToast,
   });
   const connection = useConnectionStatus({
-    getAuthHeaders,
     showToast,
     onMemoryStatus: memory.setMemoriaAtiva,
   });
@@ -293,8 +289,6 @@ const AIPage = () => {
           setCarregando(true);
 
           try {
-            const authHeaders = getAuthHeaders();
-            const API_BASE = getApiBaseUrl();
             const requestBody: any = {
               message: novaMensagem.conteudo,
               usuario_id: user?.id,
@@ -303,19 +297,12 @@ const AIPage = () => {
             };
 
             logger.info('🚀 Enviando requisição (seleção de cliente)', {
-              endpoint: `${API_BASE}/api/agno/chat-inteligente`,
+              endpoint: '/agno/chat-inteligente',
               contextoAtivo,
               message: novaMensagem.conteudo,
             });
 
-            const response = await fetch(`${API_BASE}/api/agno/chat-inteligente`, {
-              method: 'POST',
-              headers: authHeaders,
-              body: JSON.stringify(requestBody),
-            });
-
-            if (response.ok) {
-              const data = await response.json();
+            const { data } = await apiClient.post('/agno/chat-inteligente', requestBody);
               let responseContent = '';
               let tipoResposta = 'agente';
 
@@ -355,9 +342,6 @@ const AIPage = () => {
               }
 
               tentarFalarResposta(responseContent);
-            } else {
-              throw new Error(`Erro na API: ${response.status}`);
-            }
           } catch (error) {
             logger.error('Erro ao enviar seleção de cliente', { error: error.message, userId: user?.id });
             showToast('Erro ao processar seleção de cliente. Tente novamente.', 'error');
@@ -417,8 +401,6 @@ const AIPage = () => {
     setInputHint('');
 
     try {
-      const authHeaders = getAuthHeaders();
-
       // NLP enrichment
       let mensagemEnriquecida: any = null;
       try {
@@ -431,7 +413,6 @@ const AIPage = () => {
         logger.warn('Erro ao enriquecer mensagem com NLP', { error: nlpError.message });
       }
 
-      const API_BASE = getApiBaseUrl();
       const requestBody: any = {
         message: novaMensagem.conteudo,
         usuario_id: user?.id,
@@ -445,26 +426,20 @@ const AIPage = () => {
       }
 
       logger.info('🚀 Enviando requisição ao backend', {
-        endpoint: `${API_BASE}/api/agno/chat-inteligente`,
+        endpoint: '/agno/chat-inteligente',
         hasNLP: !!mensagemEnriquecida,
         contextoAtivo,
         message: novaMensagem.conteudo.substring(0, 50),
       });
 
-      const response = await fetch(`${API_BASE}/api/agno/chat-inteligente`, {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify(requestBody),
-      });
+      const { data } = await apiClient.post('/agno/chat-inteligente', requestBody);
 
-      logger.info('📥 Resposta recebida', { status: response.status, ok: response.ok });
+      logger.info('📥 Resposta recebida', { status: 200 });
 
-      if (response.ok) {
-        const data = await response.json();
-        let responseContent = '';
-        let tipoResposta = 'agente';
+      let responseContent = '';
+      let tipoResposta = 'agente';
 
-        if (data.response) {
+      if (data.response) {
           if (typeof data.response === 'string') {
             responseContent = data.response;
           } else if (typeof data.response === 'object') {
@@ -555,9 +530,6 @@ const AIPage = () => {
         }
 
         tentarFalarResposta(responseContent);
-      } else {
-        throw new Error(`Erro na API: ${response.status}`);
-      }
     } catch (error) {
       logger.error('Erro ao enviar mensagem', { error: error.message, userId: user?.id, messageLength: mensagem.length, contextoAtivo });
       showToast('Erro ao enviar mensagem. Tente novamente.', 'error');

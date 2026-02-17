@@ -2,10 +2,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import logger from '../../utils/logger';
-import { getApiBaseUrl } from '../../utils/api';
+import apiClient from '../../services/api';
 
 interface ConnectionOptions {
-  getAuthHeaders: () => Record<string, string>;
   showToast: (msg: string, type?: string) => void;
   /** Chamado quando o endpoint de status do Agno retorna o estado da memória */
   onMemoryStatus?: (enabled: boolean) => void;
@@ -14,51 +13,30 @@ interface ConnectionOptions {
 /**
  * Hook para gerenciar conexão com o Agno (status, polling, warm).
  */
-export function useConnectionStatus({ getAuthHeaders, showToast, onMemoryStatus }: ConnectionOptions) {
+export function useConnectionStatus({ showToast, onMemoryStatus }: ConnectionOptions) {
   const [statusConexao, setStatusConexao] = useState('desconectado');
   const podeInteragir = statusConexao === 'conectado' || statusConexao === 'local';
-
-  const fetchWithTimeout = useCallback(async (url: string, options: RequestInit = {}, timeoutMs = 10000) => {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      return await fetch(url, { ...options, signal: controller.signal });
-    } finally {
-      window.clearTimeout(timeoutId);
-    }
-  }, []);
 
   const verificarConexao = useCallback(async ({ warm = false, silent = false } = {}) => {
     try {
       if (!silent) setStatusConexao('conectando');
-      const authHeaders = getAuthHeaders();
-      const API_BASE = getApiBaseUrl();
 
       if (warm) {
         try {
-          await fetchWithTimeout(`${API_BASE}/api/agno/warm`, { method: 'POST', headers: authHeaders }, 180000);
+          await apiClient.post('/agno/warm', null, { timeout: 180000 });
         } catch (e) {
           logger.warn('Falha ao aquecer Agno', { error: e.message });
         }
       }
 
-      const response = await fetchWithTimeout(`${API_BASE}/api/agno/status`, { method: 'GET', headers: authHeaders }, 10000);
-      if (!response.ok) {
-        setStatusConexao(silent ? 'local' : 'erro');
-        return false;
-      }
-
-      const data = await response.json();
+      const { data } = await apiClient.get('/agno/status', { timeout: 10000 });
       const agnoOnline = Boolean(data?.agno?.online);
       setStatusConexao(agnoOnline ? 'conectado' : 'local');
 
       if (agnoOnline) {
         try {
-          const memoryRes = await fetchWithTimeout(`${API_BASE}/api/agno/memory-status`, { method: 'GET', headers: authHeaders }, 8000);
-          if (memoryRes.ok) {
-            const memoryData = await memoryRes.json();
-            onMemoryStatus?.(Boolean(memoryData?.enabled));
-          }
+          const { data: memoryData } = await apiClient.get('/agno/memory-status', { timeout: 8000 });
+          onMemoryStatus?.(Boolean(memoryData?.enabled));
         } catch (e) {
           logger.warn('Falha ao verificar memoria', { error: e.message });
         }
@@ -74,7 +52,7 @@ export function useConnectionStatus({ getAuthHeaders, showToast, onMemoryStatus 
       }
       return false;
     }
-  }, [getAuthHeaders, showToast, onMemoryStatus, fetchWithTimeout]);
+  }, [showToast, onMemoryStatus]);
 
   const atualizarStatusPorMetadata = useCallback((metadata: any = {}) => {
     const processedBy = metadata?.processed_by;

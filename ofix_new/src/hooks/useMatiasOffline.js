@@ -366,25 +366,19 @@ export const useMatiasOffline = (config = {}) => {
 
     const sendMessageToServer = async (message) => {
         try {
-            const response = await fetch('/api/matias/chat', {
-                method: 'POST',
+            const { default: apiClient } = await import('../services/api');
+            const { data } = await apiClient.post('/matias/chat', {
+                ...message,
+                offlineTimestamp: message.timestamp,
+                retryCount: message.retryCount
+            }, {
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-Offline-Mode': 'true',
                     'X-Message-ID': message.id
-                },
-                body: JSON.stringify({
-                    ...message,
-                    offlineTimestamp: message.timestamp,
-                    retryCount: message.retryCount
-                })
+                }
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            return await response.json();
+            return data;
 
         } catch (error) {
             console.error('Error sending message to server:', error);

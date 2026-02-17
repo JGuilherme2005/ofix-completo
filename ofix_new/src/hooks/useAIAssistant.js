@@ -1,8 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { aiService } from '../services/ai.service';
 import { useAuth } from '../context/AuthContext';
-import { getApiBaseUrl } from '../utils/api';
-import { getAuthToken } from '../services/auth.service.js';
+import apiClient from '../services/api';
 
 export function useAIAssistant(options = {}) {
     const {
@@ -49,10 +48,6 @@ export function useAIAssistant(options = {}) {
     const responseTimeRef = useRef(null);
     const abortControllerRef = useRef(null);
 
-    // Base URL do backend (prod) ou string vazia (dev via proxy do Vite)
-    const API_BASE_URL = getApiBaseUrl();
-    const buildUrl = (path) => (API_BASE_URL ? `${API_BASE_URL}${path}` : path);
-
     // Carregar sugestões baseadas no contexto
     useEffect(() => {
         const loadSuggestions = async () => {
@@ -89,17 +84,8 @@ export function useAIAssistant(options = {}) {
             setIsLoading(true);
             setError(null);
 
-            // Primeiro verificar se a API está funcionando (sem autenticação)
-            const healthResponse = await fetch(buildUrl('/api/agno/health'), {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (!healthResponse.ok) {
-                throw new Error('Servidor AI não está disponível');
-            }
+            // Primeiro verificar se a API está funcionando
+            await apiClient.get('/agno/health');
 
             // Verificar se usuário está autenticado para funcionalidades protegidas
             if (!isAuthenticated || !token) {
@@ -110,17 +96,8 @@ export function useAIAssistant(options = {}) {
             }
 
             // Verificar conectividade com a API autenticada
-            const authResponse = await fetch(buildUrl('/api/ai/suggestions'), {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (authResponse.ok) {
-                setIsConnected(true);
-            } else {
-                throw new Error('Falha na conexão com o assistente');
-            }
+            await apiClient.get('/ai/suggestions');
+            setIsConnected(true);
         } catch (err) {
             setError(err.message);
             setIsConnected(false);
@@ -147,30 +124,22 @@ export function useAIAssistant(options = {}) {
      */
     const loadConversationHistory = useCallback(async () => {
         try {
-            const response = await fetch(buildUrl(`/api/ai/conversations/${conversationId}`), {
-                headers: {
-                    'Authorization': `Bearer ${getAuthToken()}`
-                }
-            });
-
-            if (response.ok) {
-                const conversation = await response.json();
-                const formattedMessages = conversation.messages?.map(msg => ({
-                    id: msg.id,
-                    message: msg.content,
-                    isUser: msg.type === 'user',
-                    timestamp: new Date(msg.createdAt),
-                    type: msg.type,
-                    confidence: msg.confidence,
-                    metadata: msg.metadata
-                })) || [];
-                
-                setMessages(formattedMessages);
-                setContext(prev => ({
-                    ...prev,
-                    ...conversation.context
-                }));
-            }
+            const { data: conversation } = await apiClient.get(`/ai/conversations/${conversationId}`);
+            const formattedMessages = conversation.messages?.map(msg => ({
+                id: msg.id,
+                message: msg.content,
+                isUser: msg.type === 'user',
+                timestamp: new Date(msg.createdAt),
+                type: msg.type,
+                confidence: msg.confidence,
+                metadata: msg.metadata
+            })) || [];
+            
+            setMessages(formattedMessages);
+            setContext(prev => ({
+                ...prev,
+                ...conversation.context
+            }));
         } catch (error) {
             console.error('Erro ao carregar histórico:', error);
         }
@@ -188,16 +157,10 @@ export function useAIAssistant(options = {}) {
      */
     const loadSuggestions = async () => {
         try {
-            const response = await fetch(buildUrl(`/api/ai/suggestions?context=${encodeURIComponent(JSON.stringify(context))}`), {
-                headers: {
-                    'Authorization': `Bearer ${getAuthToken()}`
-                }
+            const { data } = await apiClient.get('/ai/suggestions', {
+                params: { context: JSON.stringify(context) }
             });
-
-            if (response.ok) {
-                const data = await response.json();
-                setSuggestions(data);
-            }
+            setSuggestions(data);
         } catch (error) {
             console.error('Erro ao carregar sugestões:', error);
         }
@@ -238,26 +201,14 @@ export function useAIAssistant(options = {}) {
             };
 
             // Enviar para a nova API
-            const response = await fetch(buildUrl('/api/ai/chat'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getAuthToken()}`
-                },
-                body: JSON.stringify({
-                    message: messageText,
-                    conversationId,
-                    userType,
-                    context: enrichedContext
-                }),
+            const { data: result } = await apiClient.post('/ai/chat', {
+                message: messageText,
+                conversationId,
+                userType,
+                context: enrichedContext
+            }, {
                 signal: abortControllerRef.current.signal
             });
-
-            if (!response.ok) {
-                throw new Error('Falha na comunicação com o assistente');
-            }
-
-            const result = await response.json();
             
             const aiMessage = {
                 id: Date.now() + 1,
@@ -328,24 +279,11 @@ export function useAIAssistant(options = {}) {
             setIsLoading(true);
             setError(null);
 
-            const response = await fetch(buildUrl('/api/ai/diagnosis'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getAuthToken()}`
-                },
-                body: JSON.stringify({
-                    ...diagnosticData,
-                    conversationId,
-                    context
-                })
+            const { data: result } = await apiClient.post('/ai/diagnosis', {
+                ...diagnosticData,
+                conversationId,
+                context
             });
-
-            if (!response.ok) {
-                throw new Error('Falha no diagnóstico');
-            }
-
-            const result = await response.json();
 
             // Adicionar resultado do diagnóstico às mensagens
             const diagnosticMessage = {
@@ -375,24 +313,11 @@ export function useAIAssistant(options = {}) {
         try {
             setIsLoading(true);
 
-            const response = await fetch(buildUrl('/api/ai/quick-action'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getAuthToken()}`
-                },
-                body: JSON.stringify({
-                    action,
-                    context,
-                    data
-                })
+            const { data: result } = await apiClient.post('/ai/quick-action', {
+                action,
+                context,
+                data
             });
-
-            if (!response.ok) {
-                throw new Error('Falha na execução da ação');
-            }
-
-            const result = await response.json();
 
             // Adicionar resultado como mensagem se fornecido
             if (result.message) {
@@ -426,27 +351,17 @@ export function useAIAssistant(options = {}) {
      */
     const provideFeedback = useCallback(async (messageId, feedbackData) => {
         try {
-            const response = await fetch(buildUrl('/api/ai/feedback'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getAuthToken()}`
-                },
-                body: JSON.stringify({
-                    conversationId,
-                    messageId,
-                    ...feedbackData
-                })
+            await apiClient.post('/ai/feedback', {
+                conversationId,
+                messageId,
+                ...feedbackData
             });
-
-            if (response.ok) {
-                // Atualizar a mensagem com o feedback
-                setMessages(prev => prev.map(msg => 
-                    msg.id === messageId 
-                        ? { ...msg, feedback: feedbackData }
-                        : msg
-                ));
-            }
+            // Atualizar a mensagem com o feedback
+            setMessages(prev => prev.map(msg => 
+                msg.id === messageId 
+                    ? { ...msg, feedback: feedbackData }
+                    : msg
+            ));
         } catch (error) {
             console.error('Erro ao enviar feedback:', error);
         }
@@ -487,12 +402,7 @@ export function useAIAssistant(options = {}) {
     const endConversation = useCallback(async () => {
         if (conversationId) {
             try {
-                await fetch(buildUrl(`/api/ai/conversations/${conversationId}/end`), {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    }
-                });
+                await apiClient.put(`/ai/conversations/${conversationId}/end`);
             } catch (error) {
                 console.error('Erro ao finalizar conversa:', error);
             }
