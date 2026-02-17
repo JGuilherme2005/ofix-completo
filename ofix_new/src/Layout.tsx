@@ -67,7 +67,7 @@ const LogoIcon = () => (
             <Wrench className="w-7 h-7 text-white" />
         </div>
         <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
-            <div className="w-2 h-2 bg-white rounded-full"></div>
+            <div className="w-2 h-2 bg-white dark:bg-slate-900 rounded-full"></div>
         </div>
     </div>
 );
@@ -268,19 +268,20 @@ export default function Layout() {
                 reverseOrder={false}
                 toastOptions={{
                     duration: 3000,
-                    style: { background: '#333', color: '#fff' },
-                    success: { duration: 3000, theme: { primary: 'green', secondary: 'black' } },
-                    error: { duration: 4000, theme: { primary: 'red', secondary: 'black' } }
+                    className: 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 dark:text-slate-100',
+                    style: { background: undefined, color: undefined },
+                    success: { duration: 3000 },
+                    error: { duration: 4000 }
                 } as any}
             />
 
-            <div className="h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col">
+            <div className="h-dvh w-full bg-slate-50 dark:bg-slate-950 flex flex-col supports-[height:100dvh]:h-dvh">
 
                 {/* Header Global Fixo */}
-                <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-30 flex-shrink-0 sticky top-0">
+                <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-header flex-shrink-0 sticky top-0">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-4 px-6">
-                            <SidebarTrigger className="md:hidden hover:bg-slate-100 p-2 rounded-lg transition-colors duration-200" />
+                            <SidebarTrigger className="md:hidden hover:bg-slate-100 dark:bg-slate-800 p-2.5 rounded-lg transition-colors duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center" />
 
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center">
@@ -289,20 +290,20 @@ export default function Layout() {
                                 <div className="flex items-center gap-2 md:gap-4">
                                     {/* Parte fixa - P.I.S.T.A */}
                                     <div className="hidden sm:block">
-                                        <h1 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight">
+                                        <h1 className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                                             Pista
                                         </h1>
-                                        <p className="text-[10px] text-slate-500 font-medium tracking-wider">
+                                        <p className="text-xs text-slate-500 font-medium tracking-wider leading-tight">
                                             Plataforma Inteligente para Simplificar a Tarefa da Automecânica
                                         </p>
                                     </div>
 
                                     {/* Versão mobile - apenas Pista */}
                                     <div className="block sm:hidden">
-                                        <h1 className="text-lg font-bold text-slate-900 tracking-tight">
+                                        <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                                             Pista
                                         </h1>
-                                        <p className="text-[9px] text-slate-500 font-medium tracking-wider">
+                                        <p className="text-[11px] text-slate-500 font-medium tracking-widest">
                                             P.I.S.T.A
                                         </p>
                                     </div>
@@ -329,7 +330,7 @@ export default function Layout() {
                                             size="icon"
                                             onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
                                             aria-label="Notificações"
-                                            className="text-slate-500 hover:text-slate-700 hover:bg-blue-100 rounded-lg transition-all duration-200"
+                                            className="text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-blue-100 rounded-lg transition-all duration-200"
                                         >
                                             <Bell className="w-5 h-5" />
                                         </Button>
@@ -343,13 +344,14 @@ export default function Layout() {
 
                                         {/* Dropdown de Notificações */}
                                         {showNotificationsDropdown && (
-                                            <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 z-50">
+                                            <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 z-dropdown">
                                                 {/* Header do Dropdown */}
                                                 <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-                                                    <h3 className="text-lg font-semibold text-slate-900">Notificações</h3>
+                                                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Notificações</h3>
                                                     <button
                                                         onClick={() => setShowNotificationsDropdown(false)}
-                                                        className="p-1 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+                                                        className="p-1 hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors duration-200"
+                                                        aria-label="Fechar notificações"
                                                     >
                                                         <X className="w-4 h-4 text-slate-500" />
                                                     </button>
@@ -376,7 +378,7 @@ export default function Layout() {
                                                                         >
                                                                             <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
                                                                             <div className="flex-1 min-w-0">
-                                                                                <p className="text-sm font-medium text-slate-900 truncate">
+                                                                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                                                                                     {peca.nome || peca.descricao || 'Peça sem nome'}
                                                                                 </p>
                                                                                 <p className="text-xs text-slate-500">
@@ -426,7 +428,7 @@ export default function Layout() {
                                                                                 >
                                                                                     <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
                                                                                     <div className="flex-1 min-w-0">
-                                                                                        <p className="text-sm font-medium text-slate-900 truncate">
+                                                                                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                                                                                             OS #{servico.numeroOS || servico.id}
                                                                                         </p>
                                                                                         <p className="text-xs text-slate-500">
@@ -449,10 +451,10 @@ export default function Layout() {
 
                                                 {/* Footer do Dropdown */}
                                                 {notificationsCount > 0 && (
-                                                    <div className="p-3 border-t border-slate-200 bg-slate-50">
+                                                    <div className="p-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                                                         <button
                                                             onClick={() => setShowNotificationsDropdown(false)}
-                                                            className="w-full text-sm text-slate-600 hover:text-slate-800 transition-colors duration-200"
+                                                            className="w-full text-sm text-slate-600 hover:text-slate-800 dark:text-slate-200 transition-colors duration-200"
                                                         >
                                                             Fechar notificações
                                                         </button>
@@ -483,7 +485,7 @@ export default function Layout() {
                 {/* Container com Sidebar e Conteúdo */}
                 <div className="flex flex-1 min-h-0 overflow-hidden">
                     {/* Sidebar */}
-                    <Sidebar className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-20 w-64 flex-shrink-0 fixed h-full top-16 left-0 hidden md:flex md:flex-col">
+                    <Sidebar className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-sidebar w-64 flex-shrink-0 fixed h-[calc(100dvh-4rem)] top-16 left-0 hidden md:flex md:flex-col">
                         <SidebarContent className="p-4 pt-6 flex-1 overflow-y-auto">
                             {/* Menu de navegação */}
                             <SidebarGroup>
@@ -507,7 +509,7 @@ export default function Layout() {
                                                         <Link to={item.url} className="flex items-center gap-4 px-4 py-3">
                                                             <div className={`p-2 rounded-lg transition-all duration-200 ${isActive
                                                                 ? 'bg-blue-500 text-white dark:bg-blue-600'
-                                                                : 'bg-slate-100 group-hover:bg-slate-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'
+                                                                : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'
                                                                 }`}>
                                                                 <item.icon className="w-4 h-4" />
                                                             </div>
@@ -572,12 +574,12 @@ export default function Layout() {
             {isAuthenticated && location.pathname !== '/assistente-ia' && (
                 <Link
                     to="/assistente-ia"
-                    className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full shadow-md flex items-center justify-center z-40 transition-colors group"
+                    className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-full shadow-lg hover:shadow-xl flex items-center justify-center z-fab transition-all duration-200 group"
                     aria-label="Abrir Assistente Matias"
                 >
                     <Brain className="w-6 h-6 text-white" />
                     <span className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                        <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                        <span className="w-2 h-2 bg-white dark:bg-slate-900 rounded-full animate-pulse"></span>
                     </span>
                     <div className="absolute bottom-full mb-2 right-0 bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                         Matias IA (Alt+M)
@@ -587,8 +589,8 @@ export default function Layout() {
 
             {/* Modal de Estoque Baixo - Overlay Global */}
             {showEstoqueBaixoModal && (
-                <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg w-full max-w-2xl max-h-[80vh] overflow-hidden">
+                <div className="fixed inset-0 bg-black/50 z-modal-backdrop flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
                         {/* Header do Modal */}
                         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
                             <div className="flex items-center gap-3">
@@ -596,7 +598,7 @@ export default function Layout() {
                                     <AlertTriangle className="w-5 h-5 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-slate-900">
+                                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                                         Peças com Estoque Baixo
                                     </h3>
                                     <p className="text-sm text-slate-600">
@@ -606,7 +608,8 @@ export default function Layout() {
                             </div>
                             <button
                                 onClick={() => setShowEstoqueBaixoModal(false)}
-                                className="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+                                className="p-2 hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors duration-200"
+                                aria-label="Fechar modal de estoque baixo"
                             >
                                 <X className="w-5 h-5 text-slate-500" />
                             </button>
@@ -622,10 +625,10 @@ export default function Layout() {
                                         return (
                                             <div
                                                 key={peca.id || index}
-                                                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
+                                                className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700"
                                             >
                                                 <div className="flex-1">
-                                                    <h4 className="font-medium text-slate-900">
+                                                    <h4 className="font-medium text-slate-900 dark:text-slate-100">
                                                         {peca.nome || peca.descricao || 'Peça sem nome'}
                                                     </h4>
                                                     <p className="text-sm text-slate-600">
@@ -653,14 +656,14 @@ export default function Layout() {
                         </div>
 
                         {/* Footer do Modal */}
-                        <div className="flex items-center justify-between p-6 border-t border-slate-200 bg-slate-50">
+                        <div className="flex items-center justify-between p-6 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                             <div className="text-sm text-slate-600">
                                 📝 Dica: Considere repor essas peças o quanto antes
                             </div>
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => setShowEstoqueBaixoModal(false)}
-                                    className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors duration-200"
+                                    className="px-4 py-2 text-slate-600 hover:text-slate-800 dark:text-slate-200 transition-colors duration-200"
                                 >
                                     Fechar
                                 </button>

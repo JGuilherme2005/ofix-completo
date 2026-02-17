@@ -158,7 +158,7 @@ export default function ServiceMessages({
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-lg font-semibold text-slate-900">
+                    <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                       {mensagem.nomeMensagem || mensagem.nome || "Mensagem"}
                     </CardTitle>
                     <Badge variant="secondary" className="mt-2">
@@ -170,8 +170,8 @@ export default function ServiceMessages({
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-slate-50 p-4 rounded-lg">
-                  <p className="text-sm text-slate-700 whitespace-pre-wrap">
+                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
+                  <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
                     {replaceVariables(
                       mensagem.textoMensagem ||
                       mensagem.template ||

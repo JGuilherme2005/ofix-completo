@@ -179,7 +179,7 @@ const KnowledgeManagement = ({ className = '' }) => {
       case 'high': return 'bg-red-100 text-red-800';
       case 'medium': return 'bg-yellow-100 text-yellow-800';
       case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      default: return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200';
     }
   };
 
@@ -198,8 +198,8 @@ const KnowledgeManagement = ({ className = '' }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Base de Conhecimento</h2>
-          <p className="text-gray-600">Gerencie informações e conteúdo para o assistente</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Base de Conhecimento</h2>
+          <p className="text-slate-600">Gerencie informações e conteúdo para o assistente</p>
         </div>
         
         <div className="flex gap-2">
@@ -221,8 +221,8 @@ const KnowledgeManagement = ({ className = '' }) => {
             <div className="flex items-center">
               <BookOpen className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total de Itens</p>
-                <p className="text-2xl font-bold text-gray-900">{knowledgeItems.length}</p>
+                <p className="text-sm font-medium text-slate-600">Total de Itens</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{knowledgeItems.length}</p>
               </div>
             </div>
           </CardContent>
@@ -233,8 +233,8 @@ const KnowledgeManagement = ({ className = '' }) => {
             <div className="flex items-center">
               <Tag className="h-8 w-8 text-green-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Categorias</p>
-                <p className="text-2xl font-bold text-gray-900">{categories.length}</p>
+                <p className="text-sm font-medium text-slate-600">Categorias</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{categories.length}</p>
               </div>
             </div>
           </CardContent>
@@ -245,8 +245,8 @@ const KnowledgeManagement = ({ className = '' }) => {
             <div className="flex items-center">
               <CheckCircle className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Itens Ativos</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-slate-600">Itens Ativos</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                   {knowledgeItems.filter(item => item.isActive).length}
                 </p>
               </div>
@@ -259,8 +259,8 @@ const KnowledgeManagement = ({ className = '' }) => {
             <div className="flex items-center">
               <Brain className="h-8 w-8 text-orange-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Mais Acessados</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-slate-600">Mais Acessados</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                   {Math.max(...knowledgeItems.map(item => item.views || 0), 0)}
                 </p>
               </div>
@@ -275,13 +275,13 @@ const KnowledgeManagement = ({ className = '' }) => {
           <div className="flex gap-4 flex-wrap">
             <div className="flex-1 min-w-64">
               <div className="relative">
-                <Search className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
+                <Search className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Pesquisar na base de conhecimento..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="pl-10 w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -289,7 +289,7 @@ const KnowledgeManagement = ({ className = '' }) => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md"
+              className="px-3 py-2 border border-slate-300 rounded-md"
             >
               <option value="all">Todas as categorias</option>
               {categories.map(category => (
@@ -311,12 +311,12 @@ const KnowledgeManagement = ({ className = '' }) => {
           <div className="space-y-4">
             {filteredItems.length > 0 ? (
               filteredItems.map((item) => (
-                <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+                <div key={item.id} className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
                         {getTypeIcon(item.type)}
-                        <h3 className="font-semibold text-gray-900">{item.title}</h3>
+                        <h3 className="font-semibold text-slate-900 dark:text-slate-100">{item.title}</h3>
                         <Badge className={getPriorityColor(item.priority)}>
                           {item.priority}
                         </Badge>
@@ -324,7 +324,7 @@ const KnowledgeManagement = ({ className = '' }) => {
                           <Badge variant="secondary">Inativo</Badge>
                         )}
                       </div>
-                      <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                      <p className="text-slate-600 text-sm mb-2 line-clamp-2">
                         {item.content.substring(0, 150)}...
                       </p>
                       <div className="flex flex-wrap gap-1 mb-2">
@@ -361,7 +361,7 @@ const KnowledgeManagement = ({ className = '' }) => {
                     </div>
                   </div>
                   
-                  <div className="flex justify-between items-center text-sm text-gray-500">
+                  <div className="flex justify-between items-center text-sm text-slate-500">
                     <div className="flex items-center space-x-4">
                       <span className="flex items-center">
                         <User className="h-4 w-4 mr-1" />
@@ -381,11 +381,11 @@ const KnowledgeManagement = ({ className = '' }) => {
               ))
             ) : (
               <div className="text-center py-8">
-                <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <BookOpen className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">
                   Nenhum item encontrado
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-slate-600">
                   {searchTerm || selectedCategory !== 'all' 
                     ? 'Tente ajustar os filtros de pesquisa.' 
                     : 'Adicione o primeiro item à base de conhecimento.'}
@@ -399,33 +399,33 @@ const KnowledgeManagement = ({ className = '' }) => {
       {/* Modal de Adicionar/Editar */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">
               {editingItem ? 'Editar Item' : 'Adicionar Novo Item'}
             </h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Título
                 </label>
                 <input
                   type="text"
                   value={newItem.title}
                   onChange={(e) => setNewItem(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md"
                   placeholder="Título do item de conhecimento"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Conteúdo
                 </label>
                 <textarea
                   value={newItem.content}
                   onChange={(e) => setNewItem(prev => ({ ...prev, content: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md"
                   rows={6}
                   placeholder="Conteúdo detalhado..."
                 />
@@ -433,13 +433,13 @@ const KnowledgeManagement = ({ className = '' }) => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Categoria
                   </label>
                   <select
                     value={newItem.category}
                     onChange={(e) => setNewItem(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md"
                   >
                     <option value="">Selecione uma categoria</option>
                     {categories.map(category => (
@@ -451,13 +451,13 @@ const KnowledgeManagement = ({ className = '' }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Tipo
                   </label>
                   <select
                     value={newItem.type}
                     onChange={(e) => setNewItem(prev => ({ ...prev, type: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md"
                   >
                     <option value="faq">FAQ</option>
                     <option value="procedure">Procedimento</option>
@@ -468,7 +468,7 @@ const KnowledgeManagement = ({ className = '' }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Tags (separadas por vírgula)
                 </label>
                 <input
@@ -478,7 +478,7 @@ const KnowledgeManagement = ({ className = '' }) => {
                     ...prev, 
                     tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
                   }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md"
                   placeholder="tag1, tag2, tag3"
                 />
               </div>

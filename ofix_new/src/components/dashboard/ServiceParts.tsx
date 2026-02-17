@@ -107,7 +107,7 @@ export default function ServiceParts({ service, pecas, onUpdate, isGuest }) {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-lg font-semibold text-slate-900">
+                    <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                       {peca.nome}
                     </CardTitle>
                     <p className="text-sm text-slate-500">

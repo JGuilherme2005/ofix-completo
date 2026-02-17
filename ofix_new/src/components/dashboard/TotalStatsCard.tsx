@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 // Componente para o card total destacado - versão compacta
 export default function TotalStatsCard({ title, value, subtitle, icon: Icon }) {
     return (
-        <Card className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border-0 group">
+        <Card className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border-0 group">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 rounded-xl" />
             
             <CardContent className="relative p-5">
@@ -37,7 +37,7 @@ export default function TotalStatsCard({ title, value, subtitle, icon: Icon }) {
 
 // Skeleton para o card total - versão compacta
 export const TotalStatsCardSkeleton = () => (
-    <Card className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md border-0">
+    <Card className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl shadow-md border-0">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-xl" />
         <CardContent className="relative p-5">
             <div className="flex items-center justify-between">

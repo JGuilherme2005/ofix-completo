@@ -29,7 +29,7 @@ const ChatHeader = ({
       case 'erro':
         return <AlertCircle className="w-4 h-4 text-red-500" />;
       default:
-        return <AlertCircle className="w-4 h-4 text-gray-400" />;
+        return <AlertCircle className="w-4 h-4 text-slate-400" />;
     }
   };
 
@@ -49,7 +49,7 @@ const ChatHeader = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-4 mb-4">
+    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200/60 p-4 mb-4">
       <div className="flex items-center justify-between">
         {/* Logo e Título */}
         <div className="flex items-center gap-3">
@@ -57,7 +57,7 @@ const ChatHeader = ({
             <Bot className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Assistente IA Pista</h1>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Assistente IA Pista</h1>
             <p className="text-sm text-slate-600">Powered by Agno AI Agent</p>
           </div>
         </div>
@@ -65,9 +65,9 @@ const ChatHeader = ({
         {/* Status e Ações */}
         <div className="flex items-center gap-4">
           {/* Status da Conexão */}
-          <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+          <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
             {getStatusIcon()}
-            <span className="text-sm font-medium text-slate-700">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
               {getStatusText()}
             </span>
           </div>
@@ -82,7 +82,7 @@ const ChatHeader = ({
               className={`flex items-center gap-2 ${
                 vozHabilitada 
                   ? 'text-green-600 hover:bg-green-50' 
-                  : 'text-gray-600 hover:bg-gray-50'
+                  : 'text-slate-600 hover:bg-slate-50 dark:bg-slate-800'
               }`}
               title={vozHabilitada ? 'Desativar voz' : 'Ativar voz'}
             >

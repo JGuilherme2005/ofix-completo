@@ -48,9 +48,9 @@ export default function QuickActions({ onNewService, onRefresh, stats }) {
     return (
         <div className="space-y-6">
             {/* Ações Rápidas */}
-            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg">
+            <Card className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-0 shadow-lg">
                 <CardHeader className="pb-4">
-                    <CardTitle className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                    <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                         <TrendingUp className="w-5 h-5 text-blue-600" />
                         Ações Rápidas
                     </CardTitle>
@@ -67,7 +67,7 @@ export default function QuickActions({ onNewService, onRefresh, stats }) {
                         
                         <Button
                             variant="outline"
-                            className="border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
+                            className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800 hover:border-slate-300 transition-all duration-200"
                         >
                             <Search className="w-4 h-4 mr-2" />
                             Buscar
@@ -75,7 +75,7 @@ export default function QuickActions({ onNewService, onRefresh, stats }) {
                         
                         <Button
                             variant="outline"
-                            className="border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
+                            className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800 hover:border-slate-300 transition-all duration-200"
                         >
                             <Filter className="w-4 h-4 mr-2" />
                             Filtrar
@@ -85,7 +85,7 @@ export default function QuickActions({ onNewService, onRefresh, stats }) {
                             onClick={handleRefresh}
                             disabled={isRefreshing}
                             variant="outline"
-                            className="border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
+                            className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800 hover:border-slate-300 transition-all duration-200"
                         >
                             <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                             Atualizar

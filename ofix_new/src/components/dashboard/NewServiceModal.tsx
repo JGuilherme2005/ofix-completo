@@ -127,9 +127,9 @@ export default function NewServiceModal({ isOpen, onClose, onSuccess: reloadDash
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-white text-black dark:bg-white dark:text-black p-6 rounded-xl shadow-xl max-w-3xl" aria-describedby="new-service-modal-description">
+            <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:bg-slate-900 dark:text-slate-100 p-6 rounded-xl shadow-xl max-w-3xl" aria-describedby="new-service-modal-description">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                         <Plus className="w-6 h-6" />
                         Nova Ordem de Serviço
                     </DialogTitle>

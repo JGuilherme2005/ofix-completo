@@ -89,7 +89,7 @@ export default function ChatInterface({
     return (
       <button
         onClick={onToggle}
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 z-50"
+        className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-200 z-fab min-w-[56px] min-h-[56px] flex items-center justify-center"
         aria-label="Abrir chat"
       >
         <MessageCircle className="w-6 h-6" />
@@ -98,15 +98,15 @@ export default function ChatInterface({
   }
 
   return (
-    <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
-      <div className={`bg-white rounded-2xl shadow-2xl backdrop-blur-lg bg-opacity-95 border border-gray-200 overflow-hidden transition-all duration-300 ${
-        isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
+    <div className={`fixed bottom-6 right-6 z-dropdown ${className}`}>
+      <div className={`bg-white dark:bg-slate-900 rounded-xl shadow-xl backdrop-blur-lg border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-200 ${
+        isMinimized ? 'w-80 h-16' : 'w-[calc(100vw-3rem)] sm:w-96 h-[min(600px,calc(100dvh-6rem))]'
       }`}>
         
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-white bg-opacity-20 rounded-full p-2">
+            <div className="bg-white dark:bg-slate-900 bg-opacity-20 rounded-full p-2">
               <Bot className="w-5 h-5" />
             </div>
             <div>
@@ -121,14 +121,14 @@ export default function ChatInterface({
           <div className="flex items-center gap-2">
             <button
               onClick={toggleMinimize}
-              className="p-1 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+              className="p-1 hover:bg-white dark:bg-slate-900 hover:bg-opacity-20 rounded-lg transition-colors"
               aria-label={isMinimized ? 'Maximizar' : 'Minimizar'}
             >
               {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
             </button>
             <button
               onClick={onToggle}
-              className="p-1 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+              className="p-1 hover:bg-white dark:bg-slate-900 hover:bg-opacity-20 rounded-lg transition-colors"
               aria-label="Fechar chat"
             >
               ×
@@ -139,12 +139,12 @@ export default function ChatInterface({
         {!isMinimized && (
           <>
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 h-[400px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent">
               {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
-                  <Bot className="w-16 h-16 mb-4 text-gray-300" />
-                  <h3 className="text-lg font-semibold mb-2">Bem-vindo ao Assistente Pista</h3>
-                  <p className="text-sm max-w-xs">
+                <div className="flex flex-col items-center justify-center h-full text-center text-slate-500">
+                  <Bot className="w-16 h-16 mb-4 text-slate-300 dark:text-slate-600" />
+                  <h3 className="text-lg font-semibold mb-2 text-slate-700 dark:text-slate-200">Bem-vindo ao Assistente Pista</h3>
+                  <p className="text-sm max-w-xs text-slate-500 dark:text-slate-400">
                     {userType === 'cliente' 
                       ? 'Estou aqui para ajudar com informações sobre seus serviços e agendamentos.'
                       : 'Pronto para auxiliar com diagnósticos técnicos e procedimentos.'
@@ -170,7 +170,7 @@ export default function ChatInterface({
             <QuickActions
               userType={userType}
               onActionClick={handleQuickAction}
-              className="px-4 py-2 border-t border-gray-100"
+              className="px-4 py-2 border-t border-slate-100 dark:border-slate-800"
             />
 
             {/* Suggestions */}
@@ -191,7 +191,7 @@ export default function ChatInterface({
             )}
 
             {/* Input Area */}
-            <div className="p-4 border-t border-gray-100 bg-gray-50">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
               <div className="flex items-end gap-2">
                 <div className="flex-1 relative">
                   <textarea
@@ -201,7 +201,7 @@ export default function ChatInterface({
                     onKeyPress={handleKeyPress}
                     placeholder={isConnected ? "Digite sua mensagem..." : "Reconnecting..."}
                     disabled={!isConnected || isLoading}
-                    className="w-full px-4 py-3 pr-12 bg-white border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 max-h-24"
+                    className="w-full px-4 py-3 pr-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 max-h-24 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     rows="1"
                     style={{ height: 'auto' }}
                     onInput={(e) => {
@@ -222,7 +222,7 @@ export default function ChatInterface({
               </div>
               
               {/* Status indicators */}
-              <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+              <div className="flex items-center justify-between mt-2 text-xs text-slate-500 dark:text-slate-400">
                 <span>
                   {userType === 'cliente' ? 'Cliente' : 'Mecânico'} • {messages.length} mensagens
                 </span>

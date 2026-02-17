@@ -51,9 +51,9 @@ export default function InvitePage() {
 
     if (status === 'loading') {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800">
                 <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
-                <h2 className="text-xl font-semibold text-slate-700">Validando seu convite...</h2>
+                <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-300">Validando seu convite...</h2>
                 <p className="text-slate-500">Por favor, aguarde um momento.</p>
             </div>
         );
@@ -61,12 +61,12 @@ export default function InvitePage() {
 
     if (status === 'error') {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
-                <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800 p-4">
+                <div className="bg-white dark:bg-slate-900 p-8 rounded-xl shadow-lg max-w-md w-full text-center">
                     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <AlertCircle className="w-8 h-8 text-red-600" />
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-800 mb-2">Ops! Algo deu errado.</h2>
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">Ops! Algo deu errado.</h2>
                     <p className="text-slate-600 mb-6">{errorMessage}</p>
                     <Button onClick={() => navigate('/login')} className="w-full">
                         Ir para Login

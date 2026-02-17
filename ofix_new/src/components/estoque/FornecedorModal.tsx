@@ -72,9 +72,9 @@ export default function FornecedorModal({ isOpen, onClose, onSuccess }) {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-white sm:max-w-lg" aria-describedby="fornecedor-modal-description">
+            <DialogContent className="bg-white dark:bg-slate-900 sm:max-w-lg" aria-describedby="fornecedor-modal-description">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-slate-800">Novo Fornecedor</DialogTitle>
+                    <DialogTitle className="text-2xl font-bold text-slate-800 dark:text-slate-200">Novo Fornecedor</DialogTitle>
                     <DialogDescription>
                         Adicione um novo fornecedor para associar às suas peças.
                     </DialogDescription>

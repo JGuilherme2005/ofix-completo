@@ -28,7 +28,7 @@ export default function VoiceSettingsCard({
         type="button"
         onClick={() => setMostrarConfig(!mostrarConfig)}
         aria-expanded={mostrarConfig}
-        className="w-full flex items-center justify-between gap-3 p-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+        className="w-full flex items-center justify-between gap-3 p-4 hover:bg-slate-50 dark:bg-slate-800/80 dark:hover:bg-slate-800/40 transition-colors"
       >
         <div className="text-left">
           <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Configurações de voz</div>
@@ -62,9 +62,9 @@ export default function VoiceSettingsCard({
             <button
               type="button"
               onClick={() => setModoContinuo(!modoContinuo)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${modoContinuo ? 'bg-blue-600' : 'bg-gray-300 dark:bg-slate-700'}`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${modoContinuo ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
             >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${modoContinuo ? 'translate-x-6' : 'translate-x-1'}`} />
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 transition-transform ${modoContinuo ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
 

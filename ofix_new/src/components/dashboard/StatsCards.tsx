@@ -18,7 +18,7 @@ export const StatsCardSkeleton = () => (
 );
 
 // Componente StatsCards com design refinado e animação
-export default function StatsCards({ title, value, icon: Icon, color = "text-slate-600", bgColor = "bg-slate-100" }) {
+export default function StatsCards({ title, value, icon: Icon, color = "text-slate-600", bgColor = "bg-slate-100 dark:bg-slate-800" }) {
     return (
         <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl hover:shadow-md transition-shadow duration-200">
             <CardContent className="p-4">

@@ -38,24 +38,24 @@ export default function TypingIndicator({
       )}
 
       <div className="max-w-[80%]">
-        <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
+        <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
           <div className="flex items-center gap-3">
             {/* Animated dots */}
             <div className="flex gap-1">
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
             </div>
             
             {/* Text with dynamic dots */}
-            <span className="text-gray-600 text-sm">
+            <span className="text-slate-600 text-sm">
               {displayMessage}{dots}
             </span>
           </div>
         </div>
         
         {/* Timestamp */}
-        <div className="text-xs text-gray-500 mt-1">
+        <div className="text-xs text-slate-500 mt-1">
           {new Date().toLocaleTimeString('pt-BR', {
             hour: '2-digit',
             minute: '2-digit'

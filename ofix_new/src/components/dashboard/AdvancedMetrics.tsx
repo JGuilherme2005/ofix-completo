@@ -150,7 +150,7 @@ export default function AdvancedMetrics({ servicos, clientes, veiculos }) {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-slate-800">Métricas Avançadas</h2>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">Métricas Avançadas</h2>
                 <Badge variant="outline" className="text-xs">
                     Atualizado em tempo real
                 </Badge>

@@ -223,6 +223,7 @@ export const IconButton = ({
   return (
     <button 
       className={`inline-flex items-center justify-center gap-2 ${className}`}
+      aria-label={props['aria-label'] || (typeof children === 'string' ? children : icon)}
       {...props}
     >
       <Icon name={icon} category={category} size={iconSizeMap[size]} />

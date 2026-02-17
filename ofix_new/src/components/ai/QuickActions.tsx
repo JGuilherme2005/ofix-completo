@@ -21,7 +21,7 @@ export default function QuickActions({ userType = 'cliente', onActionClick, clas
 				<button
 					key={a.type}
 					onClick={() => onActionClick?.(a)}
-					className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full border border-gray-200 transition-colors"
+					className="px-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 rounded-full border border-slate-200 dark:border-slate-700 transition-colors"
 				>
 					{a.label}
 				</button>

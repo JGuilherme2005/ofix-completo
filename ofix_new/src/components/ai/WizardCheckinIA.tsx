@@ -187,7 +187,7 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg max-w-4xl mx-auto">
+    <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg max-w-4xl mx-auto">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-6 rounded-t-lg">
         <div className="flex items-center space-x-3">
@@ -208,7 +208,7 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
           </div>
           <div className="w-full bg-purple-300 rounded-full h-2">
             <div 
-              className="bg-white rounded-full h-2 transition-all duration-500"
+              className="bg-white dark:bg-slate-900 rounded-full h-2 transition-all duration-500"
               style={{ width: `${checkinCompleto ? 100 : getProgresso()}%` }}
             />
           </div>
@@ -231,11 +231,11 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
                 <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
                   mensagem.tipo === 'usuario' 
                     ? 'bg-blue-500 text-white rounded-br-none' 
-                    : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-none'
                 }`}>
                   <p className="text-sm">{mensagem.conteudo}</p>
                   <p className={`text-xs mt-1 ${
-                    mensagem.tipo === 'usuario' ? 'text-blue-100' : 'text-gray-500'
+                    mensagem.tipo === 'usuario' ? 'text-blue-100' : 'text-slate-500'
                   }`}>
                     {formatarTempo(mensagem.timestamp)}
                   </p>
@@ -260,7 +260,7 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
                 onChange={(e) => setRespostaAtual(e.target.value)}
                 placeholder="Digite sua resposta aqui..."
                 rows={3}
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                className="flex-1 border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -273,7 +273,7 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
               <motion.button
                 onClick={processarResposta}
                 disabled={loading || !respostaAtual.trim()}
-                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 text-white rounded-lg transition-colors flex items-center space-x-2"
+                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 disabled:bg-slate-300 text-white rounded-lg transition-colors flex items-center space-x-2"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -288,7 +288,7 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
               </motion.button>
             </div>
 
-            <p className="text-gray-500 text-sm text-center">
+            <p className="text-slate-500 text-sm text-center">
               💡 Dica: Seja específico em suas respostas para que a IA possa ajudar melhor
             </p>
           </div>
@@ -312,8 +312,8 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
             </div>
 
             {/* Resumo dos Dados Coletados */}
-            <div className="bg-gray-50 rounded-lg p-4 text-left">
-              <h4 className="font-semibold text-gray-800 mb-3">
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 text-left">
+              <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">
                 📋 Resumo das Informações Coletadas:
               </h4>
               <div className="space-y-2 text-sm">
@@ -372,7 +372,7 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
               
               <motion.button
                 onClick={reiniciarCheckin}
-                className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg shadow-md transition-colors flex items-center space-x-2"
+                className="px-6 py-3 bg-slate-50 dark:bg-slate-8000 hover:bg-slate-600 text-white rounded-lg shadow-md transition-colors flex items-center space-x-2"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

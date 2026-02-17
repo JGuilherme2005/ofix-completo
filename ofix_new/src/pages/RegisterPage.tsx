@@ -65,7 +65,7 @@ export default function RegisterPage() {
                     <div className="mx-auto mb-4 h-16 w-16 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg">
             <Wrench className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">Crie sua Conta Pista</CardTitle>
+          <CardTitle className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Crie sua Conta Pista</CardTitle>
           <p className="text-xs font-medium text-blue-600 tracking-wide mt-1">Plataforma Inteligente para Simplificar a Tarefa da Automecânica</p>
           <CardDescription className="text-slate-600 mt-2">
             Comece a gerenciar sua oficina de forma eficiente.
@@ -73,7 +73,7 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-800 border-b pb-2 mb-3">Dados do Usuário Principal</h3>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 border-b pb-2 mb-3">Dados do Usuário Principal</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                     <Label htmlFor="nomeUser">Seu Nome Completo</Label>
@@ -95,7 +95,7 @@ export default function RegisterPage() {
                 </div>
             </div>
 
-            <h3 className="text-lg font-semibold text-slate-800 border-b pb-2 pt-4 mb-3">Dados da Oficina</h3>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 border-b pb-2 pt-4 mb-3">Dados da Oficina</h3>
             <div className="space-y-1">
                 <Label htmlFor="nomeOficina">Nome da Oficina</Label>
                 <Input id="nomeOficina" name="nomeOficina" autoComplete="organization" value={formData.nomeOficina} onChange={handleChange} required />

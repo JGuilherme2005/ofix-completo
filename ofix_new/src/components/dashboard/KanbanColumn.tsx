@@ -40,7 +40,7 @@ export default function KanbanColumn({ status, config, servicos, serviceIds, cli
                 {/* Área dos Cards */}
                 <ScrollArea
                     ref={setNodeRef}
-                    className={`h-[calc(100vh-320px)] rounded-lg transition-all duration-200 ${isOver ? 'bg-blue-50 dark:bg-blue-900/20 border-2 border-dashed border-blue-300 dark:border-blue-700' : 'bg-transparent'
+                    className={`h-[calc(100dvh-320px)] min-h-48 rounded-lg transition-all duration-200 ${isOver ? 'bg-blue-50 dark:bg-blue-900/20 border-2 border-dashed border-blue-300 dark:border-blue-700' : 'bg-transparent'
                         }`}
                 >
                     <SortableContext items={serviceIds || []} strategy={verticalListSortingStrategy}>

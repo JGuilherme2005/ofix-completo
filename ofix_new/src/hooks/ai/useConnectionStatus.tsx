@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import { useState, useEffect, useCallback } from 'react';
 import { CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import logger from '../../utils/logger';
@@ -74,7 +74,7 @@ export function useConnectionStatus({ showToast, onMemoryStatus }: ConnectionOpt
       case 'local': return <AlertCircle className="w-4 h-4 text-amber-500" />;
       case 'conectando': return <Loader2 className="w-4 h-4 text-yellow-500 animate-spin" />;
       case 'erro': return <AlertCircle className="w-4 h-4 text-red-500" />;
-      default: return <AlertCircle className="w-4 h-4 text-gray-400" />;
+      default: return <AlertCircle className="w-4 h-4 text-slate-400" />;
     }
   }, [statusConexao]);
 

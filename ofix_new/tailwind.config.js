@@ -9,6 +9,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Inter"', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+      },
       keyframes: {
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
@@ -17,6 +20,20 @@ export default {
       },
       animation: {
         shimmer: 'shimmer 2s infinite linear',
+      },
+      // Z-Index scale padronizado — usar APENAS esses tokens
+      zIndex: {
+        'base': '0',
+        'raised': '10',
+        'sticky': '20',
+        'header': '30',
+        'sidebar': '25',
+        'fab': '40',
+        'dropdown': '50',
+        'modal-backdrop': '60',
+        'modal': '70',
+        'toast': '80',
+        'max': '9999',
       },
       colors: {
         'primary-blue': '#2563eb',

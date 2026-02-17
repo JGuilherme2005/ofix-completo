@@ -102,7 +102,7 @@ export default function MessageBubble({
                 ? 'bg-yellow-500 text-white hover:bg-yellow-600'
                 : action.style === 'danger'
                 ? 'bg-red-600 text-white hover:bg-red-700'
-                : 'bg-white bg-opacity-20 hover:bg-opacity-30 text-current'
+                : 'bg-white dark:bg-slate-900 bg-opacity-20 hover:bg-opacity-30 text-current'
             }`}
           >
             {action.icon && <ExternalLink className="w-3 h-3" />}
@@ -156,10 +156,10 @@ export default function MessageBubble({
             isUser
               ? 'bg-blue-600 text-white rounded-br-md'
               : isError
-              ? 'bg-red-50 border-l-4 border-red-500 text-gray-900 rounded-bl-md'
+              ? 'bg-red-50 border-l-4 border-red-500 text-slate-900 dark:text-slate-100 rounded-bl-md'
               : isSystem
-              ? 'bg-yellow-50 border-l-4 border-yellow-500 text-gray-900 rounded-bl-md'
-              : 'bg-gray-100 text-gray-900 rounded-bl-md hover:bg-gray-50'
+              ? 'bg-yellow-50 border-l-4 border-yellow-500 text-slate-900 dark:text-slate-100 rounded-bl-md'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-md hover:bg-slate-50 dark:bg-slate-800'
           }`}
         >
           {/* Message content */}
@@ -178,7 +178,7 @@ export default function MessageBubble({
             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <button
                 onClick={handleCopy}
-                className="p-1 text-gray-400 hover:text-gray-600 bg-white rounded shadow-sm"
+                className="p-1 text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-900 rounded shadow-sm"
                 title="Copiar mensagem"
               >
                 {copied ? <CheckCircle className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
@@ -188,7 +188,7 @@ export default function MessageBubble({
         </div>
 
         {/* Message metadata */}
-        <div className={`flex items-center gap-2 mt-1 text-xs text-gray-500 ${
+        <div className={`flex items-center gap-2 mt-1 text-xs text-slate-500 ${
           isUser ? 'justify-end' : 'justify-start'
         }`}>
           {showTimestamp && (
@@ -208,26 +208,26 @@ export default function MessageBubble({
         {/* Feedback buttons for AI messages */}
         {isAI && !isError && !feedbackGiven && onFeedback && (
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-xs text-gray-500">Esta resposta foi útil?</span>
+            <span className="text-xs text-slate-500">Esta resposta foi útil?</span>
             <button
               onClick={() => handleFeedback(true)}
               className="p-1 hover:bg-green-100 rounded-full transition-colors group"
               title="Resposta útil"
             >
-              <ThumbsUp className="w-3 h-3 text-gray-400 group-hover:text-green-600" />
+              <ThumbsUp className="w-3 h-3 text-slate-400 group-hover:text-green-600" />
             </button>
             <button
               onClick={() => handleFeedback(false)}
               className="p-1 hover:bg-red-100 rounded-full transition-colors group"
               title="Resposta não útil"
             >
-              <ThumbsDown className="w-3 h-3 text-gray-400 group-hover:text-red-600" />
+              <ThumbsDown className="w-3 h-3 text-slate-400 group-hover:text-red-600" />
             </button>
           </div>
         )}
 
         {feedbackGiven && (
-          <div className="text-xs text-gray-500 mt-2">
+          <div className="text-xs text-slate-500 mt-2">
             Obrigado pelo feedback!
           </div>
         )}

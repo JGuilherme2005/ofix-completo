@@ -81,7 +81,7 @@ export default function ChatInputBar({
           variant="outline"
           size="sm"
           disabled={carregando || falando}
-          className={`rounded-xl ${gravando ? 'bg-red-50 border-red-300 text-red-700 hover:bg-red-100 animate-pulse' : falando ? 'bg-blue-50 border-blue-300 text-blue-400 cursor-not-allowed' : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+          className={`rounded-xl ${gravando ? 'bg-red-50 border-red-300 text-red-700 hover:bg-red-100 animate-pulse' : falando ? 'bg-blue-50 border-blue-300 text-blue-400 cursor-not-allowed' : 'bg-slate-50 dark:bg-slate-800 border-slate-300 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800'}`}
           aria-label={gravando ? 'Parar gravação' : falando ? 'Aguardar o assistente terminar de falar' : 'Gravar mensagem de voz'}
           title={gravando ? 'Parar gravação (Clique ou pressione ESC)' : falando ? 'Aguarde o assistente terminar de falar' : 'Gravar mensagem de voz (Clique para começar)'}
         >

@@ -24,7 +24,7 @@ const AdminStatsCard = ({ title, value, icon: Icon, color, bgColor, description 
             <div className="flex items-center justify-between">
                 <div className="space-y-2">
                     <p className="text-sm font-medium text-slate-600">{title}</p>
-                    <p className="text-2xl md:text-3xl font-bold text-slate-800">{value}</p>
+                    <p className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">{value}</p>
                     {description && (
                         <p className="text-xs text-slate-500">{description}</p>
                     )}
@@ -79,14 +79,14 @@ export default function Admin() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-red-50/20 to-orange-50/30">
+        <div className="min-h-0 bg-gradient-to-br from-slate-50 via-red-50/20 to-orange-50/30">
             <div className="absolute inset-0 bg-grid-pattern opacity-30" />
             
             <div className="relative z-10 p-6 lg:p-8">
                 <div className="max-w-7xl mx-auto space-y-8">
                     {/* Header da Administração */}
                     <header className="mb-8">
-                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border-0">
+                        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border-0">
                             <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-orange-500/5 rounded-2xl" />
                             <div className="relative">
                                 {/* Alerta de erro, se houver */}
@@ -130,7 +130,7 @@ export default function Admin() {
                                             disabled={adminData.loading}
                                             variant="outline"
                                             size="sm"
-                                            className="bg-white hover:bg-slate-50"
+                                            className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:bg-slate-800"
                                         >
                                             <RefreshCw className={`w-4 h-4 mr-2 ${adminData.loading ? 'animate-spin' : ''}`} />
                                             {adminData.loading ? 'Atualizando...' : 'Atualizar'}
@@ -170,42 +170,42 @@ export default function Admin() {
                                     <TabsList className="w-full justify-start bg-transparent p-0 h-auto">
                                         <TabsTrigger
                                             value="migration"
-                                            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-red-500 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-50 data-[state=active]:to-transparent px-6 py-4 text-base font-medium transition-all duration-300 hover:bg-slate-50/50"
+                                            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-red-500 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-50 data-[state=active]:to-transparent px-6 py-4 text-base font-medium transition-all duration-300 hover:bg-slate-50 dark:bg-slate-800/50"
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
                                                     <Database className="w-5 h-5 text-white" />
                                                 </div>
                                                 <div className="text-left">
-                                                    <div className="font-semibold text-slate-800">Migração de Dados</div>
+                                                    <div className="font-semibold text-slate-800 dark:text-slate-200">Migração de Dados</div>
                                                     <div className="text-xs text-slate-500">Importar dados antigos</div>
                                                 </div>
                                             </div>
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="users"
-                                            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-orange-500 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-50 data-[state=active]:to-transparent px-6 py-4 text-base font-medium transition-all duration-300 hover:bg-slate-50/50"
+                                            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-orange-500 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-50 data-[state=active]:to-transparent px-6 py-4 text-base font-medium transition-all duration-300 hover:bg-slate-50 dark:bg-slate-800/50"
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
                                                     <Users className="w-5 h-5 text-white" />
                                                 </div>
                                                 <div className="text-left">
-                                                    <div className="font-semibold text-slate-800">Usuários</div>
+                                                    <div className="font-semibold text-slate-800 dark:text-slate-200">Usuários</div>
                                                     <div className="text-xs text-slate-500">Gestão de acesso</div>
                                                 </div>
                                             </div>
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="system"
-                                            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-purple-500 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-50 data-[state=active]:to-transparent px-6 py-4 text-base font-medium transition-all duration-300 hover:bg-slate-50/50"
+                                            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-purple-500 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-50 data-[state=active]:to-transparent px-6 py-4 text-base font-medium transition-all duration-300 hover:bg-slate-50 dark:bg-slate-800/50"
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
                                                     <Settings className="w-5 h-5 text-white" />
                                                 </div>
                                                 <div className="text-left">
-                                                    <div className="font-semibold text-slate-800">Sistema</div>
+                                                    <div className="font-semibold text-slate-800 dark:text-slate-200">Sistema</div>
                                                     <div className="text-xs text-slate-500">Configurações avançadas</div>
                                                 </div>
                                             </div>

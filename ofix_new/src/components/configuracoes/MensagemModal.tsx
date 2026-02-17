@@ -120,9 +120,9 @@ export default function MensagemModal({ isOpen, onClose, mensagem, onSuccess }) 
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-white sm:max-w-2xl" aria-describedby="mensagem-modal-description">
+            <DialogContent className="bg-white dark:bg-slate-900 sm:max-w-2xl" aria-describedby="mensagem-modal-description">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-slate-800">
+                    <DialogTitle className="text-2xl font-bold text-slate-800 dark:text-slate-200">
                         {mensagem ? 'Editar Mensagem' : 'Nova Mensagem Padrão'}
                     </DialogTitle>
                     <DialogDescription>

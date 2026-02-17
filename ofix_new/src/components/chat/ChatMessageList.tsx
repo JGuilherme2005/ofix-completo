@@ -24,8 +24,7 @@ export default function ChatMessageList({
       role="log"
       aria-live="polite"
       aria-label="Histórico de conversas com o assistente Matias"
-      className="flex-1 min-h-0 min-w-0 overflow-y-auto p-4 sm:p-5 space-y-4 matias-animate-fade-in"
-      style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}
+      className="flex-1 min-h-0 min-w-0 overflow-y-auto p-4 sm:p-5 space-y-4 animate-in fade-in-0 duration-300 [scrollbar-width:thin] [scrollbar-color:theme(colors.slate.300)_transparent] dark:[scrollbar-color:theme(colors.slate.600)_transparent]"
     >
       {conversas.map((conversa) => (
         <ChatMessageItem

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { StandardButton } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Search, User, AlertCircle, RefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
@@ -28,9 +28,10 @@ const ErrorState = ({ error, onRetry }) => (
       <p className="text-slate-500 dark:text-slate-400 mb-6">
         Não foi possível carregar os dados. Tente novamente.
       </p>
-      <StandardButton onClick={onRetry} variant="danger" icon={RefreshCw}>
+      <Button variant="destructive" onClick={onRetry}>
+        <RefreshCw className="w-4 h-4" />
         Tentar Novamente
-      </StandardButton>
+      </Button>
     </div>
   </div>
 );
@@ -47,9 +48,10 @@ const EmptyState = ({ onNewCliente, searchTerm }) => (
         ? "Tente ajustar sua busca."
         : "Clique no botão abaixo para começar."}
     </p>
-    <StandardButton onClick={onNewCliente} variant="primary" icon={Plus}>
+    <Button onClick={onNewCliente}>
+      <Plus className="w-4 h-4" />
       Adicionar Novo Cliente
-    </StandardButton>
+    </Button>
   </div>
 );
 
@@ -173,13 +175,12 @@ export default function Clientes() {
                 Visualize, adicione e gerencie seus clientes.
               </p>
             </div>
-            <StandardButton
+            <Button
               onClick={handleNewCliente}
-              variant="primary"
-              icon={Plus}
             >
+              <Plus className="w-4 h-4" />
               Novo Cliente
-            </StandardButton>
+            </Button>
           </div>
         </header>
 
@@ -192,6 +193,7 @@ export default function Clientes() {
               placeholder="Buscar por nome, telefone ou email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label="Buscar clientes"
               className="w-full pl-11 pr-4 py-3 text-base h-12 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
           </div>

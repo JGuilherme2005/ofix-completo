@@ -177,11 +177,11 @@ export default function ProcedimentoModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="bg-white sm:max-w-2xl"
+        className="bg-white dark:bg-slate-900 sm:max-w-2xl"
         aria-describedby="procedimento-modal-description"
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-slate-800">
+          <DialogTitle className="text-2xl font-bold text-slate-800 dark:text-slate-200">
             {procedimento ? "Editar Procedimento" : "Novo Procedimento Padrão"}
           </DialogTitle>
           <DialogDescription>
@@ -274,11 +274,11 @@ export default function ProcedimentoModal({
             {formData.checklistJson &&
               Array.isArray(JSON.parse(formData.checklistJson)) &&
               JSON.parse(formData.checklistJson).length > 0 && (
-                <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-2 bg-slate-50">
+                <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-2 bg-slate-50 dark:bg-slate-800">
                   {JSON.parse(formData.checklistJson).map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-2 rounded-md bg-white shadow-sm text-sm"
+                      className="flex items-center justify-between p-2 rounded-md bg-white dark:bg-slate-900 shadow-sm text-sm"
                     >
                       <span>{item.item}</span>
                       <Button

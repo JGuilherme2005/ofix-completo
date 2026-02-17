@@ -166,13 +166,13 @@ const AssistantPersonalization = ({ className = '' }) => {
   const renderPersonalitySettings = () => (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Tom de Voz
         </label>
         <select
           value={settings.personality.tone}
           onChange={(e) => updateSetting('personality', 'tone', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          className="w-full px-3 py-2 border border-slate-300 rounded-md"
         >
           <option value="casual">Casual</option>
           <option value="profissional">Profissional</option>
@@ -181,13 +181,13 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Nível de Formalidade
         </label>
         <select
           value={settings.personality.formality}
           onChange={(e) => updateSetting('personality', 'formality', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          className="w-full px-3 py-2 border border-slate-300 rounded-md"
         >
           <option value="formal">Formal</option>
           <option value="informal">Informal</option>
@@ -195,13 +195,13 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Verbosidade das Respostas
         </label>
         <select
           value={settings.personality.verbosity}
           onChange={(e) => updateSetting('personality', 'verbosity', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          className="w-full px-3 py-2 border border-slate-300 rounded-md"
         >
           <option value="conciso">Conciso</option>
           <option value="medio">Médio</option>
@@ -210,15 +210,15 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">Usar Humor</label>
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Usar Humor</label>
         <button
           onClick={() => updateSetting('personality', 'humor', !settings.personality.humor)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-            settings.personality.humor ? 'bg-blue-600' : 'bg-gray-200'
+            settings.personality.humor ? 'bg-blue-600' : 'bg-slate-200'
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 transition ${
               settings.personality.humor ? 'translate-x-6' : 'translate-x-1'
             }`}
           />
@@ -226,15 +226,15 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">Demonstrar Empatia</label>
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Demonstrar Empatia</label>
         <button
           onClick={() => updateSetting('personality', 'empathy', !settings.personality.empathy)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-            settings.personality.empathy ? 'bg-blue-600' : 'bg-gray-200'
+            settings.personality.empathy ? 'bg-blue-600' : 'bg-slate-200'
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 transition ${
               settings.personality.empathy ? 'translate-x-6' : 'translate-x-1'
             }`}
           />
@@ -246,13 +246,13 @@ const AssistantPersonalization = ({ className = '' }) => {
   const renderAppearanceSettings = () => (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Tema
         </label>
         <select
           value={settings.appearance.theme}
           onChange={(e) => updateSetting('appearance', 'theme', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          className="w-full px-3 py-2 border border-slate-300 rounded-md"
         >
           <option value="light">Claro</option>
           <option value="dark">Escuro</option>
@@ -261,13 +261,13 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Estilo do Avatar
         </label>
         <select
           value={settings.appearance.avatarStyle}
           onChange={(e) => updateSetting('appearance', 'avatarStyle', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          className="w-full px-3 py-2 border border-slate-300 rounded-md"
         >
           <option value="human">Humano</option>
           <option value="robotic">Robótico</option>
@@ -276,13 +276,13 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Posição na Tela
         </label>
         <select
           value={settings.appearance.position}
           onChange={(e) => updateSetting('appearance', 'position', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          className="w-full px-3 py-2 border border-slate-300 rounded-md"
         >
           <option value="bottom-left">Inferior Esquerda</option>
           <option value="bottom-right">Inferior Direita</option>
@@ -291,13 +291,13 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Tamanho
         </label>
         <select
           value={settings.appearance.size}
           onChange={(e) => updateSetting('appearance', 'size', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          className="w-full px-3 py-2 border border-slate-300 rounded-md"
         >
           <option value="small">Pequeno</option>
           <option value="medium">Médio</option>
@@ -306,15 +306,15 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">Animações</label>
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Animações</label>
         <button
           onClick={() => updateSetting('appearance', 'animations', !settings.appearance.animations)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-            settings.appearance.animations ? 'bg-blue-600' : 'bg-gray-200'
+            settings.appearance.animations ? 'bg-blue-600' : 'bg-slate-200'
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 transition ${
               settings.appearance.animations ? 'translate-x-6' : 'translate-x-1'
             }`}
           />
@@ -326,15 +326,15 @@ const AssistantPersonalization = ({ className = '' }) => {
   const renderBehaviorSettings = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">Saudação Automática</label>
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Saudação Automática</label>
         <button
           onClick={() => updateSetting('behavior', 'autoGreeting', !settings.behavior.autoGreeting)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-            settings.behavior.autoGreeting ? 'bg-blue-600' : 'bg-gray-200'
+            settings.behavior.autoGreeting ? 'bg-blue-600' : 'bg-slate-200'
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 transition ${
               settings.behavior.autoGreeting ? 'translate-x-6' : 'translate-x-1'
             }`}
           />
@@ -342,15 +342,15 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">Ajuda Proativa</label>
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Ajuda Proativa</label>
         <button
           onClick={() => updateSetting('behavior', 'proactiveHelp', !settings.behavior.proactiveHelp)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-            settings.behavior.proactiveHelp ? 'bg-blue-600' : 'bg-gray-200'
+            settings.behavior.proactiveHelp ? 'bg-blue-600' : 'bg-slate-200'
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 transition ${
               settings.behavior.proactiveHelp ? 'translate-x-6' : 'translate-x-1'
             }`}
           />
@@ -358,15 +358,15 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">Memória de Contexto</label>
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Memória de Contexto</label>
         <button
           onClick={() => updateSetting('behavior', 'contextMemory', !settings.behavior.contextMemory)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-            settings.behavior.contextMemory ? 'bg-blue-600' : 'bg-gray-200'
+            settings.behavior.contextMemory ? 'bg-blue-600' : 'bg-slate-200'
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 transition ${
               settings.behavior.contextMemory ? 'translate-x-6' : 'translate-x-1'
             }`}
           />
@@ -374,15 +374,15 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">Modo Aprendizado</label>
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Modo Aprendizado</label>
         <button
           onClick={() => updateSetting('behavior', 'learningMode', !settings.behavior.learningMode)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-            settings.behavior.learningMode ? 'bg-blue-600' : 'bg-gray-200'
+            settings.behavior.learningMode ? 'bg-blue-600' : 'bg-slate-200'
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 transition ${
               settings.behavior.learningMode ? 'translate-x-6' : 'translate-x-1'
             }`}
           />
@@ -390,7 +390,7 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Limiar de Confiança: {settings.behavior.confidenceThreshold}
         </label>
         <input
@@ -405,14 +405,14 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Tempo Máximo de Resposta (ms)
         </label>
         <input
           type="number"
           value={settings.behavior.maxResponseTime}
           onChange={(e) => updateSetting('behavior', 'maxResponseTime', parseInt(e.target.value))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          className="w-full px-3 py-2 border border-slate-300 rounded-md"
           min="1000"
           max="30000"
           step="1000"
@@ -426,8 +426,8 @@ const AssistantPersonalization = ({ className = '' }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Personalização do Assistente</h2>
-          <p className="text-gray-600">Configure o comportamento e aparência do seu assistente</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Personalização do Assistente</h2>
+          <p className="text-slate-600">Configure o comportamento e aparência do seu assistente</p>
         </div>
         
         <div className="flex gap-2">
@@ -443,7 +443,7 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 border-b border-gray-200">
+      <div className="flex space-x-1 border-b border-slate-200 dark:border-slate-700">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -453,7 +453,7 @@ const AssistantPersonalization = ({ className = '' }) => {
               className={`flex items-center px-4 py-2 text-sm font-medium rounded-t-lg ${
                 activeTab === tab.id
                   ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-300'
               }`}
             >
               <Icon className="h-4 w-4 mr-2" />
@@ -475,12 +475,12 @@ const AssistantPersonalization = ({ className = '' }) => {
           {activeTab === 'appearance' && renderAppearanceSettings()}
           {activeTab === 'behavior' && renderBehaviorSettings()}
           {activeTab === 'interface' && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-slate-500">
               Configurações de interface em desenvolvimento...
             </div>
           )}
           {activeTab === 'advanced' && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-slate-500">
               Configurações avançadas em desenvolvimento...
             </div>
           )}
@@ -493,8 +493,8 @@ const AssistantPersonalization = ({ className = '' }) => {
           <CardTitle>Preview do Assistente</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300">
-            <div className="text-center text-gray-500">
+          <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border-2 border-dashed border-slate-300">
+            <div className="text-center text-slate-500">
               <MessageSquare className="h-12 w-12 mx-auto mb-2" />
               <p>Preview do assistente com as configurações atuais</p>
               <p className="text-sm mt-2">

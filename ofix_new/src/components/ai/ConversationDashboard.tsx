@@ -81,8 +81,8 @@ const ConversationDashboard = ({ className = '' }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Dashboard do Assistente</h2>
-          <p className="text-gray-600">Análise de conversas e métricas de performance</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Dashboard do Assistente</h2>
+          <p className="text-slate-600">Análise de conversas e métricas de performance</p>
         </div>
         
         <div className="flex gap-2">
@@ -109,8 +109,8 @@ const ConversationDashboard = ({ className = '' }) => {
             <div className="flex items-center">
               <MessageSquare className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total de Conversas</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-slate-600">Total de Conversas</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                   {metrics?.totalConversations || 156}
                 </p>
               </div>
@@ -123,8 +123,8 @@ const ConversationDashboard = ({ className = '' }) => {
             <div className="flex items-center">
               <Users className="h-8 w-8 text-green-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Usuários Ativos</p>
-                <p className="text-2xl font-bold text-gray-900">89</p>
+                <p className="text-sm font-medium text-slate-600">Usuários Ativos</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">89</p>
               </div>
             </div>
           </CardContent>
@@ -135,8 +135,8 @@ const ConversationDashboard = ({ className = '' }) => {
             <div className="flex items-center">
               <Clock className="h-8 w-8 text-orange-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Tempo Médio</p>
-                <p className="text-2xl font-bold text-gray-900">2.4min</p>
+                <p className="text-sm font-medium text-slate-600">Tempo Médio</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">2.4min</p>
               </div>
             </div>
           </CardContent>
@@ -147,8 +147,8 @@ const ConversationDashboard = ({ className = '' }) => {
             <div className="flex items-center">
               <TrendingUp className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Taxa de Sucesso</p>
-                <p className="text-2xl font-bold text-gray-900">87%</p>
+                <p className="text-sm font-medium text-slate-600">Taxa de Sucesso</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">87%</p>
               </div>
             </div>
           </CardContent>
@@ -176,7 +176,7 @@ const ConversationDashboard = ({ className = '' }) => {
             <select
               value={filterPeriod}
               onChange={(e) => setFilterPeriod(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md"
+              className="px-3 py-2 border border-slate-300 rounded-md"
             >
               <option value="1d">Últimas 24h</option>
               <option value="7d">Últimos 7 dias</option>
@@ -187,7 +187,7 @@ const ConversationDashboard = ({ className = '' }) => {
             <select
               value={filterUserType}
               onChange={(e) => setFilterUserType(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md"
+              className="px-3 py-2 border border-slate-300 rounded-md"
             >
               <option value="all">Todos os tipos</option>
               <option value="cliente">Clientes</option>
@@ -267,14 +267,14 @@ const ConversationDashboard = ({ className = '' }) => {
           <div className="space-y-4">
             {filteredConversations.length > 0 ? (
               filteredConversations.slice(0, 10).map((conv, index) => (
-                <div key={conv.id || index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div key={conv.id || index} className="flex items-center justify-between p-4 border border-slate-200 dark:border-slate-700 rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="w-2 h-2 bg-green-500 rounded-full" />
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-slate-900 dark:text-slate-100">
                         Conversa #{conv.id || `demo-${index + 1}`}
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-slate-600">
                         {conv.messageCount || (3 + index)} mensagens
                       </p>
                     </div>
@@ -284,7 +284,7 @@ const ConversationDashboard = ({ className = '' }) => {
                     <Badge variant="outline">
                       {conv.userType || 'cliente'}
                     </Badge>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-slate-500">
                       {conv.createdAt ? new Date(conv.createdAt).toLocaleDateString() : 'Hoje'}
                     </span>
                   </div>
@@ -292,11 +292,11 @@ const ConversationDashboard = ({ className = '' }) => {
               ))
             ) : (
               <div className="text-center py-8">
-                <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <MessageSquare className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">
                   Nenhuma conversa encontrada
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-slate-600">
                   {searchTerm ? 'Tente ajustar os filtros de pesquisa.' : 'As conversas aparecerão aqui conforme os usuários interagirem com o assistente.'}
                 </p>
               </div>

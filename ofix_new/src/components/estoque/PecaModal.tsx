@@ -105,11 +105,11 @@ export default function PecaModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="bg-white sm:max-w-2xl"
+        className="bg-white dark:bg-slate-900 sm:max-w-2xl"
         aria-describedby="peca-modal-description"
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-slate-800">
+          <DialogTitle className="text-2xl font-bold text-slate-800 dark:text-slate-200">
             {peca ? "Editar Peça" : "Nova Peça no Estoque"}
           </DialogTitle>
           <DialogDescription>

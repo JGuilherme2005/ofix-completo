@@ -18,7 +18,7 @@ export default function DeleteMensagemDialog({
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-white sm:max-w-md">
+      <DialogContent className="bg-white dark:bg-slate-900 sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-red-600">
             <AlertTriangle className="w-5 h-5" />

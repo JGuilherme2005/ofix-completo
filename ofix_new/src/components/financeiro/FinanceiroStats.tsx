@@ -35,11 +35,11 @@ export default function FinanceiroStats({ stats, isLoading }) {
         {Array(3)
           .fill(0)
           .map((_, i) => (
-            <Card key={i} className="border-2 border-blue-200 bg-white">
+            <Card key={i} className="border-2 border-blue-200 bg-white dark:bg-slate-900">
               <CardContent className="p-6">
                 <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-slate-200 rounded w-3/4 mb-4"></div>
+                  <div className="h-8 bg-slate-200 rounded w-1/2"></div>
                 </div>
               </CardContent>
             </Card>
@@ -53,16 +53,16 @@ export default function FinanceiroStats({ stats, isLoading }) {
       {statItems.map((stat) => (
         <Card
           key={stat.title}
-          className="border-2 border-blue-200 bg-white hover:shadow-lg transition-shadow"
+          className="border-2 border-blue-200 bg-white dark:bg-slate-900 hover:shadow-lg transition-shadow"
         >
           <CardContent className="p-6 text-center">
             <div className="flex justify-center mb-4">
               <stat.icon className={`w-8 h-8 ${stat.iconColor}`} />
             </div>
-            <p className="text-sm font-medium text-gray-600 mb-2 uppercase tracking-wide">
+            <p className="text-sm font-medium text-slate-600 mb-2 uppercase tracking-wide">
               {stat.title}
             </p>
-            <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+            <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{stat.value}</p>
           </CardContent>
         </Card>
       ))}

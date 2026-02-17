@@ -87,7 +87,7 @@ const AIAdminDashboard = ({
         <CardContent className="p-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">{systemStats.uptime}</div>
-            <div className="text-sm text-gray-600">Uptime</div>
+            <div className="text-sm text-slate-600">Uptime</div>
           </div>
         </CardContent>
       </Card>
@@ -96,7 +96,7 @@ const AIAdminDashboard = ({
         <CardContent className="p-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">{systemStats.totalUsers}</div>
-            <div className="text-sm text-gray-600">Usuários Ativos</div>
+            <div className="text-sm text-slate-600">Usuários Ativos</div>
           </div>
         </CardContent>
       </Card>
@@ -105,7 +105,7 @@ const AIAdminDashboard = ({
         <CardContent className="p-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600">{systemStats.activeConversations}</div>
-            <div className="text-sm text-gray-600">Conversas Ativas</div>
+            <div className="text-sm text-slate-600">Conversas Ativas</div>
           </div>
         </CardContent>
       </Card>
@@ -114,7 +114,7 @@ const AIAdminDashboard = ({
         <CardContent className="p-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-600">{systemStats.systemHealth}%</div>
-            <div className="text-sm text-gray-600">Saúde do Sistema</div>
+            <div className="text-sm text-slate-600">Saúde do Sistema</div>
           </div>
         </CardContent>
       </Card>
@@ -123,7 +123,7 @@ const AIAdminDashboard = ({
 
   return (
     <div className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center ${className}`}>
-      <div className={`bg-white rounded-lg shadow-2xl transition-all duration-300 ${
+      <div className={`bg-white dark:bg-slate-900 rounded-xl shadow-xl transition-all duration-300 ${
         isMinimized ? 'w-96 h-20' : 'w-[95vw] h-[95vh] max-w-7xl'
       }`}>
         
@@ -134,10 +134,10 @@ const AIAdminDashboard = ({
               <Brain className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 Dashboard do Assistente Virtual
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-slate-600">
                 Gestão e monitoramento completo do sistema
               </p>
             </div>

@@ -98,7 +98,7 @@ export default function SystemStatus({ lastUpdate, isCacheValid, onRefresh, isLo
     const CacheIcon = cacheStatus.icon;
 
     return (
-        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-md">
+        <Card className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-0 shadow-md">
             <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -106,7 +106,7 @@ export default function SystemStatus({ lastUpdate, isCacheValid, onRefresh, isLo
                         <div className="flex items-center gap-2">
                             <ConnectionIcon className={`w-4 h-4 ${getConnectionColor()}`} />
                             <div className="text-xs">
-                                <p className="font-medium text-slate-700">
+                                <p className="font-medium text-slate-700 dark:text-slate-300">
                                     {isOnline ? 'Online' : 'Offline'}
                                 </p>
                                 {connectionSpeed !== 'unknown' && (
@@ -121,7 +121,7 @@ export default function SystemStatus({ lastUpdate, isCacheValid, onRefresh, isLo
                         <div className="flex items-center gap-2">
                             <CacheIcon className={`w-4 h-4 ${cacheStatus.color}`} />
                             <div className="text-xs">
-                                <p className="font-medium text-slate-700">Cache</p>
+                                <p className="font-medium text-slate-700 dark:text-slate-300">Cache</p>
                                 <p className={`${cacheStatus.color}`}>
                                     {cacheStatus.text}
                                 </p>
@@ -132,7 +132,7 @@ export default function SystemStatus({ lastUpdate, isCacheValid, onRefresh, isLo
                         <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-slate-500" />
                             <div className="text-xs">
-                                <p className="font-medium text-slate-700">Atualizado</p>
+                                <p className="font-medium text-slate-700 dark:text-slate-300">Atualizado</p>
                                 <p className="text-slate-500">
                                     {formatLastUpdate()}
                                 </p>
@@ -146,7 +146,7 @@ export default function SystemStatus({ lastUpdate, isCacheValid, onRefresh, isLo
                         disabled={isLoading}
                         variant="outline"
                         size="sm"
-                        className="h-8 px-3 text-xs border-slate-200 hover:bg-slate-50"
+                        className="h-8 px-3 text-xs border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800"
                     >
                         <RefreshCw className={`w-3 h-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
                         Atualizar

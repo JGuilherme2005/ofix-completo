@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+﻿import { Loader2 } from "lucide-react";
 
 /**
  * Componente de loading avançado com diferentes tipos e mensagens
@@ -41,7 +41,7 @@ export const PageLoading = ({ message = "Carregando dados..." }) => (
   <div className="flex items-center justify-center min-h-[60vh]">
     <div className="text-center space-y-4">
       <LoadingSpinner size="large" message={message} />
-      <p className="text-gray-500 text-sm">
+      <p className="text-slate-500 text-sm">
         Por favor, aguarde um momento.
       </p>
     </div>

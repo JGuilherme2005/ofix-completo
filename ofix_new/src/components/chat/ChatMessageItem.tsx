@@ -42,7 +42,7 @@ function MessageAvatar({ tipo }: { tipo: string }) {
   const Icon = iconMap[tipo] || Bot;
 
   return (
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm matias-animate-bounce-in bg-gradient-to-br ${gradient}`}>
+    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm animate-in zoom-in-50 duration-500 bg-gradient-to-br ${gradient}`}>
       <Icon className="w-4 h-4 text-white" />
     </div>
   );
@@ -59,7 +59,7 @@ const bubbleClass: Record<string, string> = {
   alerta: 'bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-800 border border-purple-200 dark:from-purple-950/30 dark:to-indigo-950/30 dark:text-purple-100 dark:border-purple-900/40',
   consulta_cliente: 'bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-900 border border-cyan-200 dark:from-cyan-950/25 dark:to-blue-950/25 dark:text-cyan-100 dark:border-cyan-900/40',
 };
-const defaultBubble = 'bg-white text-slate-900 border border-slate-200 dark:bg-slate-950/30 dark:text-slate-100 dark:border-slate-800/60';
+const defaultBubble = 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-200 dark:bg-slate-950/30 dark:text-slate-100 dark:border-slate-800/60';
 
 // ── Component ────────────────────────────────
 interface ChatMessageItemProps {
@@ -83,7 +83,7 @@ export default function ChatMessageItem({
       {!isUser && <MessageAvatar tipo={conversa.tipo} />}
 
       {/* Bolha */}
-      <div className={`max-w-2xl rounded-2xl px-4 py-3 shadow-sm matias-animate-message-slide transition-all duration-200 hover:shadow-md ${bubbleClass[conversa.tipo] || defaultBubble}`}>
+      <div className={`max-w-2xl rounded-2xl px-4 py-3 shadow-sm animate-in slide-in-from-bottom-2 duration-300 transition-all duration-200 hover:shadow-md ${bubbleClass[conversa.tipo] || defaultBubble}`}>
         {/* Conteúdo */}
         <div className="text-sm leading-relaxed">
           {isUser ? (
@@ -99,17 +99,17 @@ export default function ChatMessageItem({
         {/* Metadata badges */}
         {!isUser && conversa.metadata?.processed_by && (
           <div className="mt-2 flex flex-wrap gap-2">
-            <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
+            <span className="text-[11px] px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
               Fonte: {formatarFonteResposta(conversa.metadata)}
             </span>
             {typeof conversa.metadata.processing_time_ms === 'number' && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">{conversa.metadata.processing_time_ms}ms</span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">{conversa.metadata.processing_time_ms}ms</span>
             )}
             {conversa.metadata.run_id && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">run: {String(conversa.metadata.run_id).slice(0, 8)}</span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">run: {String(conversa.metadata.run_id).slice(0, 8)}</span>
             )}
             {conversa.metadata.cached && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">cache</span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">cache</span>
             )}
           </div>
         )}
@@ -126,19 +126,19 @@ export default function ChatMessageItem({
 
         {/* Client selection buttons */}
         {conversa.tipo === 'consulta_cliente' && conversa.metadata?.clientes && (
-          <div className="mt-3 pt-3 border-t border-slate-200">
+          <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
             <p className="text-xs font-medium text-slate-600 mb-2">Digite o número do cliente para selecionar:</p>
             <div className="space-y-2">
               {conversa.metadata.clientes.map((cliente, index) => (
                 <button
                   key={cliente.id}
                   onClick={() => onSelectCliente(index + 1)}
-                  className="w-full text-left px-3 py-2 rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 group"
+                  className="w-full text-left px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 group"
                 >
                   <div className="flex items-start gap-2">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center text-xs font-medium text-slate-600 group-hover:text-blue-600">{index + 1}</div>
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-blue-100 flex items-center justify-center text-xs font-medium text-slate-600 group-hover:text-blue-600">{index + 1}</div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-slate-900 group-hover:text-blue-900">{cliente.nomeCompleto}</div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-blue-900">{cliente.nomeCompleto}</div>
                       <div className="text-xs text-slate-500 mt-0.5">{cliente.telefone || 'Sem telefone'}</div>
                       {cliente.veiculos?.length > 0 && (
                         <div className="text-xs text-slate-400 mt-1">Veículos: {cliente.veiculos.map(v => `${v.marca} ${v.modelo}`).join(', ')}</div>

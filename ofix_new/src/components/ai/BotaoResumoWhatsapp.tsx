@@ -90,7 +90,7 @@ const BotaoResumoWhatsapp = ({ osId, dadosOS, onResumoGerado }) => {
       <motion.button
         onClick={gerarResumo}
         disabled={loading}
-        className="inline-flex items-center space-x-2 px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white rounded-lg shadow-md transition-colors"
+        className="inline-flex items-center space-x-2 px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-slate-300 text-white rounded-lg shadow-md transition-colors"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
@@ -132,7 +132,7 @@ const BotaoResumoWhatsapp = ({ osId, dadosOS, onResumoGerado }) => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-slate-900 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -162,25 +162,25 @@ const BotaoResumoWhatsapp = ({ osId, dadosOS, onResumoGerado }) => {
                   <>
                     {/* Mensagem Gerada */}
                     <div>
-                      <h4 className="font-semibold text-gray-800 mb-3">
+                      <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">
                         📱 Mensagem para o Cliente:
                       </h4>
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 relative">
-                        <div className="text-gray-800 whitespace-pre-wrap">
+                      <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 relative">
+                        <div className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
                           {resumo.mensagemWhatsapp}
                         </div>
                         
                         {/* Botão de Copiar */}
                         <motion.button
                           onClick={() => copiarTexto(resumo.mensagemWhatsapp)}
-                          className="absolute top-3 right-3 p-2 bg-white hover:bg-gray-100 rounded-lg shadow-sm transition-colors"
+                          className="absolute top-3 right-3 p-2 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 rounded-lg shadow-sm transition-colors"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
                           {copiado ? (
                             <CheckCircle size={16} className="text-green-500" />
                           ) : (
-                            <Copy size={16} className="text-gray-500" />
+                            <Copy size={16} className="text-slate-500" />
                           )}
                         </motion.button>
                       </div>
@@ -281,7 +281,7 @@ const BotaoResumoWhatsapp = ({ osId, dadosOS, onResumoGerado }) => {
                 ) : (
                   <div className="text-center py-8">
                     <Loader className="animate-spin mx-auto mb-4" size={48} />
-                    <p className="text-gray-600">Gerando resumo personalizado...</p>
+                    <p className="text-slate-600">Gerando resumo personalizado...</p>
                   </div>
                 )}
               </div>

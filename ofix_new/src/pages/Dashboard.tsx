@@ -271,6 +271,7 @@ export default function Dashboard() {
                     placeholder="🔍 Buscar por cliente, veículo, placa ou OS # (Ctrl+K)"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    aria-label="Buscar ordens de serviço"
                     className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:ring-2 focus:ring-blue-400 focus:outline-none rounded-lg placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   />
                   {searchTerm && (

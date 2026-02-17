@@ -28,13 +28,13 @@ const ActionButtons = ({ actions, onAction }) => {
       'excluir': 'bg-red-500 hover:bg-red-600 text-white',
       'ver_detalhes': 'bg-cyan-500 hover:bg-cyan-600 text-white'
     };
-    return styles[type] || 'bg-slate-500 hover:bg-slate-600 text-white';
+    return styles[type] || 'bg-slate-50 dark:bg-slate-8000 hover:bg-slate-600 text-white';
   };
 
   if (!actions || actions.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-200">
+    <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
       {actions.map((action, index) => (
         <button
           key={index}

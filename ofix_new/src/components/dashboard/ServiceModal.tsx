@@ -122,11 +122,11 @@ export default function ServiceModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         aria-describedby="service-dialog-desc"
-        className="bg-white text-black dark:bg-white dark:text-black p-6 rounded-xl shadow-xl max-w-4xl max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-slate-900 text-slate-900 dark:bg-slate-900 dark:text-slate-100 p-6 rounded-xl shadow-xl max-w-4xl max-h-[90vh] overflow-y-auto"
       >
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-slate-900">
+            <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">
               Ordem de Serviço #{service.numeroOs}
             </DialogTitle>
             <Badge variant="secondary" className="text-sm">

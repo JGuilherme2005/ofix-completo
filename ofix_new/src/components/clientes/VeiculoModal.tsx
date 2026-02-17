@@ -7,12 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { StandardButton, StandardInput } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createVeiculo } from "../../services/clientes.service";
-import { Save, Car } from "lucide-react";
+import { Save, Car, Loader2 } from "lucide-react";
 import { isValidPlaca } from "../../utils/validation";
 import { useModalNavigation } from "../../hooks/useModalNavigation";
 
@@ -156,12 +156,12 @@ export default function VeiculoModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="bg-white text-black dark:bg-white dark:text-black p-6 rounded-xl shadow-xl max-w-3xl"
+        className="bg-white dark:bg-slate-900 text-slate-900 dark:bg-slate-900 dark:text-slate-100 p-6 rounded-xl shadow-xl max-w-3xl"
         aria-describedby="veiculo-modal-description"
         data-modal-content
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Car className="w-6 h-6" />
             Novo Veículo
           </DialogTitle>
@@ -264,18 +264,17 @@ export default function VeiculoModal({
           </div>
 
           <div className="flex justify-end gap-3">
-            <StandardButton variant="secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose}>
               Cancelar
-            </StandardButton>
-            <StandardButton
+            </Button>
+            <Button
               type="submit"
-              variant="success"
               disabled={isSaving}
-              loading={isSaving}
-              icon={Save}
             >
+              {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+              <Save className="w-4 h-4" />
               {isSaving ? "Salvando..." : "Adicionar Veículo"}
-            </StandardButton>
+            </Button>
           </div>
         </form>
       </DialogContent>

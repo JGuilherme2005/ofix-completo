@@ -8,11 +8,11 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { StandardButton, StandardInput } from "@/components/ui";
-import { FormError } from "@/components/ui/modern-input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Save } from "lucide-react";
+import { Save, Loader2 } from "lucide-react";
 import { createCliente, updateCliente } from "@/services/clientes.service";
 import { toast } from "react-hot-toast";
 import { isValidCPF, isValidEmail } from "../../utils/validation";
@@ -207,12 +207,12 @@ export default function ClienteModal({ isOpen, onClose, cliente, onSuccess }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="bg-white sm:max-w-lg"
+        className="bg-white dark:bg-slate-900 sm:max-w-lg"
         aria-describedby="cliente-modal-description"
         data-modal-content
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-slate-800">
+          <DialogTitle className="text-2xl font-bold text-slate-800 dark:text-slate-200">
             {cliente ? "Editar Cliente" : "Novo Cliente"}
           </DialogTitle>
           <p id="cliente-modal-description" className="sr-only">
@@ -222,15 +222,18 @@ export default function ClienteModal({ isOpen, onClose, cliente, onSuccess }) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
-          <StandardInput
-            ref={nomeInputRef}
-            label="Nome Completo"
-            required
-            value={formData.nome || ""}
-            onChange={handleNomeChange}
-            placeholder="Ex: João da Silva"
-            error={errors.nome}
-          />
+          <div className="grid gap-2">
+            <Label htmlFor="nome">Nome Completo *</Label>
+            <Input
+              ref={nomeInputRef}
+              id="nome"
+              value={formData.nome || ""}
+              onChange={handleNomeChange}
+              placeholder="Ex: João da Silva"
+              className={errors.nome ? 'border-red-500 focus-visible:ring-red-500' : ''}
+            />
+            {errors.nome && <p className="text-sm text-red-600">{errors.nome}</p>}
+          </div>
 
           <div className="grid gap-2">
             <Label htmlFor="cpf">CPF</Label>
@@ -245,7 +248,7 @@ export default function ClienteModal({ isOpen, onClose, cliente, onSuccess }) {
               }`}
               placeholder="000.000.000-00"
             />
-            {errors.cpf && <FormError message={errors.cpf} />}
+            {errors.cpf && <p className="text-sm text-red-600">{errors.cpf}</p>}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -262,16 +265,20 @@ export default function ClienteModal({ isOpen, onClose, cliente, onSuccess }) {
                 }`}
                 placeholder="(11) 99999-9999"
               />
-              {errors.telefone && <FormError message={errors.telefone} />}
+              {errors.telefone && <p className="text-sm text-red-600">{errors.telefone}</p>}
             </div>
-            <StandardInput
-              type="email"
-              label="Email"
-              value={formData.email || ""}
-              onChange={handleEmailChange}
-              placeholder="joao.silva@email.com"
-              error={errors.email}
-            />
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                type="email"
+                id="email"
+                value={formData.email || ""}
+                onChange={handleEmailChange}
+                placeholder="joao.silva@email.com"
+                className={errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}
+              />
+              {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
+            </div>
           </div>
 
           <div className="grid gap-2">
@@ -287,22 +294,21 @@ export default function ClienteModal({ isOpen, onClose, cliente, onSuccess }) {
         </form>
 
         <DialogFooter>
-          <StandardButton
+          <Button
             variant="secondary"
             onClick={onClose}
             disabled={isSaving}
           >
             Cancelar
-          </StandardButton>
-          <StandardButton 
-            variant="success"
+          </Button>
+          <Button 
             onClick={handleSubmit} 
             disabled={isSaving}
-            loading={isSaving}
-            icon={Save}
           >
+            {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+            <Save className="w-4 h-4" />
             {isSaving ? 'Salvando...' : 'Salvar'}
-          </StandardButton>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

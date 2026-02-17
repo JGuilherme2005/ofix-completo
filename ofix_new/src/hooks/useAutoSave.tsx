@@ -132,14 +132,14 @@ export function AutoSaveIndicator({ saveStatus, validationErrors, onForceSave })
             case 'error':
                 return 'text-red-600 bg-red-50 border-red-200';
             default:
-                return 'text-gray-600 bg-gray-50 border-gray-200';
+                return 'text-slate-600 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
         }
     };
 
     if (saveStatus === 'idle') return null;
 
     return (
-        <div className="fixed bottom-4 right-4 z-50">
+        <div className="fixed bottom-4 right-4 z-toast">
             <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border shadow-lg backdrop-blur-sm ${getStatusColor()}`}>
                 {getStatusIcon()}
                 <span className="text-sm font-medium">

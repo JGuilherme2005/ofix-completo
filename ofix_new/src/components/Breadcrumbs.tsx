@@ -42,7 +42,7 @@ const Breadcrumbs = () => {
 
   return (
     <nav aria-label="Breadcrumb" className="mb-6">
-      <ol className="flex items-center space-x-2 text-sm text-gray-500">
+      <ol className="flex items-center space-x-2 text-sm text-slate-500">
         {breadcrumbs.map((breadcrumb, index) => {
           const isLast = index === breadcrumbs.length - 1;
           const IconComponent = breadcrumb.icon;
@@ -50,11 +50,11 @@ const Breadcrumbs = () => {
           return (
             <li key={breadcrumb.path} className="flex items-center">
               {index > 0 && (
-                <ChevronRight className="w-4 h-4 mx-2 text-gray-400" />
+                <ChevronRight className="w-4 h-4 mx-2 text-slate-400" />
               )}
               
               {isLast ? (
-                <span className="flex items-center font-medium text-gray-900">
+                <span className="flex items-center font-medium text-slate-900 dark:text-slate-100">
                   {IconComponent && <IconComponent className="w-4 h-4 mr-2" />}
                   {breadcrumb.name}
                 </span>

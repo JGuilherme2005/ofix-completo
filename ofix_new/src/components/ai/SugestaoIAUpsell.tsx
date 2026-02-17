@@ -103,7 +103,7 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
       case 'alta': return 'text-red-600 bg-red-100';
       case 'media': case 'média': return 'text-yellow-600 bg-yellow-100';
       case 'baixa': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
+      default: return 'text-slate-600 bg-slate-100 dark:bg-slate-800';
     }
   };
 
@@ -123,7 +123,7 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
       <motion.button
         onClick={analisarUpsell}
         disabled={loading || !laudoTecnico}
-        className="w-full py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white rounded-lg shadow-md transition-colors flex items-center justify-center space-x-2"
+        className="w-full py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 text-white rounded-lg shadow-md transition-colors flex items-center justify-center space-x-2"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
@@ -139,7 +139,7 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
 
       {/* Texto de ajuda */}
       {!laudoTecnico && (
-        <p className="text-gray-500 text-sm mt-2">
+        <p className="text-slate-500 text-sm mt-2">
           💡 Preencha o laudo técnico para habilitar a análise de IA
         </p>
       )}
@@ -172,7 +172,7 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-slate-900 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -190,6 +190,7 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
                   <button
                     onClick={fecharModal}
                     className="text-orange-100 hover:text-white"
+                    aria-label="Fechar sugestões"
                   >
                     <X size={24} />
                   </button>
@@ -234,10 +235,10 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
                           <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <TrendingUp className="text-orange-500" size={32} />
                           </div>
-                          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                          <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">
                             💡 Oportunidade Identificada
                           </h3>
-                          <p className="text-gray-600">
+                          <p className="text-slate-600">
                             A IA identificou uma oportunidade de serviço baseada em evidências técnicas
                           </p>
                         </div>
@@ -262,16 +263,16 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
                               <span className="text-lg font-semibold text-green-600">
                                 {formatarValor(analise.valor_estimado)}
                               </span>
-                              <span className="text-gray-500 text-sm">(valor estimado)</span>
+                              <span className="text-slate-500 text-sm">(valor estimado)</span>
                             </div>
                           )}
 
                           {/* Justificativa Técnica */}
-                          <div className="bg-white rounded-lg p-4">
-                            <h5 className="font-medium text-gray-800 mb-2">
+                          <div className="bg-white dark:bg-slate-900 rounded-lg p-4">
+                            <h5 className="font-medium text-slate-800 dark:text-slate-200 mb-2">
                               🔧 Justificativa Técnica:
                             </h5>
-                            <p className="text-gray-700 leading-relaxed">
+                            <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
                               {analise.justificativa_tecnica}
                             </p>
                           </div>
@@ -279,15 +280,15 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
 
                         {/* Serviços Detalhados */}
                         {analise.detalhes?.servicosRecomendados && (
-                          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                            <h5 className="font-medium text-gray-800 mb-3">
+                          <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                            <h5 className="font-medium text-slate-800 dark:text-slate-200 mb-3">
                               📋 Serviços Recomendados:
                             </h5>
                             <ul className="space-y-2">
                               {analise.detalhes.servicosRecomendados.map((servico, index) => (
                                 <li key={index} className="flex items-center space-x-2">
                                   <CheckCircle size={16} className="text-green-500" />
-                                  <span className="text-gray-700">{servico}</span>
+                                  <span className="text-slate-700 dark:text-slate-300">{servico}</span>
                                 </li>
                               ))}
                             </ul>
@@ -300,8 +301,8 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
                             <h5 className="font-medium text-blue-800 mb-2">
                               💬 Como Apresentar ao Cliente:
                             </h5>
-                            <div className="bg-white rounded-lg p-3 border-l-4 border-blue-400">
-                              <p className="text-gray-700 italic">
+                            <div className="bg-white dark:bg-slate-900 rounded-lg p-3 border-l-4 border-blue-400">
+                              <p className="text-slate-700 dark:text-slate-300 italic">
                                 "{analise.mensagem_cliente}"
                               </p>
                             </div>
@@ -322,7 +323,7 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
                           
                           <motion.button
                             onClick={dispensarSugestao}
-                            className="flex-1 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+                            className="flex-1 py-3 bg-slate-50 dark:bg-slate-8000 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -349,7 +350,7 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
                 ) : (
                   <div className="text-center py-8">
                     <Loader className="animate-spin mx-auto mb-4" size={48} />
-                    <p className="text-gray-600">Analisando oportunidades...</p>
+                    <p className="text-slate-600">Analisando oportunidades...</p>
                   </div>
                 )}
               </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Info, HelpCircle, AlertTriangle, CheckCircle } from "lucide-react";
 
 /**
@@ -23,7 +23,7 @@ const CustomTooltip = ({
   };
 
   const typeStyles = {
-    default: "bg-gray-900 text-white",
+    default: "bg-slate-900 text-white",
     help: "bg-blue-600 text-white",
     warning: "bg-yellow-500 text-black",
     success: "bg-green-600 text-white"
@@ -79,7 +79,7 @@ const CustomTooltip = ({
  */
 export const FieldTooltip = ({ content, type = "help" }) => (
   <CustomTooltip content={content} type={type} position="right">
-    <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help ml-1" />
+    <HelpCircle className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help ml-1" />
   </CustomTooltip>
 );
 

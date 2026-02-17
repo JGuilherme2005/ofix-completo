@@ -224,7 +224,7 @@ const AssistenteVozGlobal = ({ onComandoExecutado }) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="absolute -top-16 right-0 bg-white rounded-lg shadow-lg px-4 py-2 text-sm font-medium border whitespace-nowrap"
+              className="absolute -top-16 right-0 bg-white dark:bg-slate-900 rounded-lg shadow-lg px-4 py-2 text-sm font-medium border whitespace-nowrap"
             >
               {processando ? (
                 <span className="text-yellow-600">🤖 Processando...</span>
@@ -246,17 +246,17 @@ const AssistenteVozGlobal = ({ onComandoExecutado }) => {
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className="fixed bottom-24 right-6 bg-white rounded-lg shadow-xl border p-4 z-40 w-80"
+            className="fixed bottom-24 right-6 bg-white dark:bg-slate-900 rounded-lg shadow-xl border p-4 z-40 w-80"
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
                 <Volume2 className="text-purple-500" size={20} />
-                <span className="font-semibold text-gray-800">Assistente de Voz</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">Assistente de Voz</span>
               </div>
               <button
                 onClick={toggleAssistente}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-slate-400 hover:text-slate-600"
               >
                 <X size={18} />
               </button>
@@ -274,7 +274,7 @@ const AssistenteVozGlobal = ({ onComandoExecutado }) => {
               )}
 
               {/* Instruções */}
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-slate-600">
                 <p className="mb-2">💬 <strong>Comandos disponíveis:</strong></p>
                 <ul className="text-xs space-y-1 ml-4">
                   <li>• "Mover [placa] para [status]"</li>
@@ -330,23 +330,23 @@ const AssistenteVozGlobal = ({ onComandoExecutado }) => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full"
+              className="bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 max-w-md w-full"
             >
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Volume2 className="text-blue-500" size={32} />
                 </div>
-                <h3 className="text-lg font-bold text-gray-800">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">
                   Confirmar Comando
                 </h3>
               </div>
 
               {/* Comando Interpretado */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <p className="text-gray-700 mb-3">{ultimoComando.confirmacao}</p>
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 mb-6">
+                <p className="text-slate-700 dark:text-slate-300 mb-3">{ultimoComando.confirmacao}</p>
                 
                 {ultimoComando.confianca && (
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-slate-500">
                     Confiança: {ultimoComando.confianca}%
                   </div>
                 )}
@@ -366,7 +366,7 @@ const AssistenteVozGlobal = ({ onComandoExecutado }) => {
                 
                 <motion.button
                   onClick={cancelarComando}
-                  className="flex-1 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+                  className="flex-1 py-3 bg-slate-50 dark:bg-slate-8000 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

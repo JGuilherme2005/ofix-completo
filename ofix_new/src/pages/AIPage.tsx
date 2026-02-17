@@ -17,13 +17,12 @@ import ClienteModal from '../components/clientes/ClienteModal';
 // ✅ Utils & config
 import logger from '../utils/logger';
 import { validarMensagem } from '../utils/messageValidator';
-import { useToast } from '../components/ui/toast';
+import toast from 'react-hot-toast';
 import { AI_CONFIG } from '../constants/aiPageConfig';
 import { enrichMessage } from '../utils/nlp/queryParser';
 import apiClient from '../services/api';
 
 // ✅ Design System
-import '../styles/matias-design-system.css';
 import '../styles/matias-animations.css';
 
 // ── Custom hooks (extraídos do monólito) ─────
@@ -48,8 +47,16 @@ import ActionsCard from '../components/chat/ActionsCard';
 
 const AIPage = () => {
   const { user } = useAuth();
-  const { showToast } = useToast();
   const isAdmin = user?.role === 'admin';
+
+  // Wrapper sobre react-hot-toast com a mesma API dos hooks
+  const showToast = useCallback((msg: string, type?: string) => {
+    switch (type) {
+      case 'success': toast.success(msg); break;
+      case 'error': toast.error(msg); break;
+      default: toast(msg);
+    }
+  }, []);
 
   // ── Hooks extraídos ────────────────────────
   const panel = useSidePanel();
@@ -684,9 +691,9 @@ const AIPage = () => {
   return (
     <div className="relative h-full min-h-0 flex flex-col bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 p-2 sm:p-4">
       {/* Dot pattern */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:radial-gradient(#0f172a_1px,transparent_1px)] [background-size:24px_24px] dark:opacity-[0.10] dark:[background-image:radial-gradient(#ffffff_1px,transparent_1px)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:radial-gradient(currentColor_1px,transparent_1px)] [background-size:24px_24px] text-slate-900 dark:opacity-[0.10] dark:text-white" />
 
-      <div className="relative mx-auto w-full max-w-[1480px] flex flex-col min-h-0">
+      <div className="relative mx-auto w-full max-w-screen-2xl flex flex-col min-h-0">
         {/* ── Header ── */}
         <ChatHeaderBar
           statusConexao={connection.statusConexao}
@@ -767,7 +774,7 @@ const AIPage = () => {
                   variant="ghost"
                   size="icon"
                   onClick={() => panel.setPainelFixoDesktop(false)}
-                  className="h-9 w-9 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/60"
+                  className="h-9 w-9 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/70 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/60"
                   aria-label="Fechar painel"
                   title="Fechar painel"
                 >

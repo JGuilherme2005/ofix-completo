@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { StandardButton, StandardCard } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import logger from '@/utils/logger';
 
 type ErrorBoundaryProps = {
@@ -54,32 +55,32 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <StandardCard variant="bordered" className="max-w-md w-full">
-            <StandardCard.Header>
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-800 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full border">
+            <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-red-100 rounded-full">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
                 <div>
-                  <h1 className="text-lg font-semibold text-gray-900">
+                  <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                     Oops! Algo deu errado
                   </h1>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-slate-600">
                     Ocorreu um erro inesperado na aplicação
                   </p>
                 </div>
               </div>
-            </StandardCard.Header>
+            </CardHeader>
 
-            <StandardCard.Content>
+            <CardContent>
               <div className="space-y-4">
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-slate-700 dark:text-slate-300">
                   Não se preocupe, nossa equipe já foi notificada. Você pode tentar:
                 </p>
                 
-                <div className="bg-gray-100 rounded-lg p-3">
-                  <ul className="text-sm text-gray-600 space-y-1">
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3">
+                  <ul className="text-sm text-slate-600 space-y-1">
                     <li>• Recarregar a página</li>
                     <li>• Voltar para o início</li>
                     <li>• Tentar novamente em alguns minutos</li>
@@ -106,29 +107,28 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
                   </details>
                 )}
               </div>
-            </StandardCard.Content>
+            </CardContent>
 
-            <StandardCard.Footer>
-              <div className="flex gap-3">
-                <StandardButton 
+            <CardFooter>
+              <div className="flex gap-3 w-full">
+                <Button 
                   variant="secondary" 
                   onClick={this.handleGoHome}
-                  icon={Home}
                   className="flex-1"
                 >
+                  <Home className="w-4 h-4" />
                   Voltar ao Início
-                </StandardButton>
-                <StandardButton 
-                  variant="primary" 
+                </Button>
+                <Button 
                   onClick={this.handleReload}
-                  icon={RefreshCw}
                   className="flex-1"
                 >
+                  <RefreshCw className="w-4 h-4" />
                   Recarregar
-                </StandardButton>
+                </Button>
               </div>
-            </StandardCard.Footer>
-          </StandardCard>
+            </CardFooter>
+          </Card>
         </div>
       );
     }

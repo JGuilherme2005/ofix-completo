@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
@@ -151,10 +151,10 @@ const VirtualAssistant = ({
   // Floating button para abrir o assistente
   if (!isOpen) {
     return (
-      <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
+      <div className={`fixed bottom-6 right-6 z-dropdown ${className}`}>
         <Button
           onClick={() => setIsOpen(true)}
-          className="h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
+          className="h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
           size="icon"
         >
           <Bot className="h-6 w-6 text-white" />
@@ -178,10 +178,10 @@ const VirtualAssistant = ({
   }
 
   return (
-    <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
-      <Card className={`transition-all duration-300 ${
-        isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
-      } shadow-2xl border-0 bg-white/95 backdrop-blur-sm`}>
+    <div className={`fixed bottom-6 right-6 z-dropdown ${className}`}>
+      <Card className={`transition-all duration-200 ${
+        isMinimized ? 'w-80 h-16' : 'w-[calc(100vw-3rem)] sm:w-96 h-[min(600px,calc(100dvh-6rem))]'
+      } shadow-xl border-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm`}>
         
         {/* Header */}
         <CardHeader className="pb-3">
@@ -194,7 +194,7 @@ const VirtualAssistant = ({
                 <CardTitle className="text-sm font-medium">
                   Assistente Virtual
                 </CardTitle>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-slate-500">
                   <Activity className="h-3 w-3" />
                   {isConnected ? 'Online' : 'Conectando...'}
                 </div>
@@ -222,8 +222,8 @@ const VirtualAssistant = ({
 
         {/* Content */}
         {!isMinimized && (
-          <CardContent className="h-[500px] p-4 flex flex-col">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+          <CardContent className="flex-1 min-h-0 p-4 flex flex-col">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
               <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="chat" className="flex items-center gap-1 text-xs">
                   {getTabIcon('chat')}
@@ -307,7 +307,7 @@ const VirtualAssistant = ({
                 )}
               </div>
               
-              <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
                 <Badge variant={userType === 'cliente' ? 'default' : userType === 'mecanico' ? 'secondary' : 'outline'}>
                   {userType.charAt(0).toUpperCase() + userType.slice(1)}
                 </Badge>

@@ -86,7 +86,7 @@ const QuickSuggestions = ({
       case 'maintenance': return 'bg-green-500 hover:bg-green-600';
       case 'scheduling': return 'bg-purple-500 hover:bg-purple-600';
       case 'financial': return 'bg-yellow-500 hover:bg-yellow-600';
-      case 'documentation': return 'bg-gray-500 hover:bg-gray-600';
+      case 'documentation': return 'bg-slate-50 dark:bg-slate-8000 hover:bg-slate-600';
       case 'customer': return 'bg-pink-500 hover:bg-pink-600';
       case 'vehicle': return 'bg-indigo-500 hover:bg-indigo-600';
       case 'analytics': return 'bg-teal-500 hover:bg-teal-600';
@@ -247,8 +247,8 @@ const QuickSuggestions = ({
 
         {/* Contexto atual */}
         {Object.keys(context).length > 0 && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-600 mb-2">Contexto atual:</p>
+          <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <p className="text-xs text-slate-600 mb-2">Contexto atual:</p>
             <div className="flex flex-wrap gap-1">
               {context.currentVehicle && (
                 <Badge variant="outline" className="text-xs">

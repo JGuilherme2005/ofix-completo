@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -152,7 +152,7 @@ export default function Configuracoes() {
                   </TabsTrigger>
                   <TabsTrigger
                     value="mensagens"
-                    className="rounded-lg bg-gray-200 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-300 dark:hover:bg-slate-700 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-6 py-3 text-base font-medium"
+                    className="rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-6 py-3 text-base font-medium"
                   >
                     <MessageCircle className="w-5 h-5 mr-2" />
                     Templates de Mensagem

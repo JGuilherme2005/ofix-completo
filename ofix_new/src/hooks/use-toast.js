@@ -10,16 +10,12 @@ export const useToast = () => {
     const toastOptions = {
       id,
       duration: 4000,
-      style: {
-        background: variant === 'destructive' ? '#ef4444' : 
-                   variant === 'success' ? '#10b981' : 
-                   'rgba(255, 255, 255, 0.95)',
-        color: variant === 'destructive' || variant === 'success' ? 'white' : '#1f2937',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        borderRadius: '12px',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-      },
+      className: variant === 'destructive' 
+        ? 'bg-red-500 text-white border border-red-400 rounded-xl shadow-lg'
+        : variant === 'success'
+        ? 'bg-emerald-500 text-white border border-emerald-400 rounded-xl shadow-lg'
+        : 'bg-white/95 dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg',
+      style: {},
     };
 
     if (variant === 'destructive') {

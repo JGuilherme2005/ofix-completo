@@ -9,7 +9,7 @@ const SelectionOptions = ({ options, onSelect, title }) => {
   if (!options || options.length === 0) return null;
 
   return (
-    <div className="mt-3 pt-3 border-t border-slate-200">
+    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
       {title && (
         <p className="text-xs font-medium text-slate-600 mb-2">{title}</p>
       )}
@@ -18,14 +18,14 @@ const SelectionOptions = ({ options, onSelect, title }) => {
           <button
             key={index}
             onClick={() => onSelect(option)}
-            className="w-full text-left px-3 py-2 rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 group"
+            className="w-full text-left px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 group"
           >
             <div className="flex items-start gap-2">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center text-xs font-medium text-slate-600 group-hover:text-blue-600">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-blue-100 flex items-center justify-center text-xs font-medium text-slate-600 group-hover:text-blue-600">
                 {index + 1}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-slate-900 group-hover:text-blue-900">
+                <div className="text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-blue-900">
                   {option.label}
                 </div>
                 {option.subtitle && (

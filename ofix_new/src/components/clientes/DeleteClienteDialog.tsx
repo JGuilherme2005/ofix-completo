@@ -21,14 +21,14 @@ export default function DeleteClienteDialog({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="bg-white">
+      <AlertDialogContent className="bg-white dark:bg-slate-900">
         <AlertDialogHeader>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
               <AlertTriangle className="w-6 h-6 text-red-600" />
             </div>
             <div>
-              <AlertDialogTitle className="text-xl font-bold text-slate-800">
+              <AlertDialogTitle className="text-xl font-bold text-slate-800 dark:text-slate-200">
                 Excluir Cliente
               </AlertDialogTitle>
               <AlertDialogDescription className="text-slate-600 mt-1">
@@ -39,7 +39,7 @@ export default function DeleteClienteDialog({
         </AlertDialogHeader>
 
         <div className="py-4">
-          <p className="text-slate-700">
+          <p className="text-slate-700 dark:text-slate-300">
             Tem certeza que deseja excluir o cliente{" "}
             <span className="font-semibold">{cliente.nomeCompleto}</span>?
           </p>
@@ -62,7 +62,7 @@ export default function DeleteClienteDialog({
           <AlertDialogCancel
             onClick={onClose}
             disabled={isDeleting}
-            className="bg-slate-100 hover:bg-slate-200 text-slate-700"
+            className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300"
           >
             Cancelar
           </AlertDialogCancel>

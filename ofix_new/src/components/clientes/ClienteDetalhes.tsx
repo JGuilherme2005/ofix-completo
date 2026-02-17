@@ -27,25 +27,25 @@ import {
 // Sub-componente para a seção de informações de contato
 const ContactInfo = ({ cliente }) => (
   <section className="space-y-4">
-    <h3 className="text-lg font-semibold text-slate-800">
+    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
       Informações de Contato
     </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
       <div className="flex items-start gap-3">
         <Phone className="w-4 h-4 text-slate-500 mt-1 flex-shrink-0" />
-        <span className="text-slate-700">
+        <span className="text-slate-700 dark:text-slate-300">
           {cliente.telefone || "Não informado"}
         </span>
       </div>
       <div className="flex items-start gap-3">
         <Mail className="w-4 h-4 text-slate-500 mt-1 flex-shrink-0" />
-        <span className="text-slate-700 truncate">
+        <span className="text-slate-700 dark:text-slate-300 truncate">
           {cliente.email || "Não informado"}
         </span>
       </div>
       <div className="flex items-start gap-3 sm:col-span-2">
         <MapPin className="w-4 h-4 text-slate-500 mt-1 flex-shrink-0" />
-        <span className="text-slate-700">
+        <span className="text-slate-700 dark:text-slate-300">
           {cliente.endereco || "Endereço não informado"}
         </span>
       </div>
@@ -57,7 +57,7 @@ const ContactInfo = ({ cliente }) => (
 const VeiculosSection = ({ veiculos, onAddVeiculo }) => (
   <section>
     <div className="flex justify-between items-center mb-4">
-      <h3 className="text-lg font-semibold text-slate-800">
+      <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
         Veículos ({veiculos.length})
       </h3>
       <Button variant="outline" size="sm" onClick={onAddVeiculo}>
@@ -70,11 +70,11 @@ const VeiculosSection = ({ veiculos, onAddVeiculo }) => (
         veiculos.map((veiculo) => (
           <div
             key={veiculo.id}
-            className="p-4 rounded-lg border border-slate-200 bg-slate-50"
+            className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
           >
             <div className="flex justify-between items-start">
               <div>
-                <p className="font-bold text-slate-800">{veiculo.modelo}</p>
+                <p className="font-bold text-slate-800 dark:text-slate-200">{veiculo.modelo}</p>
                 <p className="text-sm text-slate-500">{veiculo.cor}</p>
               </div>
               <Badge variant="secondary" className="font-mono text-xs">
@@ -90,7 +90,7 @@ const VeiculosSection = ({ veiculos, onAddVeiculo }) => (
           </div>
         ))
       ) : (
-        <div className="text-center py-8 px-4 rounded-lg border-2 border-dashed border-slate-200">
+        <div className="text-center py-8 px-4 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700">
           <Car className="w-8 h-8 mx-auto text-slate-400 mb-2" />
           <p className="text-sm text-slate-500">Nenhum veículo cadastrado.</p>
         </div>
@@ -102,7 +102,7 @@ const VeiculosSection = ({ veiculos, onAddVeiculo }) => (
 // Sub-componente para o histórico de serviços
 const ServicosSection = ({ servicos, veiculos }) => (
   <section>
-    <h3 className="text-lg font-semibold text-slate-800 mb-4">
+    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
       Histórico de Serviços ({servicos.length})
     </h3>
     <div className="space-y-4">
@@ -112,11 +112,11 @@ const ServicosSection = ({ servicos, veiculos }) => (
           return (
             <div
               key={servico.id}
-              className="p-4 rounded-lg border border-slate-200 bg-slate-50"
+              className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="font-bold text-slate-800">{servico.problema}</p>
+                  <p className="font-bold text-slate-800 dark:text-slate-200">{servico.problema}</p>
                   <p className="text-sm text-slate-500">
                     {veiculo
                       ? `${veiculo.modelo} - ${veiculo.placa}`
@@ -146,7 +146,7 @@ const ServicosSection = ({ servicos, veiculos }) => (
           );
         })
       ) : (
-        <div className="text-center py-8 px-4 rounded-lg border-2 border-dashed border-slate-200">
+        <div className="text-center py-8 px-4 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700">
           <Wrench className="w-8 h-8 mx-auto text-slate-400 mb-2" />
           <p className="text-sm text-slate-500">Nenhum serviço registrado.</p>
         </div>
@@ -170,11 +170,11 @@ export default function ClienteDetalhes({
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
-        className="w-full sm:max-w-lg bg-white p-0 flex flex-col"
+        className="w-full sm:max-w-lg bg-white dark:bg-slate-900 p-0 flex flex-col"
         aria-describedby="cliente-detalhes-description"
       >
         <SheetHeader className="p-6">
-          <SheetTitle className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+          <SheetTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-3">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <User className="w-6 h-6 text-blue-600" />
             </div>
@@ -193,7 +193,7 @@ export default function ClienteDetalhes({
           <ServicosSection servicos={servicos} veiculos={veiculos} />
         </div>
 
-        <SheetFooter className="p-6 bg-slate-50 border-t border-slate-200">
+        <SheetFooter className="p-6 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
           <div className="flex gap-3 w-full">
             <Button
               variant="outline"

@@ -181,13 +181,13 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
+    <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
       {/* Header */}
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">
           🎤 Triagem por Voz com IA
         </h2>
-        <p className="text-gray-600">
+        <p className="text-slate-600">
           Grave o cliente descrevendo o problema e obtenha análise automática
         </p>
       </div>
@@ -200,7 +200,7 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
           className="space-y-4 mb-6"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Telefone do Cliente *
             </label>
             <input
@@ -208,12 +208,12 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
               value={clienteTelefone}
               onChange={(e) => setClienteTelefone(e.target.value)}
               placeholder="(11) 99999-9999"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Placa do Veículo *
             </label>
             <input
@@ -222,7 +222,7 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
               onChange={(e) => setVeiculoPlaca(e.target.value.toUpperCase())}
               placeholder="ABC1234"
               maxLength={7}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </motion.div>
@@ -244,7 +244,7 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
                 <motion.button
                   onClick={iniciarGravacao}
                   disabled={!clienteTelefone || !veiculoPlaca}
-                  className="w-32 h-32 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-full flex items-center justify-center text-6xl shadow-lg transition-all duration-200 transform hover:scale-105 disabled:cursor-not-allowed"
+                  className="w-32 h-32 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 text-white rounded-full flex items-center justify-center text-6xl shadow-lg transition-all duration-200 transform hover:scale-105 disabled:cursor-not-allowed"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -269,7 +269,7 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
                     
                     <motion.button
                       onClick={reiniciar}
-                      className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg shadow-md transition-colors"
+                      className="px-6 py-3 bg-slate-50 dark:bg-slate-8000 hover:bg-slate-600 text-white rounded-lg shadow-md transition-colors"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -281,7 +281,7 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
               )}
               
               {!audioBlob && (
-                <p className="text-gray-600 text-sm">
+                <p className="text-slate-600 text-sm">
                   {clienteTelefone && veiculoPlaca 
                     ? 'Clique para começar a gravar o problema relatado pelo cliente'
                     : 'Preencha os dados obrigatórios para começar'
@@ -315,7 +315,7 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
                 <div className="text-2xl font-mono">
                   {formatarTempo(tempoGravacao)}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-slate-600">
                   Máximo: 2 minutos
                 </div>
               </div>
@@ -353,7 +353,7 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
                 <div className="text-yellow-600 font-semibold text-xl">
                   ⏳ Analisando problema...
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-slate-600">
                   A IA está processando o áudio e gerando a análise
                 </div>
               </div>
@@ -392,7 +392,7 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
                 ❌ Erro no processamento
               </div>
               
-              <div className="text-gray-700 bg-red-50 p-4 rounded-lg">
+              <div className="text-slate-700 dark:text-slate-300 bg-red-50 p-4 rounded-lg">
                 {erroMensagem}
               </div>
               
@@ -423,7 +423,7 @@ const ResultadoAnalise = ({ analise, onNovaAnalise }) => {
       case 'alta': return 'text-orange-600 bg-orange-100';
       case 'média': return 'text-yellow-600 bg-yellow-100';
       case 'baixa': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
+      default: return 'text-slate-600 bg-slate-100 dark:bg-slate-800';
     }
   };
 
@@ -432,7 +432,7 @@ const ResultadoAnalise = ({ analise, onNovaAnalise }) => {
       case 'alta': return 'text-red-600 bg-red-100';
       case 'média': return 'text-yellow-600 bg-yellow-100';
       case 'baixa': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
+      default: return 'text-slate-600 bg-slate-100 dark:bg-slate-800';
     }
   };
 
@@ -442,7 +442,7 @@ const ResultadoAnalise = ({ analise, onNovaAnalise }) => {
         <h3 className="text-xl font-bold text-green-600 mb-2">
           ✅ Análise Concluída
         </h3>
-        <p className="text-gray-600">
+        <p className="text-slate-600">
           A IA analisou o problema e gerou as informações abaixo
         </p>
       </div>
@@ -464,22 +464,22 @@ const ResultadoAnalise = ({ analise, onNovaAnalise }) => {
 
       {/* Informações Técnicas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gray-50 rounded-lg p-4 text-center">
-          <div className="text-gray-600 text-sm font-medium">Tempo Estimado</div>
-          <div className="text-xl font-bold text-gray-800">
+        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 text-center">
+          <div className="text-slate-600 text-sm font-medium">Tempo Estimado</div>
+          <div className="text-xl font-bold text-slate-800 dark:text-slate-200">
             {analise.tempoEstimadoHoras}h
           </div>
         </div>
         
-        <div className="bg-gray-50 rounded-lg p-4 text-center">
-          <div className="text-gray-600 text-sm font-medium">Complexidade</div>
+        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 text-center">
+          <div className="text-slate-600 text-sm font-medium">Complexidade</div>
           <div className={`text-lg font-semibold px-3 py-1 rounded-full ${getComplexidadeColor(analise.complexidade)}`}>
             {analise.complexidade}
           </div>
         </div>
         
-        <div className="bg-gray-50 rounded-lg p-4 text-center">
-          <div className="text-gray-600 text-sm font-medium">Urgência</div>
+        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 text-center">
+          <div className="text-slate-600 text-sm font-medium">Urgência</div>
           <div className={`text-lg font-semibold px-3 py-1 rounded-full ${getUrgenciaColor(analise.urgencia)}`}>
             {analise.urgencia}
           </div>
@@ -487,11 +487,11 @@ const ResultadoAnalise = ({ analise, onNovaAnalise }) => {
       </div>
 
       {/* Resumo do Cliente */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h4 className="font-semibold text-gray-800 mb-2">
+      <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+        <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-2">
           💬 O que o cliente disse:
         </h4>
-        <blockquote className="italic text-gray-700 border-l-4 border-gray-300 pl-4">
+        <blockquote className="italic text-slate-700 dark:text-slate-300 border-l-4 border-slate-300 pl-4">
           "{analise.resumoCliente}"
         </blockquote>
       </div>
@@ -505,7 +505,7 @@ const ResultadoAnalise = ({ analise, onNovaAnalise }) => {
           {analise.sugestoesVerificacao?.map((sugestao, index) => (
             <li key={index} className="flex items-start space-x-2">
               <span className="text-yellow-600 font-bold">{index + 1}.</span>
-              <span className="text-gray-700">{sugestao}</span>
+              <span className="text-slate-700 dark:text-slate-300">{sugestao}</span>
             </li>
           ))}
         </ul>
@@ -531,7 +531,7 @@ const ResultadoAnalise = ({ analise, onNovaAnalise }) => {
         
         <motion.button
           onClick={onNovaAnalise}
-          className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg shadow-md transition-colors"
+          className="px-6 py-3 bg-slate-50 dark:bg-slate-8000 hover:bg-slate-600 text-white rounded-lg shadow-md transition-colors"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >

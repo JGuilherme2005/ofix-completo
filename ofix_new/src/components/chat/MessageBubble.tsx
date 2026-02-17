@@ -20,14 +20,14 @@ const MessageBubble = ({ conversa, onAbrirModal, onExecutarAcao }) => {
       align: 'justify-end'
     },
     agente: {
-      bg: 'bg-white border border-slate-200',
-      text: 'text-slate-900',
+      bg: 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700',
+      text: 'text-slate-900 dark:text-slate-100',
       icon: Bot,
       align: 'justify-start'
     },
     sistema: {
-      bg: 'bg-slate-100',
-      text: 'text-slate-700',
+      bg: 'bg-slate-100 dark:bg-slate-800',
+      text: 'text-slate-700 dark:text-slate-300',
       icon: Bot,
       align: 'justify-center'
     },
@@ -72,7 +72,7 @@ const MessageBubble = ({ conversa, onAbrirModal, onExecutarAcao }) => {
     if (!metadata?.dadosExtraidos || tipo !== 'cadastro') return null;
 
     return (
-      <div className="mt-3 pt-3 border-t border-slate-200">
+      <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
         <Button
           size="sm"
           onClick={() => onAbrirModal?.(metadata.dadosExtraidos)}

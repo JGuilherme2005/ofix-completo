@@ -129,7 +129,7 @@ const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true })
       case 'high': return 'bg-orange-500';
       case 'medium': return 'bg-yellow-500';
       case 'low': return 'bg-green-500';
-      default: return 'bg-gray-500';
+      default: return 'bg-slate-50 dark:bg-slate-8000';
     }
   };
 
@@ -305,7 +305,7 @@ const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true })
                 </div>
                 <div>
                   <p className="font-medium">Nível de Urgência</p>
-                  <p className="text-sm text-gray-600 capitalize">
+                  <p className="text-sm text-slate-600 capitalize">
                     {diagnosis.urgencyLevel}
                   </p>
                 </div>
@@ -316,7 +316,7 @@ const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true })
             {diagnosis.diagnosis && (
               <div>
                 <h3 className="font-medium mb-2">Análise Diagnóstica</h3>
-                <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
                   {typeof diagnosis.diagnosis === 'object' ? (
                     <div className="space-y-2">
                       {diagnosis.diagnosis.primaryCause && (

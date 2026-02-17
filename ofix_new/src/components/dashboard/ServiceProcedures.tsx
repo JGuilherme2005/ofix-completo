@@ -91,7 +91,7 @@ export default function ServiceProcedures({
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <CardTitle className="text-lg font-semibold text-slate-900">
+                  <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                     {procedimento.nome_procedimento}
                   </CardTitle>
                   <div className="flex items-center gap-2 mt-2">
@@ -133,7 +133,7 @@ export default function ServiceProcedures({
               {procedimento.checklist_padrao &&
                 procedimento.checklist_padrao.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-slate-900 mb-2 flex items-center gap-2">
+                    <h4 className="font-medium text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
                       <Wrench className="w-4 h-4" />
                       Checklist ({procedimento.checklist_padrao.length} itens)
                     </h4>

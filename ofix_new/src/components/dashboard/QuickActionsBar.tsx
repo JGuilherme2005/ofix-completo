@@ -22,7 +22,7 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
     const completedToday = stats?.FINALIZADO || 0;
 
     return (
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md border-0 p-4 mb-6">
+        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl shadow-md border-0 p-4 mb-6">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                 {/* Barra de Busca */}
                 <div className="flex items-center gap-3 flex-1 max-w-md">
@@ -32,14 +32,14 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
                             placeholder="Buscar por OS, cliente ou veículo..."
                             value={searchTerm}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className="pl-10 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
+                            className="pl-10 border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
                         />
                     </div>
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setShowFilters(!showFilters)}
-                        className="border-slate-200 hover:bg-slate-50"
+                        className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800"
                     >
                         <Filter className="w-4 h-4 mr-1" />
                         Filtros
@@ -79,7 +79,7 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
                         variant="outline"
                         size="sm"
                         onClick={onExport}
-                        className="border-slate-200 hover:bg-slate-50"
+                        className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800"
                     >
                         <Download className="w-4 h-4 mr-1" />
                         Exportar
@@ -89,13 +89,13 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
 
             {/* Filtros Expandidos */}
             {showFilters && (
-                <div className="mt-4 pt-4 border-t border-slate-200">
+                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div>
                             <label className="block text-xs font-medium text-slate-600 mb-1">
                                 Status
                             </label>
-                            <select className="w-full text-sm border border-slate-200 rounded-md px-2 py-1">
+                            <select className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1">
                                 <option value="">Todos</option>
                                 <option value="AGUARDANDO">Aguardando</option>
                                 <option value="EM_ANDAMENTO">Em Andamento</option>
@@ -107,7 +107,7 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
                             <label className="block text-xs font-medium text-slate-600 mb-1">
                                 Período
                             </label>
-                            <select className="w-full text-sm border border-slate-200 rounded-md px-2 py-1">
+                            <select className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1">
                                 <option value="">Todos</option>
                                 <option value="hoje">Hoje</option>
                                 <option value="semana">Esta Semana</option>
@@ -121,7 +121,7 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
                             </label>
                             <Input
                                 placeholder="Nome do cliente"
-                                className="text-sm border-slate-200"
+                                className="text-sm border-slate-200 dark:border-slate-700"
                             />
                         </div>
                         
@@ -129,7 +129,7 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
                             <label className="block text-xs font-medium text-slate-600 mb-1">
                                 Valor
                             </label>
-                            <select className="w-full text-sm border border-slate-200 rounded-md px-2 py-1">
+                            <select className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1">
                                 <option value="">Todos</option>
                                 <option value="0-500">R$ 0 - 500</option>
                                 <option value="500-1000">R$ 500 - 1.000</option>

@@ -22,7 +22,7 @@ export default function KanbanMobileList({ servicos, clientes, veiculos, onServi
                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${config.color}`}>
                                     <config.icon className="w-4 h-4" />
                                 </div>
-                                <h3 className="font-bold text-slate-800">{config.title}</h3>
+                                <h3 className="font-bold text-slate-800 dark:text-slate-200">{config.title}</h3>
                             </div>
                             <Badge variant="secondary" className="font-bold">
                                 {servicosStatus.length}
@@ -47,7 +47,7 @@ export default function KanbanMobileList({ servicos, clientes, veiculos, onServi
                                         >
                                             <div className="flex items-start justify-between mb-2">
                                                 <div className="flex-1">
-                                                    <p className="font-semibold text-slate-900">
+                                                    <p className="font-semibold text-slate-900 dark:text-slate-100">
                                                         OS #{servico.numeroOs || servico.id}
                                                     </p>
                                                     <p className="text-sm text-slate-600">
