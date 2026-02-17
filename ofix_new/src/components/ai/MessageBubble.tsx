@@ -180,6 +180,7 @@ export default function MessageBubble({
                 onClick={handleCopy}
                 className="p-1 text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-900 rounded shadow-sm"
                 title="Copiar mensagem"
+                aria-label="Copiar mensagem"
               >
                 {copied ? <CheckCircle className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
               </button>

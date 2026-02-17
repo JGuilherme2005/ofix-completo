@@ -31,7 +31,7 @@ const TransactionRow = ({ transacao, onEdit }) => {
                 {new Date(transacao.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
             </TableCell>
             <TableCell className="text-right">
-                <Button variant="ghost" size="icon" onClick={() => onEdit(transacao)}>
+                <Button variant="ghost" size="icon" onClick={() => onEdit(transacao)} aria-label="Editar transação">
                     <Edit className="w-4 h-4" />
                 </Button>
             </TableCell>

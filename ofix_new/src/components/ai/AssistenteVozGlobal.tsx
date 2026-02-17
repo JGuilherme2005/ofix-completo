@@ -257,6 +257,7 @@ const AssistenteVozGlobal = ({ onComandoExecutado }) => {
               <button
                 onClick={toggleAssistente}
                 className="text-slate-400 hover:text-slate-600"
+                aria-label="Fechar assistente de voz"
               >
                 <X size={18} />
               </button>
@@ -265,7 +266,7 @@ const AssistenteVozGlobal = ({ onComandoExecutado }) => {
             {/* Status e Controles */}
             <div className="space-y-4">
               {erro && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3" role="alert">
                   <div className="flex items-center space-x-2">
                     <AlertCircle size={16} className="text-red-500" />
                     <span className="text-red-700 text-sm">{erro}</span>

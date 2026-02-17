@@ -78,6 +78,7 @@ export default function ServiceProcedures({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
+            aria-label="Buscar procedimentos"
           />
         </div>
       </div>

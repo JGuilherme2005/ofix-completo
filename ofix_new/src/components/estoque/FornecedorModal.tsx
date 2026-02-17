@@ -10,16 +10,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Save, Loader2, AlertCircle } from "lucide-react";
+import { Save, Loader2 } from "lucide-react";
+import { FormError } from "@/components/ui/FormError";
 
 import * as fornecedoresService from "@/services/fornecedores.service.js";
-
-const FormError = ({ message }) => (
-    <div className="flex items-center gap-2 text-sm text-red-600 mt-1">
-        <AlertCircle className="w-4 h-4" />
-        <span>{message}</span>
-    </div>
-);
 
 const initialFormData = {
     nome: '',

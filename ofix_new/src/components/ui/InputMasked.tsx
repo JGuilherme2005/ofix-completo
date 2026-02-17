@@ -68,7 +68,7 @@ const InputMasked = forwardRef<any, any>(({
       
       {/* Mensagem de erro ou sucesso */}
       {hasError && (
-        <div className="flex items-center gap-2 text-sm text-red-600">
+        <div className="flex items-center gap-2 text-sm text-red-600" role="alert">
           <AlertCircle className="h-3 w-3 flex-shrink-0" />
           <span>{error}</span>
         </div>

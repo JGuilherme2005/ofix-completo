@@ -166,6 +166,7 @@ export default function NewServiceModal({ isOpen, onClose, onSuccess: reloadDash
                                     onClick={handleGenerateNewNumber}
                                     title="Gerar novo número automático"
                                     className="shrink-0 hover:bg-blue-50 hover:border-blue-300"
+                                    aria-label="Gerar novo número automático"
                                 >
                                     <RefreshCw className="w-4 h-4" />
                                 </Button>

@@ -107,6 +107,7 @@ export default function MensagensList({
                     size="icon"
                     onClick={() => onEdit(mensagem)}
                     className="h-9 w-9 rounded-full hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-600 dark:hover:text-green-400"
+                    aria-label="Editar mensagem"
                   >
                     <Edit className="w-4 h-4" />
                   </Button>
@@ -115,6 +116,7 @@ export default function MensagensList({
                     size="icon"
                     onClick={() => onDelete(mensagem)}
                     className="h-9 w-9 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400"
+                    aria-label="Excluir mensagem"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

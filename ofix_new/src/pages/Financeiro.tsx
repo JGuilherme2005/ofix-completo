@@ -61,7 +61,7 @@ export default function FinanceiroPage() {
             </div>
             <div className="flex items-center gap-2">
               <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-                <SelectTrigger className="w-40 bg-blue-600 text-white border-blue-600 hover:bg-blue-700 focus:ring-blue-500">
+                <SelectTrigger className="w-40 bg-blue-600 text-white border-blue-600 hover:bg-blue-700 focus:ring-blue-500" aria-label="Filtrar por período">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

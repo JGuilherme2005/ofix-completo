@@ -70,6 +70,7 @@ export default function ChatHeaderBar({
             <Button variant="outline" size="sm" onClick={onAlternarVoz}
               className={`flex items-center gap-2 bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/20 transition-all ${vozHabilitada ? 'text-white' : 'text-white/60'}`}
               title={vozHabilitada ? 'Desativar voz' : 'Ativar voz'}
+              aria-label={vozHabilitada ? 'Desativar voz' : 'Ativar voz'}
             >
               {vozHabilitada ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </Button>
@@ -77,7 +78,8 @@ export default function ChatHeaderBar({
             {falando && (
               <Button variant="outline" size="sm" onClick={onPararFala}
                 className="bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20 animate-pulse"
-                title="Parar fala">
+                title="Parar fala"
+                aria-label="Parar fala">
                 <VolumeX className="w-4 h-4" />
               </Button>
             )}

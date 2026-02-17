@@ -22,14 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, Loader2, AlertCircle, Plus, X } from "lucide-react";
-
-const FormError = ({ message }) => (
-  <div className="flex items-center gap-2 text-sm text-red-600 mt-1">
-    <AlertCircle className="w-4 h-4" />
-    <span>{message}</span>
-  </div>
-);
+import { Save, Loader2, Plus, X } from "lucide-react";
+import { FormError } from "@/components/ui/FormError";
 
 export default function ProcedimentoModal({
   isOpen,

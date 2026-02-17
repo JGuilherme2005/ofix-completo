@@ -110,6 +110,7 @@ const BotaoResumoWhatsapp = ({ osId, dadosOS, onResumoGerado }) => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="mt-2 bg-red-50 border border-red-200 rounded-lg p-3"
+          role="alert"
         >
           <div className="flex items-center space-x-2">
             <AlertCircle size={16} className="text-red-500" />
@@ -150,6 +151,7 @@ const BotaoResumoWhatsapp = ({ osId, dadosOS, onResumoGerado }) => {
                   <button
                     onClick={fecharModal}
                     className="text-green-100 hover:text-white"
+                    aria-label="Fechar modal"
                   >
                     ✕
                   </button>

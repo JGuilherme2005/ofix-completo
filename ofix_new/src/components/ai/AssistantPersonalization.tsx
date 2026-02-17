@@ -213,6 +213,9 @@ const AssistantPersonalization = ({ className = '' }) => {
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Usar Humor</label>
         <button
           onClick={() => updateSetting('personality', 'humor', !settings.personality.humor)}
+          role="switch"
+          aria-checked={settings.personality.humor}
+          aria-label="Usar Humor"
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
             settings.personality.humor ? 'bg-blue-600' : 'bg-slate-200'
           }`}
@@ -229,6 +232,9 @@ const AssistantPersonalization = ({ className = '' }) => {
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Demonstrar Empatia</label>
         <button
           onClick={() => updateSetting('personality', 'empathy', !settings.personality.empathy)}
+          role="switch"
+          aria-checked={settings.personality.empathy}
+          aria-label="Demonstrar Empatia"
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
             settings.personality.empathy ? 'bg-blue-600' : 'bg-slate-200'
           }`}
@@ -309,6 +315,9 @@ const AssistantPersonalization = ({ className = '' }) => {
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Animações</label>
         <button
           onClick={() => updateSetting('appearance', 'animations', !settings.appearance.animations)}
+          role="switch"
+          aria-checked={settings.appearance.animations}
+          aria-label="Animações"
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
             settings.appearance.animations ? 'bg-blue-600' : 'bg-slate-200'
           }`}
@@ -329,6 +338,9 @@ const AssistantPersonalization = ({ className = '' }) => {
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Saudação Automática</label>
         <button
           onClick={() => updateSetting('behavior', 'autoGreeting', !settings.behavior.autoGreeting)}
+          role="switch"
+          aria-checked={settings.behavior.autoGreeting}
+          aria-label="Saudação Automática"
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
             settings.behavior.autoGreeting ? 'bg-blue-600' : 'bg-slate-200'
           }`}
@@ -345,6 +357,9 @@ const AssistantPersonalization = ({ className = '' }) => {
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Ajuda Proativa</label>
         <button
           onClick={() => updateSetting('behavior', 'proactiveHelp', !settings.behavior.proactiveHelp)}
+          role="switch"
+          aria-checked={settings.behavior.proactiveHelp}
+          aria-label="Ajuda Proativa"
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
             settings.behavior.proactiveHelp ? 'bg-blue-600' : 'bg-slate-200'
           }`}
@@ -361,6 +376,9 @@ const AssistantPersonalization = ({ className = '' }) => {
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Memória de Contexto</label>
         <button
           onClick={() => updateSetting('behavior', 'contextMemory', !settings.behavior.contextMemory)}
+          role="switch"
+          aria-checked={settings.behavior.contextMemory}
+          aria-label="Memória de Contexto"
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
             settings.behavior.contextMemory ? 'bg-blue-600' : 'bg-slate-200'
           }`}
@@ -377,6 +395,9 @@ const AssistantPersonalization = ({ className = '' }) => {
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Modo Aprendizado</label>
         <button
           onClick={() => updateSetting('behavior', 'learningMode', !settings.behavior.learningMode)}
+          role="switch"
+          aria-checked={settings.behavior.learningMode}
+          aria-label="Modo Aprendizado"
           className={`relative inline-flex h-6 w-11 items-center rounded-full ${
             settings.behavior.learningMode ? 'bg-blue-600' : 'bg-slate-200'
           }`}
@@ -390,10 +411,11 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+        <label htmlFor="confidenceThreshold" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Limiar de Confiança: {settings.behavior.confidenceThreshold}
         </label>
         <input
+          id="confidenceThreshold"
           type="range"
           min="0.1"
           max="1"
@@ -405,10 +427,11 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+        <label htmlFor="maxResponseTime" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Tempo Máximo de Resposta (ms)
         </label>
         <input
+          id="maxResponseTime"
           type="number"
           value={settings.behavior.maxResponseTime}
           onChange={(e) => updateSetting('behavior', 'maxResponseTime', parseInt(e.target.value))}
@@ -443,13 +466,15 @@ const AssistantPersonalization = ({ className = '' }) => {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 border-b border-slate-200 dark:border-slate-700">
+      <div className="flex space-x-1 border-b border-slate-200 dark:border-slate-700" role="tablist">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              role="tab"
+              aria-selected={activeTab === tab.id}
               className={`flex items-center px-4 py-2 text-sm font-medium rounded-t-lg ${
                 activeTab === tab.id
                   ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'

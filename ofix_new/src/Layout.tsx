@@ -330,6 +330,7 @@ export default function Layout() {
                                             size="icon"
                                             onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
                                             aria-label="Notificações"
+                                            aria-expanded={showNotificationsDropdown}
                                             className="text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-blue-100 rounded-lg transition-all duration-200"
                                         >
                                             <Bell className="w-5 h-5" />
@@ -485,7 +486,7 @@ export default function Layout() {
                 {/* Container com Sidebar e Conteúdo */}
                 <div className="flex flex-1 min-h-0 overflow-hidden">
                     {/* Sidebar */}
-                    <Sidebar className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-sidebar w-64 flex-shrink-0 fixed h-[calc(100dvh-4rem)] top-16 left-0 hidden md:flex md:flex-col">
+                    <Sidebar className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-sidebar w-64 flex-shrink-0 fixed h-[calc(100dvh-4rem)] top-16 left-0 hidden md:flex md:flex-col" role="navigation" aria-label="Menu principal">
                         <SidebarContent className="p-4 pt-6 flex-1 overflow-y-auto">
                             {/* Menu de navegação */}
                             <SidebarGroup>

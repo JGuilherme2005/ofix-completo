@@ -156,6 +156,7 @@ const VirtualAssistant = ({
           onClick={() => setIsOpen(true)}
           className="h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
           size="icon"
+          aria-label="Abrir assistente virtual"
         >
           <Bot className="h-6 w-6 text-white" />
         </Button>
@@ -206,6 +207,7 @@ const VirtualAssistant = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMinimized(!isMinimized)}
+                aria-label={isMinimized ? 'Maximizar assistente' : 'Minimizar assistente'}
               >
                 {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
               </Button>
@@ -213,6 +215,7 @@ const VirtualAssistant = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(false)}
+                aria-label="Fechar assistente"
               >
                 <X className="h-4 w-4" />
               </Button>

@@ -85,6 +85,7 @@ export function ClienteCard({
                 }}
                 className="h-9 w-9 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400"
                 title="Editar cliente"
+                aria-label="Editar cliente"
               >
                 <Edit className="w-5 h-5" />
               </Button>
@@ -97,6 +98,7 @@ export function ClienteCard({
                 }}
                 className="h-9 w-9 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400"
                 title="Excluir cliente"
+                aria-label="Excluir cliente"
               >
                 <Trash2 className="w-5 h-5" />
               </Button>

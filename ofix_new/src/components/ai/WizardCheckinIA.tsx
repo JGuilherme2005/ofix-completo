@@ -249,7 +249,7 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
         {!checkinCompleto && (
           <div className="space-y-4">
             {erro && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3" role="alert">
                 <p className="text-red-600 text-sm">{erro}</p>
               </div>
             )}
@@ -261,6 +261,7 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
                 placeholder="Digite sua resposta aqui..."
                 rows={3}
                 className="flex-1 border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                aria-label="Resposta ao wizard de check-in"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();

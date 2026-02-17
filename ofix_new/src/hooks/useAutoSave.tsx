@@ -139,7 +139,7 @@ export function AutoSaveIndicator({ saveStatus, validationErrors, onForceSave })
     if (saveStatus === 'idle') return null;
 
     return (
-        <div className="fixed bottom-4 right-4 z-toast">
+        <div className="fixed bottom-4 right-4 z-toast" role="status" aria-live="polite">
             <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border shadow-lg backdrop-blur-sm ${getStatusColor()}`}>
                 {getStatusIcon()}
                 <span className="text-sm font-medium">

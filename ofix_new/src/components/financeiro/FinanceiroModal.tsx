@@ -12,14 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, Loader2, AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
-
-const FormError = ({ message }) => (
-    <div className="flex items-center gap-2 text-sm text-red-600 mt-1">
-        <AlertCircle className="w-4 h-4" />
-        <span>{message}</span>
-    </div>
-);
+import { Save, Loader2, TrendingUp, TrendingDown } from "lucide-react";
+import { FormError } from "@/components/ui/FormError";
 
 export default function FinanceiroModal({ isOpen, onClose, transacao, onSuccess }) {
     const [formData, setFormData] = useState({

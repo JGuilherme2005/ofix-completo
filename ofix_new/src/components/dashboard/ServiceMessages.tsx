@@ -102,6 +102,7 @@ export default function ServiceMessages({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
+              aria-label="Buscar templates de mensagem"
             />
           </div>
         </div>
@@ -121,6 +122,7 @@ export default function ServiceMessages({
                 value={customMessage}
                 onChange={(e) => setCustomMessage(e.target.value)}
                 className="h-24"
+                aria-label="Mensagem personalizada"
               />
               <div className="flex gap-2">
                 <Button

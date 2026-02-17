@@ -97,6 +97,7 @@ export default function ServiceParts({ service, pecas, onUpdate, isGuest }) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
+              aria-label="Buscar peças"
             />
           </div>
         </div>

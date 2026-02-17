@@ -200,10 +200,11 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
           className="space-y-4 mb-6"
         >
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            <label htmlFor="clienteTelefone" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Telefone do Cliente *
             </label>
             <input
+              id="clienteTelefone"
               type="text"
               value={clienteTelefone}
               onChange={(e) => setClienteTelefone(e.target.value)}
@@ -213,10 +214,11 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            <label htmlFor="veiculoPlaca" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Placa do Veículo *
             </label>
             <input
+              id="veiculoPlaca"
               type="text"
               value={veiculoPlaca}
               onChange={(e) => setVeiculoPlaca(e.target.value.toUpperCase())}

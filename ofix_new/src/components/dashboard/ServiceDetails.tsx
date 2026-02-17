@@ -266,6 +266,7 @@ export default function ServiceDetails({
                         }
                         placeholder="Descrição da tarefa..."
                         disabled={isGuest}
+                        aria-label="Descrição da tarefa"
                       />
                       <Input
                         value={item.observacao || ""}
@@ -279,6 +280,7 @@ export default function ServiceDetails({
                         placeholder="Observações..."
                         className="text-sm"
                         disabled={isGuest}
+                        aria-label="Observações da tarefa"
                       />
                     </div>
                   </div>

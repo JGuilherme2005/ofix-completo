@@ -73,6 +73,7 @@ const PecaRow = ({ peca, fornecedores, onEdit, onDelete }) => {
               size="icon"
               onClick={() => onEdit(peca)}
               title="Editar peça"
+              aria-label="Editar peça"
             >
               <Edit className="w-4 h-4" />
             </Button>
@@ -83,6 +84,7 @@ const PecaRow = ({ peca, fornecedores, onEdit, onDelete }) => {
               onClick={() => setShowDeleteConfirm(true)}
               className="hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400"
               title="Excluir peça"
+              aria-label="Excluir peça"
             >
               <Trash2 className="w-4 h-4" />
             </Button>

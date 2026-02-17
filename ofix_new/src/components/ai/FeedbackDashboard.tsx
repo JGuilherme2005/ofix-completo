@@ -220,10 +220,11 @@ const FeedbackDashboard = ({ className = '' }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label htmlFor="feedbackCategory" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Categoria
               </label>
               <select
+                id="feedbackCategory"
                 value={newFeedback.category}
                 onChange={(e) => setNewFeedback(prev => ({ ...prev, category: e.target.value }))}
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -237,10 +238,11 @@ const FeedbackDashboard = ({ className = '' }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label htmlFor="feedbackComment" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Comentário
               </label>
               <textarea
+                id="feedbackComment"
                 value={newFeedback.comment}
                 onChange={(e) => setNewFeedback(prev => ({ ...prev, comment: e.target.value }))}
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

@@ -69,7 +69,7 @@ export default function ChatInputBar({
             {mensagem.length}/{AI_CONFIG.CHAT.MAX_MESSAGE_LENGTH} caracteres
           </div>
           {inputWarning && (
-            <div className="px-4 py-1 text-xs text-red-600 dark:text-red-200 bg-red-50 dark:bg-red-950/30 rounded">⚠️ {inputWarning}</div>
+            <div className="px-4 py-1 text-xs text-red-600 dark:text-red-200 bg-red-50 dark:bg-red-950/30 rounded" role="alert">⚠️ {inputWarning}</div>
           )}
           {inputHint && (
             <div className="px-4 py-1 text-xs text-green-600 dark:text-green-200 bg-green-50 dark:bg-green-950/30 rounded">{inputHint}</div>
@@ -100,7 +100,7 @@ export default function ChatInputBar({
       </div>
 
       {statusConexao !== 'conectado' && (
-        <div className={`mt-2 text-xs flex items-center gap-1 ${statusConexao === 'erro' ? 'text-red-600 dark:text-red-200' : 'text-amber-600 dark:text-amber-200'}`}>
+        <div className={`mt-2 text-xs flex items-center gap-1 ${statusConexao === 'erro' ? 'text-red-600 dark:text-red-200' : 'text-amber-600 dark:text-amber-200'}`} aria-live="assertive">
           <AlertCircle className="w-3 h-3" />
           {statusConexao === 'local' ? 'Agno offline: modo local ativo (respostas locais).' : statusConexao === 'conectando' ? 'Conectando ao Matias...' : 'Sem conexao com o agente. Clique em Reconectar.'}
         </div>

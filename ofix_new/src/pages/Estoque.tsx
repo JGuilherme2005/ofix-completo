@@ -83,7 +83,7 @@ export default function Estoque() {
         </section>
 
         {/* Tabela e Filtros */}
-        <main className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+        <section className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
               Peças em Estoque
@@ -95,6 +95,7 @@ export default function Estoque() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                aria-label="Buscar por nome ou SKU"
               />
             </div>
           </div>
@@ -104,7 +105,7 @@ export default function Estoque() {
             onEditPeca={handleEditPeca}
             onDeletePeca={reload}
           />
-        </main>
+        </section>
       </div>
 
       {/* Modals */}

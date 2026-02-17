@@ -335,7 +335,7 @@ export default function Dashboard() {
           </section>
 
           {/* Kanban Board / Mobile List */}
-          <main>
+          <section>
             {isMobile ? (
               <KanbanMobileList
                 servicos={filteredServicos}
@@ -363,7 +363,7 @@ export default function Dashboard() {
                 isLoading={isLoading}
               />
             )}
-          </main>
+          </section>
         </div>
       </div>
 

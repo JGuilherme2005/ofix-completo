@@ -139,7 +139,7 @@ export default function ChatInterface({
         {!isMinimized && (
           <>
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent" aria-live="polite" aria-relevant="additions">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center text-slate-500">
                   <Bot className="w-16 h-16 mb-4 text-slate-300 dark:text-slate-600" />
@@ -203,6 +203,7 @@ export default function ChatInterface({
                     disabled={!isConnected || isLoading}
                     className="w-full px-4 py-3 pr-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 max-h-24 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     rows="1"
+                    aria-label="Mensagem para o assistente"
                     style={{ height: 'auto' }}
                     onInput={(e) => {
                       e.target.style.height = 'auto';

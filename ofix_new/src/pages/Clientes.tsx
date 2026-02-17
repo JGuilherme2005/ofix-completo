@@ -200,7 +200,7 @@ export default function Clientes() {
         </div>
 
         {/* Lista de Clientes */}
-        <main className="grid gap-4">
+        <section className="grid gap-4">
           {isLoading ? (
             Array(3)
               .fill(0)
@@ -223,7 +223,7 @@ export default function Clientes() {
               searchTerm={searchTerm}
             />
           )}
-        </main>
+        </section>
       </div>
 
       {/* Modals */}

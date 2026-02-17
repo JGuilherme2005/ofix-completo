@@ -33,6 +33,7 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
                             value={searchTerm}
                             onChange={(e) => handleSearch(e.target.value)}
                             className="pl-10 border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
+                            aria-label="Buscar por OS, cliente ou veículo"
                         />
                     </div>
                     <Button
@@ -40,6 +41,7 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
                         size="sm"
                         onClick={() => setShowFilters(!showFilters)}
                         className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800"
+                        aria-expanded={showFilters}
                     >
                         <Filter className="w-4 h-4 mr-1" />
                         Filtros
@@ -92,10 +94,10 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
                 <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">
+                            <label className="block text-xs font-medium text-slate-600 mb-1" htmlFor="filterStatus">
                                 Status
                             </label>
-                            <select className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1">
+                            <select id="filterStatus" className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1">
                                 <option value="">Todos</option>
                                 <option value="AGUARDANDO">Aguardando</option>
                                 <option value="EM_ANDAMENTO">Em Andamento</option>
@@ -104,10 +106,10 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
                         </div>
                         
                         <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">
+                            <label className="block text-xs font-medium text-slate-600 mb-1" htmlFor="filterPeriodo">
                                 Período
                             </label>
-                            <select className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1">
+                            <select id="filterPeriodo" className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1">
                                 <option value="">Todos</option>
                                 <option value="hoje">Hoje</option>
                                 <option value="semana">Esta Semana</option>
@@ -116,20 +118,21 @@ export default function QuickActionsBar({ stats, onSearch, onFilter, onExport })
                         </div>
                         
                         <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">
+                            <label className="block text-xs font-medium text-slate-600 mb-1" htmlFor="filterCliente">
                                 Cliente
                             </label>
                             <Input
+                                id="filterCliente"
                                 placeholder="Nome do cliente"
                                 className="text-sm border-slate-200 dark:border-slate-700"
                             />
                         </div>
                         
                         <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">
+                            <label className="block text-xs font-medium text-slate-600 mb-1" htmlFor="filterValor">
                                 Valor
                             </label>
-                            <select className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1">
+                            <select id="filterValor" className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1">
                                 <option value="">Todos</option>
                                 <option value="0-500">R$ 0 - 500</option>
                                 <option value="500-1000">R$ 500 - 1.000</option>

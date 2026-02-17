@@ -90,7 +90,7 @@ export default function LoginPage() {
                 className={`text-base ${emailError ? 'border-red-500' : ''}`}
               />
               {emailError && (
-                <p className="text-sm text-red-600">{emailError}</p>
+                <p className="text-sm text-red-600" role="alert">{emailError}</p>
               )}
             </div>
             <div className="space-y-2">

@@ -170,6 +170,7 @@ const ConversationDashboard = ({ className = '' }) => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full"
+                aria-label="Pesquisar conversas"
               />
             </div>
             
@@ -177,6 +178,7 @@ const ConversationDashboard = ({ className = '' }) => {
               value={filterPeriod}
               onChange={(e) => setFilterPeriod(e.target.value)}
               className="px-3 py-2 border border-slate-300 rounded-md"
+              aria-label="Filtrar por período"
             >
               <option value="1d">Últimas 24h</option>
               <option value="7d">Últimos 7 dias</option>
@@ -188,6 +190,7 @@ const ConversationDashboard = ({ className = '' }) => {
               value={filterUserType}
               onChange={(e) => setFilterUserType(e.target.value)}
               className="px-3 py-2 border border-slate-300 rounded-md"
+              aria-label="Filtrar por tipo de usuário"
             >
               <option value="all">Todos os tipos</option>
               <option value="cliente">Clientes</option>

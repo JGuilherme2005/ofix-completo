@@ -62,6 +62,9 @@ export default function VoiceSettingsCard({
             <button
               type="button"
               onClick={() => setModoContinuo(!modoContinuo)}
+              role="switch"
+              aria-checked={modoContinuo}
+              aria-label="Modo contínuo"
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${modoContinuo ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
             >
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 transition-transform ${modoContinuo ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -70,16 +73,16 @@ export default function VoiceSettingsCard({
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="text-xs text-slate-600 dark:text-slate-300 mb-1 block">Velocidade: {configVoz.rate.toFixed(1)}x</label>
-              <input type="range" min="0.5" max="2" step="0.1" value={configVoz.rate} onChange={(e) => setConfigVoz({ ...configVoz, rate: parseFloat(e.target.value) })} className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+              <label htmlFor="voiceRate" className="text-xs text-slate-600 dark:text-slate-300 mb-1 block">Velocidade: {configVoz.rate.toFixed(1)}x</label>
+              <input id="voiceRate" type="range" min="0.5" max="2" step="0.1" value={configVoz.rate} onChange={(e) => setConfigVoz({ ...configVoz, rate: parseFloat(e.target.value) })} className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer" />
             </div>
             <div>
-              <label className="text-xs text-slate-600 dark:text-slate-300 mb-1 block">Tom: {configVoz.pitch.toFixed(1)}</label>
-              <input type="range" min="0.5" max="2" step="0.1" value={configVoz.pitch} onChange={(e) => setConfigVoz({ ...configVoz, pitch: parseFloat(e.target.value) })} className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+              <label htmlFor="voicePitch" className="text-xs text-slate-600 dark:text-slate-300 mb-1 block">Tom: {configVoz.pitch.toFixed(1)}</label>
+              <input id="voicePitch" type="range" min="0.5" max="2" step="0.1" value={configVoz.pitch} onChange={(e) => setConfigVoz({ ...configVoz, pitch: parseFloat(e.target.value) })} className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer" />
             </div>
             <div>
-              <label className="text-xs text-slate-600 dark:text-slate-300 mb-1 block">Volume: {Math.round(configVoz.volume * 100)}%</label>
-              <input type="range" min="0" max="1" step="0.1" value={configVoz.volume} onChange={(e) => setConfigVoz({ ...configVoz, volume: parseFloat(e.target.value) })} className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+              <label htmlFor="voiceVolume" className="text-xs text-slate-600 dark:text-slate-300 mb-1 block">Volume: {Math.round(configVoz.volume * 100)}%</label>
+              <input id="voiceVolume" type="range" min="0" max="1" step="0.1" value={configVoz.volume} onChange={(e) => setConfigVoz({ ...configVoz, volume: parseFloat(e.target.value) })} className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer" />
             </div>
           </div>
 

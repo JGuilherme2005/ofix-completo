@@ -85,6 +85,7 @@ const ChatHeader = ({
                   : 'text-slate-600 hover:bg-slate-50 dark:bg-slate-800'
               }`}
               title={vozHabilitada ? 'Desativar voz' : 'Ativar voz'}
+              aria-label={vozHabilitada ? 'Desativar voz' : 'Ativar voz'}
             >
               {vozHabilitada ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </Button>
@@ -97,6 +98,7 @@ const ChatHeader = ({
                 onClick={onPararFala}
                 className="text-red-600 hover:bg-red-50"
                 title="Parar fala"
+                aria-label="Parar fala"
               >
                 <VolumeX className="w-4 h-4" />
               </Button>
@@ -109,6 +111,7 @@ const ChatHeader = ({
               onClick={onLimparHistorico}
               className="flex items-center gap-2 text-red-600 hover:bg-red-50"
               title="Limpar histórico"
+              aria-label="Limpar histórico"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
@@ -120,6 +123,7 @@ const ChatHeader = ({
               onClick={onToggleConfig}
               className="flex items-center gap-2"
               title="Configurações de voz"
+              aria-label="Configurações de voz"
             >
               <Settings className="w-4 h-4" />
             </Button>
