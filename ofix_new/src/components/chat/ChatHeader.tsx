@@ -57,7 +57,7 @@ const ChatHeader = ({
             <Bot className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Assistente IA OFIX</h1>
+            <h1 className="text-xl font-bold text-slate-900">Assistente IA Pista</h1>
             <p className="text-sm text-slate-600">Powered by Agno AI Agent</p>
           </div>
         </div>

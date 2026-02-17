@@ -1,5 +1,5 @@
 /**
- * Sistema de Design OFIX - Cores e Temas Padronizados
+ * Sistema de Design Pista - Cores e Temas Padronizados
  * Centraliza todas as definições de cores e estilos para consistência visual
  */
 

@@ -287,23 +287,23 @@ export default function Layout() {
                                     <Wrench className="w-4 h-4 text-white" />
                                 </div>
                                 <div className="flex items-center gap-2 md:gap-4">
-                                    {/* Parte fixa - OFIX Sistema Operacional */}
+                                    {/* Parte fixa - P.I.S.T.A */}
                                     <div className="hidden sm:block">
                                         <h1 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight">
-                                            OFIX Sistema Operacional
+                                            Pista
                                         </h1>
-                                        <p className="text-xs text-slate-600 font-medium uppercase tracking-wider">
-                                            Gestão Completa de Oficina
+                                        <p className="text-[10px] text-slate-500 font-medium tracking-wider">
+                                            Plataforma Inteligente para Simplificar a Tarefa da Automecânica
                                         </p>
                                     </div>
 
-                                    {/* Versão mobile - apenas OFIX */}
+                                    {/* Versão mobile - apenas Pista */}
                                     <div className="block sm:hidden">
                                         <h1 className="text-lg font-bold text-slate-900 tracking-tight">
-                                            OFIX
+                                            Pista
                                         </h1>
-                                        <p className="text-xs text-slate-600 font-medium uppercase tracking-wider">
-                                            Sistema
+                                        <p className="text-[9px] text-slate-500 font-medium tracking-wider">
+                                            P.I.S.T.A
                                         </p>
                                     </div>
 

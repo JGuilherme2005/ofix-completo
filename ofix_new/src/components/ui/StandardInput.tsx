@@ -2,7 +2,7 @@ import React from 'react';
 import { getInputClass } from '@/lib/designSystem';
 
 /**
- * Componente Input padronizado OFIX
+ * Componente Input padronizado Pista
  * Implementa estados visuais consistentes
  */
 const StandardInput = React.forwardRef<any, any>(({

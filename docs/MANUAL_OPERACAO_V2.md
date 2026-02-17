@@ -1,6 +1,6 @@
-# Manual de Operação — OFIX V2
+# Manual de Operação — Pista V2
 
-> Guia definitivo para operar, manter e fazer deploy do sistema OFIX V2.
+> Guia definitivo para operar, manter e fazer deploy do sistema Pista V2.
 > Última atualização: 17 Fev 2026 | Branch: `feat/frontend-tsx-migration`
 
 ---
@@ -134,7 +134,7 @@ Se eles divergirem, toda comunicação Backend → IA retorna **401 Unauthorized
 
 O Render free tier **dorme** serviços após ~15 minutos de inatividade. O cold start (acordar) leva **30-90 segundos** dependendo do serviço.
 
-### 3.2 Como o OFIX lida automaticamente
+### 3.2 Como o Pista lida automaticamente
 
 O sistema tem **3 camadas** de proteção contra cold start:
 
@@ -513,6 +513,6 @@ VALIDAÇÃO FINAL
 
 ---
 
-> **Mantido por:** Equipe OFIX
+> **Mantido por:** Equipe Pista
 > **Repo:** `JGuilherme2005/ofix-completo`
 > **Branch V2:** `feat/frontend-tsx-migration`

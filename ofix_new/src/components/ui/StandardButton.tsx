@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { getButtonClass } from '@/lib/designSystem';
 
 /**
- * Componente StandardButton padronizado OFIX
+ * Componente StandardButton padronizado Pista
  * Implementa o sistema de design consistente com todas as variantes
  */
 const StandardButton = React.forwardRef<any, any>(({

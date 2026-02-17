@@ -1,4 +1,4 @@
-// Design System Components - OFIX
+// Design System Components - Pista
 export { default as StandardButton } from './StandardButton';
 export { default as StandardInput } from './StandardInput';
 export { default as StandardCard } from './StandardCard';

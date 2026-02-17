@@ -2,7 +2,7 @@ import React from 'react';
 import { getCardClass } from '@/lib/designSystem';
 
 /**
- * Componente Card padronizado OFIX
+ * Componente Card padronizado Pista
  * Variantes: default, bordered, elevated, interactive
  */
 const StandardCard = ({

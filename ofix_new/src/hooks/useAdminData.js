@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import apiClient from '../services/api';
 
 /**
- * 🔧 Hook para dados administrativos do OFIX
+ * 🔧 Hook para dados administrativos do Pista
  * Busca estatísticas reais do sistema
  */
 export const useAdminData = () => {

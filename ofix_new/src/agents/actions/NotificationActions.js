@@ -88,7 +88,7 @@ class NotificationActions {
         telefone: cleanPhone,
         mensagem: personalizedMessage,
         dataEnvio: new Date(),
-        remetente: context.user?.oficinaId || 'OFIX',
+        remetente: context.user?.oficinaId || 'Pista',
         status: 'PENDENTE'
       };
       
@@ -145,7 +145,7 @@ class NotificationActions {
         assunto,
         mensagem: this.personalizeMessage(mensagem, context),
         dataEnvio: new Date(),
-        remetente: context.user?.email || 'oficina@ofix.com',
+        remetente: context.user?.email || 'contato@pista.com.br',
         status: 'ENVIADO'
       };
       
@@ -198,7 +198,7 @@ class NotificationActions {
         telefone: telefone.replace(/\D/g, ''),
         mensagem: smsMessage,
         dataEnvio: new Date(),
-        remetente: 'OFIX',
+        remetente: 'Pista',
         status: 'ENVIADO',
         caracteres: smsMessage.length
       };
@@ -233,7 +233,7 @@ class NotificationActions {
     
     // Substituir placeholders
     const replacements = {
-      '{oficina}': context.user?.oficinaNome || 'Ofix',
+      '{oficina}': context.user?.oficinaNome || 'Pista',
       '{data}': new Date().toLocaleDateString('pt-BR'),
       '{hora}': new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
       '{atendente}': context.user?.nome || 'Matias'
@@ -244,8 +244,8 @@ class NotificationActions {
     }
     
     // Adicionar assinatura padrão se não houver
-    if (!personalizedMessage.includes('Ofix') && !personalizedMessage.includes('oficina')) {
-      personalizedMessage += '\n\n---\nOficina Ofix - Seu carro em boas mãos';
+    if (!personalizedMessage.includes('Pista') && !personalizedMessage.includes('oficina')) {
+      personalizedMessage += '\n\n---\nPista - Seu carro em boas mãos';
     }
     
     return personalizedMessage;

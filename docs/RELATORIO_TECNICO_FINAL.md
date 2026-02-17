@@ -1,10 +1,10 @@
-# Relatório Técnico Final (Status do Projeto OFIX V2)
+# Relatório Técnico Final (Status do Projeto Pista V2)
 
 Branch atual: `feat/frontend-tsx-migration` (Branch de Desenvolvimento V2)
 Data de Atualização: 17/02/2026
 Status Global: **96% dos Milestones Concluídos (47/49 itens)**
 
-Este documento consolida o status da refatoração do OFIX (Backend Node, IA Python, Frontend React, DB Postgres).
+Este documento consolida o status da refatoração do Pista (codinome interno: ofix) (Backend Node, IA Python, Frontend React, DB Postgres).
 
 ---
 

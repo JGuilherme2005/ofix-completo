@@ -1,4 +1,4 @@
-# Deploy — Projeto OFIX
+# Deploy — Projeto Pista
 
 Guia unificado de deploy. Custo: **R$ 0** (camada gratuita de cada plataforma).
 

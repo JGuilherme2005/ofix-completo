@@ -1,4 +1,4 @@
-// Tema de cores padronizado para botões do OFIX
+// Tema de cores padronizado para botões do Pista
 // Arquivo: src/lib/buttonThemes.js
 
 export const buttonThemes = {

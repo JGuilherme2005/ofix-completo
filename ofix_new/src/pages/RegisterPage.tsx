@@ -65,8 +65,9 @@ export default function RegisterPage() {
                     <div className="mx-auto mb-4 h-16 w-16 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg">
             <Wrench className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">Crie sua Conta OFIX</CardTitle>
-          <CardDescription className="text-slate-600">
+          <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">Crie sua Conta Pista</CardTitle>
+          <p className="text-xs font-medium text-blue-600 tracking-wide mt-1">Plataforma Inteligente para Simplificar a Tarefa da Automecânica</p>
+          <CardDescription className="text-slate-600 mt-2">
             Comece a gerenciar sua oficina de forma eficiente.
           </CardDescription>
         </CardHeader>

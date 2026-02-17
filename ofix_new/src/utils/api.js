@@ -1,5 +1,5 @@
 /**
- * API helpers for OFIX frontend.
+ * API helpers for Pista frontend (codinome interno: ofix).
  *
  * getApiBaseUrl() returns the backend base URL without a trailing `/api`.
  * In local development on `localhost`, we return an empty string to use the
@@ -27,7 +27,7 @@ export const getApiBaseUrl = () => {
 
   // M4-FE-03: Sem fallback hardcoded. Em produção, VITE_API_BASE_URL deve ser definido
   // no ambiente (Vercel/Netlify). Se ausente, usa proxy relativo (funciona com rewrites).
-  console.warn('[OFIX] VITE_API_BASE_URL não definido e não é localhost — usando proxy relativo');
+  console.warn('[Pista] VITE_API_BASE_URL não definido e não é localhost — usando proxy relativo');
   return "";
 };
 

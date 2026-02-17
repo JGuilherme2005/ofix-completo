@@ -1,4 +1,4 @@
-# 📜 HISTÓRICO DO PROJETO OFIX
+# 📜 HISTÓRICO DO PROJETO PISTA
 
 Consolidação das principais etapas de desenvolvimento, decisões técnicas e correções aplicadas.
 

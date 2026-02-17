@@ -110,7 +110,7 @@ export default function ChatInterface({
               <Bot className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-sm">Assistente OfixNovo</h3>
+              <h3 className="font-semibold text-sm">Assistente Pista</h3>
               <div className="flex items-center gap-2 text-xs opacity-90">
                 <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
                 {isConnected ? 'Online' : 'Reconectando...'}
@@ -143,7 +143,7 @@ export default function ChatInterface({
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
                   <Bot className="w-16 h-16 mb-4 text-gray-300" />
-                  <h3 className="text-lg font-semibold mb-2">Bem-vindo ao Assistente OFIX</h3>
+                  <h3 className="text-lg font-semibold mb-2">Bem-vindo ao Assistente Pista</h3>
                   <p className="text-sm max-w-xs">
                     {userType === 'cliente' 
                       ? 'Estou aqui para ajudar com informações sobre seus serviços e agendamentos.'

@@ -118,7 +118,7 @@ const AIPage = () => {
       const msg = {
         id: Date.now(),
         tipo: 'sistema',
-        conteudo: `Olá ${user?.nome || 'usuário'}! 👋\n\n**Bem-vindo ao Assistente IA do OFIX!**\n\nSou especializado em:\n\n🔧 Diagnósticos automotivos\n🚗 Gestão de peças e estoque\n💼 Suporte comercial\n📊 Análise de dados operacionais\n\n${memory.memoriaAtiva ? '🧠 **Sistema de memória ativo** - Vou lembrar das nossas conversas!' : ''}\n\nComo posso ajudá-lo hoje?`,
+        conteudo: `Olá ${user?.nome || 'usuário'}! 👋\n\n**Bem-vindo ao Assistente IA do Pista!**\n\nSou especializado em:\n\n🔧 Diagnósticos automotivos\n🚗 Gestão de peças e estoque\n💼 Suporte comercial\n📊 Análise de dados operacionais\n\n${memory.memoriaAtiva ? '🧠 **Sistema de memória ativo** - Vou lembrar das nossas conversas!' : ''}\n\nComo posso ajudá-lo hoje?`,
         timestamp: new Date().toISOString(),
       };
       setConversas([msg]);
@@ -159,7 +159,7 @@ const AIPage = () => {
       const msg = {
         id: Date.now(),
         tipo: 'sistema',
-        conteudo: `Olá ${user?.nome || 'usuário'}! 👋\n\n**Nova conversa iniciada!**\n\nSou o assistente de IA do OFIX, especializado em:\n\n🔧 Diagnósticos automotivos\n🚗 Gestão de peças e estoque\n💼 Suporte comercial\n📊 Análise de dados operacionais\n\n${memory.memoriaAtiva ? '🧠 **Sistema de memória ativo** - Eu lembro das nossas conversas anteriores!' : ''}\n\nComo posso ajudá-lo hoje?`,
+        conteudo: `Olá ${user?.nome || 'usuário'}! 👋\n\n**Nova conversa iniciada!**\n\nSou o assistente de IA do Pista, especializado em:\n\n🔧 Diagnósticos automotivos\n🚗 Gestão de peças e estoque\n💼 Suporte comercial\n📊 Análise de dados operacionais\n\n${memory.memoriaAtiva ? '🧠 **Sistema de memória ativo** - Eu lembro das nossas conversas anteriores!' : ''}\n\nComo posso ajudá-lo hoje?`,
         timestamp: new Date().toISOString(),
       };
       setConversas([msg]);

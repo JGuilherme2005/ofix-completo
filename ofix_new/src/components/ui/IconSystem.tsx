@@ -47,7 +47,7 @@ import {
 } from "lucide-react";
 
 /**
- * Sistema de Ícones Padronizado OFIX
+ * Sistema de Ícones Padronizado Pista
  * Centraliza todos os ícones usados na aplicação com tamanhos consistentes
  */
 
@@ -141,7 +141,7 @@ export const iconMap = {
 export const iconSizes = {
   xs: 12,
   sm: 16,
-  md: 18, // Padrão OFIX
+  md: 18, // Padrão Pista
   lg: 24,
   xl: 32,
 };
@@ -150,7 +150,7 @@ export const iconSizes = {
 export const iconSizeClasses = {
   xs: 'w-3 h-3',
   sm: 'w-4 h-4',
-  md: 'w-[18px] h-[18px]', // Padrão OFIX
+  md: 'w-[18px] h-[18px]', // Padrão Pista
   lg: 'w-6 h-6',
   xl: 'w-8 h-8',
 };

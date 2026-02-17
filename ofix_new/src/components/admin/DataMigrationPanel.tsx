@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 /**
  * 🔄 COMPONENTE DE MIGRAÇÃO DE DADOS
  * 
- * Interface simplificada para migração de dados antigos para o OFIX
+ * Interface simplificada para migração de dados antigos para o Pista
  */
 export default function DataMigrationPanel() {
   const [selectedFile, setSelectedFile] = useState<any>(null);
@@ -63,7 +63,7 @@ export default function DataMigrationPanel() {
           🔄 Migração de Dados
         </h2>
         <p className="text-slate-600 mt-2">
-          Importe dados de sistemas antigos para o OFIX
+          Importe dados de sistemas antigos para o Pista
         </p>
       </div>
 

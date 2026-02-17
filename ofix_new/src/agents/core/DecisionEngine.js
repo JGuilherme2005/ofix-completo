@@ -744,7 +744,7 @@ class DecisionEngine {
       
       "🔧 **E aí! Matias aqui, pronto para te atender!**\n\nSeja diagnóstico, orçamento, agendamento ou qualquer dúvida técnica - estou à disposição. O que precisa?",
       
-      "🚗 **Oi! Matias da Ofix aqui!**\n\nSou especialista em diagnósticos e tenho acesso completo ao sistema da oficina. Qual o problema do seu carro hoje?",
+      "🚗 **Oi! Matias da Pista aqui!**\n\nSou especialista em diagnósticos e tenho acesso completo ao sistema da oficina. Qual o problema do seu carro hoje?",
       
       "⚡ **Fala aí! Matias para te ajudar!**\n\nTenho 15 anos de experiência e posso resolver desde um diagnóstico complexo até agendar seu próximo serviço. Me conta o que está acontecendo!"
     ];
@@ -759,7 +759,7 @@ class DecisionEngine {
    * Gerar resposta informativa sobre serviços da oficina
    */
   getInfoResponse() {
-    return "🔧 **Principais Serviços da Ofix:**\n\n" +
+    return "🔧 **Principais Serviços da Pista:**\n\n" +
            "**🚗 Serviços Técnicos:**\n" +
            "• **Diagnósticos computadorizados** - Análise completa do sistema\n" +
            "• **Manutenção preventiva** - Revisões programadas\n" +

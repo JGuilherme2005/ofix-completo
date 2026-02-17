@@ -510,7 +510,7 @@ const helmetConfig = helmet(securityConfig.securityHeaders);
 // CORS configurado com segurança
 const corsConfig = {
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://ofix.com.br', 'https://app.ofix.com.br']
+    ? ['https://pista.com.br', 'https://www.pista.com.br', 'https://ofix.com.br', 'https://app.ofix.com.br']
     : ['http://localhost:3000', 'http://localhost:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

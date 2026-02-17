@@ -116,7 +116,7 @@ export default function Admin() {
                                             Administração
                                         </h1>
                                         <p className="text-slate-600">
-                                            Painel administrativo com dados reais do sistema OFIX
+                                            Painel administrativo com dados reais do sistema Pista
                                         </p>
                                         {adminData.lastUpdate && (
                                             <p className="text-xs text-slate-500">
@@ -221,7 +221,7 @@ export default function Admin() {
                                             Migração de Dados Antigos
                                         </h3>
                                         <p className="text-slate-600">
-                                            Importe seus dados existentes de outros sistemas para o OFIX
+                                            Importe seus dados existentes de outros sistemas para o Pista
                                         </p>
                                     </div>
                                     
@@ -262,7 +262,7 @@ export default function Admin() {
                                             Configurações do Sistema
                                         </h3>
                                         <p className="text-slate-600">
-                                            Configurações avançadas e manutenção do sistema OFIX
+                                            Configurações avançadas e manutenção do sistema Pista
                                         </p>
                                     </div>
                                     

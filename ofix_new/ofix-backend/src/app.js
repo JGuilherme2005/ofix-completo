@@ -31,6 +31,8 @@ class Application {
     const allowedOrigins = [
       'https://ofix.vercel.app',  // URL de produção do seu frontend (antiga)
       'https://ofix-completo.vercel.app', // URL real do Vercel
+      'https://pista.com.br',     // Novo domínio Pista
+      'https://www.pista.com.br', // Novo domínio Pista (www)
       'http://localhost:5173',   // URL para desenvolvimento local com Vite
       'http://localhost:5174',   // URL para desenvolvimento local com Vite (porta alternativa)
       'http://localhost:3000',   // Outra URL comum para desenvolvimento local
@@ -55,7 +57,8 @@ class Application {
 
           const isSameVercelTeam = hostname.endsWith('-catgreens-projects.vercel.app');
           const isOfixProject =
-            hostname.startsWith('ofix-completo-') || hostname.startsWith('ofix-completo-git-');
+            hostname.startsWith('ofix-completo-') || hostname.startsWith('ofix-completo-git-')
+            || hostname.startsWith('pista-') || hostname.startsWith('pista-git-');
 
           if (isSameVercelTeam && isOfixProject) return true;
         }

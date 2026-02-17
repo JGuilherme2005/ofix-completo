@@ -1,6 +1,6 @@
-﻿# ðŸ“š DOCUMENTAÃ‡ÃƒO OFIX
+﻿# ðŸ"š DOCUMENTAÃ‡ÃƒO PISTA
 
-DocumentaÃ§Ã£o oficial do projeto OFIX - Sistema de GestÃ£o de Oficinas Automotivas
+DocumentaÃ§Ã£o oficial do projeto Pista - Sistema de GestÃ£o de Oficinas Automotivas
 
 ---
 

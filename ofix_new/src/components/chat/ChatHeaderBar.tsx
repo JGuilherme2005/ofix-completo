@@ -37,7 +37,7 @@ export default function ChatHeaderBar({
           </div>
           <div>
             <h1 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-              Assistente IA OFIX
+              Assistente IA Pista
               <span className="text-xs font-normal bg-white/20 px-2 py-0.5 rounded-full">AI v2.0</span>
             </h1>
             <p className="text-xs sm:text-sm text-blue-100 hidden sm:block">Seu especialista em oficina mecânica</p>

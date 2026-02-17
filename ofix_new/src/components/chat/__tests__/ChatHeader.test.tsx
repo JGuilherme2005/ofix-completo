@@ -22,7 +22,7 @@ describe('ChatHeader', () => {
     it('deve renderizar título e logo', () => {
       render(<ChatHeader {...defaultProps} />);
 
-      expect(screen.getByText('Assistente IA OFIX')).toBeInTheDocument();
+      expect(screen.getByText('Assistente IA Pista')).toBeInTheDocument();
       expect(screen.getByText('Powered by Agno AI Agent')).toBeInTheDocument();
     });
 
