@@ -8,6 +8,7 @@ import AssistenteVozGlobal from './AssistenteVozGlobal';
 import BotaoResumoWhatsapp from './BotaoResumoWhatsapp';
 import SugestaoIAUpsell from './SugestaoIAUpsell';
 import { useAuth } from '../../context/AuthContext';
+import apiClient from '../../services/api';
 
 /**
  * Painel de demonstração das funcionalidades de IA implementadas
@@ -97,32 +98,18 @@ const PainelIA = () => {
       console.log('Enviando requisição com token:', token ? 'Token presente' : 'Token ausente');
 
       // Tentar primeira rota autenticada, se falhar, usar rota de teste
-      let response;
+      let resultado;
       try {
         // Simular dados de uma OS
-        response = await fetch('/api/ai/os/123/resumo-whatsapp', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        const { data } = await apiClient.post('/ai/os/123/resumo-whatsapp');
+        resultado = data;
       } catch (error) {
         console.log('Rota autenticada falhou, usando rota de teste:', error.message);
         // Fallback para rota de teste
-        response = await fetch('/api/ai/test/resumo-whatsapp', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+        const { data } = await apiClient.post('/ai/test/resumo-whatsapp');
+        resultado = data;
       }
       
-      const resultado = await response.json();
       console.log('Resultado recebido (WhatsApp):', resultado);
       setResultadoDemo({
         tipo: 'whatsapp',
@@ -139,34 +126,19 @@ const PainelIA = () => {
   const demoCheckinGuiado = async () => {
     try {
       // Tentar primeira rota autenticada, se falhar, usar rota de teste
-      let response;
+      let resultado;
       try {
-        response = await fetch('/api/ai/checkin/conduzir', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            mensagemCliente: "Meu carro está fazendo um barulho estranho"
-          })
+        const { data } = await apiClient.post('/ai/checkin/conduzir', {
+          mensagemCliente: "Meu carro está fazendo um barulho estranho"
         });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        resultado = data;
       } catch (error) {
         console.log('Rota autenticada falhou, usando rota de teste:', error.message);
         // Fallback para rota de teste
-        response = await fetch('/api/ai/test/checkin', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+        const { data } = await apiClient.post('/ai/test/checkin');
+        resultado = data;
       }
       
-      const resultado = await response.json();
       console.log('Resultado recebido (Check-in):', resultado);
       setResultadoDemo({
         tipo: 'checkin',
@@ -183,34 +155,19 @@ const PainelIA = () => {
   const demoUpsellResponsavel = async () => {
     try {
       // Tentar primeira rota autenticada, se falhar, usar rota de teste
-      let response;
+      let resultado;
       try {
-        response = await fetch('/api/ai/os/123/analise-upsell', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            laudoTecnico: 'Pastilhas de freio com 3mm de espessura. Disco de freio com ranhuras superficiais. Fluido de freio dentro do prazo de validade.'
-          })
+        const { data } = await apiClient.post('/ai/os/123/analise-upsell', {
+          laudoTecnico: 'Pastilhas de freio com 3mm de espessura. Disco de freio com ranhuras superficiais. Fluido de freio dentro do prazo de validade.'
         });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        resultado = data;
       } catch (error) {
         console.log('Rota autenticada falhou, usando rota de teste:', error.message);
         // Fallback para rota de teste
-        response = await fetch('/api/ai/test/upsell', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+        const { data } = await apiClient.post('/ai/test/upsell');
+        resultado = data;
       }
       
-      const resultado = await response.json();
       console.log('Resultado recebido (Upsell):', resultado);
       setResultadoDemo({
         tipo: 'upsell',

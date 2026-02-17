@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, ArrowRight, CheckCircle2, Edit3, RotateCcw } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 /**
  * Wizard de Check-in Guiado por IA
@@ -30,39 +30,15 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
       setLoading(true);
       setErro('');
 
-      const response = await fetch('/api/ai/checkin/conduzir', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: JSON.stringify({
+      const response = await apiClient.post('/ai/checkin/conduzir', {
           etapaAtual: 'inicio',
           dadosParciais: dadosColetados
-        })
-      });
-
-      if (!response.ok) {
-        // Fallback para rota de teste
-        const testResponse = await fetch('/api/ai/test/checkin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
         });
-        
-        if (!testResponse.ok) {
-          throw new Error('Erro ao iniciar check-in');
-        }
-        
-        const testData = await testResponse.json();
-        setProximaPergunta(testData.proxima_pergunta);
-        setEtapaAtual(testData.etapa_seguinte || 'aguardando_resposta');
-        setConversaId(testData.conversaId || 'demo');
-      } else {
-        const data = await response.json();
-        setProximaPergunta(data.proxima_pergunta);
-        setEtapaAtual(data.etapa_seguinte);
-        setConversaId(data.conversaId);
-      }
+
+      const data = response.data;
+      setProximaPergunta(data.proxima_pergunta);
+      setEtapaAtual(data.etapa_seguinte);
+      setConversaId(data.conversaId);
 
       // Adicionar primeira pergunta ao histórico
       setConversaHistorico([{

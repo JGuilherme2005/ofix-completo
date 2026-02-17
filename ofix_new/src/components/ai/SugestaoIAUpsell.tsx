@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, DollarSign, AlertTriangle, CheckCircle, X, Plus, Loader } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 /**
  * Componente de Sugestão de Upsell Responsável
@@ -26,34 +26,16 @@ const SugestaoIAUpsell = ({ osId, laudoTecnico, historicoCliente, onSugestaoAdic
       console.log('💡 Analisando oportunidades de upsell para OS:', osId);
 
       // Chamar API
-      const response = await fetch(`/api/ai/os/${osId}/analise-upsell`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: JSON.stringify({
+      try {
+        const { data } = await apiClient.post(`/ai/os/${osId}/analise-upsell`, {
           laudoTecnico,
           historicoCliente
-        })
-      });
-
-      if (!response.ok) {
-        // Fallback para rota de teste
-        const testResponse = await fetch('/api/ai/test/upsell', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
         });
-        
-        if (!testResponse.ok) {
-          throw new Error('Erro ao analisar oportunidades');
-        }
-        
-        const testData = await testResponse.json();
-        setAnalise(testData);
-      } else {
-        const data = await response.json();
         setAnalise(data);
+      } catch {
+        // Fallback para rota de teste
+        const { data: testData } = await apiClient.post('/ai/test/upsell');
+        setAnalise(testData);
       }
 
       setMostrarModal(true);

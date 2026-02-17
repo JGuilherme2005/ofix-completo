@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { useAuth } from '../../context/AuthContext';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 export default function DebugPanel() {
   const { isAuthenticated, token, user } = useAuth();
@@ -15,13 +15,7 @@ export default function DebugPanel() {
   const testHealth = async () => {
     setLoading(true);
     try {
-  const response = await fetch('/api/agno/health', {
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-      'Content-Type': 'application/json'
-    }
-  });
-      const data = await response.json();
+      const { data } = await apiClient.get('/agno/health');
       setHealthStatus({ success: true, data });
     } catch (error) {
       setHealthStatus({ success: false, error: error.message });
@@ -32,13 +26,8 @@ export default function DebugPanel() {
   const testAuthEndpoint = async () => {
     setLoading(true);
     try {
-  const response = await fetch('/api/ai/suggestions', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      setAuthTestStatus({ success: response.ok, status: response.status, data });
+      const { data, status } = await apiClient.get('/ai/suggestions');
+      setAuthTestStatus({ success: true, status, data });
     } catch (error) {
       setAuthTestStatus({ success: false, error: error.message });
     }
@@ -48,18 +37,10 @@ export default function DebugPanel() {
   const testChat = async () => {
     setLoading(true);
     try {
-  const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          message: 'Olá, este é um teste!'
-        })
+      const { data, status } = await apiClient.post('/ai/chat', {
+        message: 'Olá, este é um teste!'
       });
-      const data = await response.json();
-      setAuthTestStatus({ success: response.ok, status: response.status, data, type: 'chat' });
+      setAuthTestStatus({ success: true, status, data, type: 'chat' });
     } catch (error) {
       setAuthTestStatus({ success: false, error: error.message, type: 'chat' });
     }
@@ -150,7 +131,7 @@ export default function DebugPanel() {
         <div>
           <h3 className="font-semibold mb-2">LocalStorage</h3>
           <div className="text-xs">
-            <div>Token no localStorage: <code>{getAuthToken() ? 'Presente' : 'Ausente'}</code></div>
+            <div>Token no localStorage: <code>{localStorage.getItem('authToken') ? 'Presente' : 'Ausente'}</code></div>
             <div>User no localStorage: <code>{localStorage.getItem('user') ? 'Presente' : 'Ausente'}</code></div>
           </div>
         </div>

@@ -2,7 +2,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Play, Pause, RotateCcw, CheckCircle, AlertCircle, Loader } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 /**
  * Componente de Triagem por Voz - Implementação da Tarefa 1
@@ -140,19 +140,7 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
       formData.append('veiculoPlaca', veiculoPlaca.toUpperCase());
 
       // Chamar API
-      const response = await fetch('/api/ai/triagem-voz', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro no processamento');
-      }
+      const { data } = await apiClient.post('/ai/triagem-voz', formData);
 
       console.log('✅ Análise concluída:', data);
       

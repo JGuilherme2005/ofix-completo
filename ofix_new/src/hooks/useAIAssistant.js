@@ -53,8 +53,7 @@ export function useAIAssistant(options = {}) {
         const loadSuggestions = async () => {
             try {
                 // Verificar se usuário está autenticado
-                const token = getAuthToken();
-                if (!token) {
+                if (!isAuthenticated || !token) {
                     return; // Não carregar sugestões se não estiver autenticado
                 }
 

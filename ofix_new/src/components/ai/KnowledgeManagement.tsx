@@ -20,7 +20,7 @@ import {
   FileText,
   Link
 } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 /**
  * Sistema de Gestão de Base de Conhecimento
@@ -95,18 +95,8 @@ const KnowledgeManagement = ({ className = '' }) => {
   const loadKnowledgeBase = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/ai/knowledge', {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setKnowledgeItems(data.length > 0 ? data : mockKnowledge);
-      } else {
-        setKnowledgeItems(mockKnowledge);
-      }
+      const { data } = await apiClient.get('/ai/knowledge');
+      setKnowledgeItems(data.length > 0 ? data : mockKnowledge);
     } catch (error) {
       // console.error('Erro ao carregar base de conhecimento:', error);
       setKnowledgeItems(mockKnowledge);
@@ -117,18 +107,8 @@ const KnowledgeManagement = ({ className = '' }) => {
 
   const loadCategories = async () => {
     try {
-      const response = await fetch('/api/ai/knowledge/categories', {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data.length > 0 ? data : mockCategories);
-      } else {
-        setCategories(mockCategories);
-      }
+      const { data } = await apiClient.get('/ai/knowledge/categories');
+      setCategories(data.length > 0 ? data : mockCategories);
     } catch (error) {
       // console.error('Erro ao carregar categorias:', error);
       setCategories(mockCategories);
@@ -138,34 +118,24 @@ const KnowledgeManagement = ({ className = '' }) => {
   const saveKnowledgeItem = async () => {
     try {
       setLoading(true);
-      const method = editingItem ? 'PUT' : 'POST';
-      const url = editingItem 
-        ? `/api/ai/knowledge/${editingItem.id}`
-        : '/api/ai/knowledge';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: JSON.stringify(newItem)
-      });
-
-      if (response.ok) {
-        await loadKnowledgeBase();
-        setShowAddModal(false);
-        setEditingItem(null);
-        setNewItem({
-          title: '',
-          content: '',
-          category: '',
-          tags: [],
-          type: 'faq',
-          priority: 'medium',
-          isActive: true
-        });
+      if (editingItem) {
+        await apiClient.put(`/ai/knowledge/${editingItem.id}`, newItem);
+      } else {
+        await apiClient.post('/ai/knowledge', newItem);
       }
+
+      await loadKnowledgeBase();
+      setShowAddModal(false);
+      setEditingItem(null);
+      setNewItem({
+        title: '',
+        content: '',
+        category: '',
+        tags: [],
+        type: 'faq',
+        priority: 'medium',
+        isActive: true
+      });
     } catch (error) {
       // console.error('Erro ao salvar item:', error);
     } finally {
@@ -177,16 +147,8 @@ const KnowledgeManagement = ({ className = '' }) => {
     if (!confirm('Tem certeza que deseja excluir este item?')) return;
 
     try {
-      const response = await fetch(`/api/ai/knowledge/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-
-      if (response.ok) {
-        await loadKnowledgeBase();
-      }
+      await apiClient.delete(`/ai/knowledge/${id}`);
+      await loadKnowledgeBase();
     } catch (error) {
       // console.error('Erro ao excluir item:', error);
     }

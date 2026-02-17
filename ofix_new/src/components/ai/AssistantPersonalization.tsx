@@ -18,7 +18,7 @@ import {
   Clock,
   Globe
 } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 /**
  * Sistema de Personalização do Assistente Virtual
@@ -84,16 +84,8 @@ const AssistantPersonalization = ({ className = '' }) => {
 
   const loadUserSettings = async () => {
     try {
-      const response = await fetch('/api/ai/user/settings', {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-      
-      if (response.ok) {
-        const userSettings = await response.json();
-        setSettings(prev => ({ ...prev, ...userSettings }));
-      }
+      const { data: userSettings } = await apiClient.get('/ai/user/settings');
+      setSettings(prev => ({ ...prev, ...userSettings }));
     } catch (error) {
       // console.error('Erro ao carregar configurações:', error);
     }
@@ -102,18 +94,8 @@ const AssistantPersonalization = ({ className = '' }) => {
   const saveSettings = async () => {
     try {
       setSaving(true);
-      const response = await fetch('/api/ai/user/settings', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: JSON.stringify(settings)
-      });
-
-      if (response.ok) {
-        // Sucesso - pode mostrar toast
-      }
+      await apiClient.put('/ai/user/settings', settings);
+      // Sucesso - pode mostrar toast
     } catch (error) {
       // console.error('Erro ao salvar configurações:', error);
     } finally {

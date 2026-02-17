@@ -17,7 +17,7 @@ import {
   Clock,
   Search
 } from 'lucide-react';
-import { getAuthToken } from '../../services/auth.service.js';
+import apiClient from '../../services/api';
 
 const QuickSuggestions = ({ 
   userType = 'cliente', 
@@ -35,16 +35,10 @@ const QuickSuggestions = ({
   const loadSuggestions = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/ai/suggestions?context=${encodeURIComponent(JSON.stringify({ userType, ...context }))}`, {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
+      const { data } = await apiClient.get('/ai/suggestions', {
+        params: { context: JSON.stringify({ userType, ...context }) }
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSuggestions(data);
-      }
+      setSuggestions(data);
     } catch (error) {
       console.error('Erro ao carregar sugestões:', error);
     } finally {
@@ -60,17 +54,10 @@ const QuickSuggestions = ({
     // Executar ação rápida se aplicável
     if (suggestion.action) {
       try {
-        await fetch('/api/ai/quick-action', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getAuthToken()}`
-          },
-          body: JSON.stringify({
-            action: suggestion.action,
-            context: { userType, ...context },
-            data: suggestion.data
-          })
+        await apiClient.post('/ai/quick-action', {
+          action: suggestion.action,
+          context: { userType, ...context },
+          data: suggestion.data
         });
       } catch (error) {
         console.error('Erro ao executar ação rápida:', error);

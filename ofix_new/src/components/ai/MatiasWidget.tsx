@@ -42,6 +42,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import toast from 'react-hot-toast';
+import apiClient from '../../services/api';
 
 // Hook personalizado para o Matias
 const useMatiasAssistant = () => {
@@ -141,25 +142,13 @@ I'm your virtual right-hand, with deep knowledge of:
 
     try {
       // Chamada para API do Matias
-      const response = await fetch('/api/matias/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data } = await apiClient.post('/matias/chat', {
           message,
           type,
           language,
           context: userContext,
           history: conversationHistory.slice(-10) // Últimas 10 mensagens para contexto
-        })
       });
-
-      if (!response.ok) {
-        throw new Error('Falha na comunicação com o Matias');
-      }
-
-      const data = await response.json();
       
       const assistantMessage = {
         id: Date.now() + 1,
@@ -354,15 +343,8 @@ const MatiasWidget = ({
       formData.append('audio', audioBlob);
       formData.append('language', language);
 
-      const response = await fetch('/api/matias/voice', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        await sendMessage(data.transcription, 'voice');
-      }
+      const { data } = await apiClient.post('/matias/voice', formData);
+      await sendMessage(data.transcription, 'voice');
     } catch (error) {
       console.error('Erro ao processar áudio:', error);
       toast.error('Erro ao processar áudio');

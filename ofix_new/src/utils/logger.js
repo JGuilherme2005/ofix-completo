@@ -14,6 +14,9 @@
 
 import { getApiBaseUrl } from './api';
 
+/** @returns {Promise<import('axios').AxiosInstance>} */
+const getApiClient = () => import('../services/api').then(m => m.default);
+
 const LOG_LEVELS = {
   ERROR: 'error',
   WARN: 'warn',
@@ -206,15 +209,10 @@ class Logger {
     this.lastFlush = Date.now();
     
     try {
-      await fetch(`${this.apiUrl}/api/logs/batch`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          logs: logsToSend,
-          count: logsToSend.length
-        })
+      const apiClient = await getApiClient();
+      await apiClient.post('/logs/batch', {
+        logs: logsToSend,
+        count: logsToSend.length
       });
     } catch (error) {
       // Falha silenciosa para não criar loop de erros
@@ -234,13 +232,8 @@ class Logger {
    */
   async sendToServer(logData) {
     try {
-      await fetch(`${this.apiUrl}/api/logs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(logData)
-      });
+      const apiClient = await getApiClient();
+      await apiClient.post('/logs', logData);
     } catch (error) {
       // Falha silenciosa para não criar loop de erros
       if (this.isDevelopment) {

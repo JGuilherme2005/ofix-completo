@@ -1,4 +1,3 @@
-import { getAuthToken } from '../services/auth.service.js';
 /**
  * Utilitário para retry com backoff exponencial
  * Implementa retry inteligente para chamadas de API que falham
@@ -108,60 +107,83 @@ export const fetchWithRetry = async (url, options = {}, retryConfig = {}) => {
 
 /**
  * Wrapper para APIs de IA com retry específico
+ * Usa apiClient centralizado para auth automática
  */
 export const aiApiCall = async (url, data, options = {}) => {
+  const { default: apiClient } = await import('../services/api');
   const aiRetryConfig = {
     maxRetries: 3,
     baseDelay: 1000,
     maxDelay: 8000,
     backoffFactor: 2,
     retryCondition: (error) => {
-      // Retry para erros de servidor, timeout ou rate limit
-      return error.status >= 500 || 
-             error.status === 429 || 
-             error.code === 'TIMEOUT' || 
-             error.code === 'NETWORK_ERROR';
+      const status = error.response?.status;
+      return status >= 500 || 
+             status === 429 || 
+             error.code === 'ECONNABORTED' || 
+             error.code === 'ERR_NETWORK';
     }
   };
-  
-  return fetchWithRetry(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getAuthToken()}`,
-      ...options.headers
-    },
-    body: JSON.stringify(data),
-    timeout: 10000, // 10 segundos para APIs de IA
-    ...options
-  }, aiRetryConfig);
+
+  const config = { ...aiRetryConfig, ...options.retryConfig };
+  let lastError;
+
+  for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
+    try {
+      console.log(`🔄 Tentativa ${attempt + 1}/${config.maxRetries + 1} para ${url}`);
+      const response = await apiClient.post(url, data, {
+        timeout: options.timeout || 10000,
+        ...options,
+      });
+      console.log(`✅ Sucesso na tentativa ${attempt + 1} para ${url}`);
+      return response;
+    } catch (error) {
+      lastError = error;
+      console.log(`❌ Erro na tentativa ${attempt + 1}:`, error.message);
+      if (attempt === config.maxRetries || !config.retryCondition(error)) break;
+      const delay = calculateDelay(attempt, config.baseDelay, config.backoffFactor, config.maxDelay);
+      console.log(`⏳ Aguardando ${delay}ms antes da próxima tentativa...`);
+      await sleep(delay);
+    }
+  }
+  throw lastError;
 };
 
 /**
  * Wrapper para upload de arquivos com retry
+ * Usa apiClient centralizado para auth automática
  */
 export const uploadWithRetry = async (url, formData, options = {}) => {
+  const { default: apiClient } = await import('../services/api');
   const uploadRetryConfig = {
-    maxRetries: 2, // Menos retries para uploads
+    maxRetries: 2,
     baseDelay: 2000,
     maxDelay: 10000,
     backoffFactor: 2,
     retryCondition: (error) => {
-      // Só retry para erros de servidor ou rede
-      return error.status >= 500 || error.code === 'NETWORK_ERROR';
+      const status = error.response?.status;
+      return status >= 500 || error.code === 'ERR_NETWORK';
     }
   };
-  
-  return fetchWithRetry(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${getAuthToken()}`,
-      ...options.headers
-    },
-    body: formData,
-    timeout: 30000, // 30 segundos para uploads
-    ...options
-  }, uploadRetryConfig);
+
+  const config = { ...uploadRetryConfig, ...options.retryConfig };
+  let lastError;
+
+  for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
+    try {
+      const response = await apiClient.post(url, formData, {
+        timeout: options.timeout || 30000,
+        ...options,
+      });
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (attempt === config.maxRetries || !config.retryCondition(error)) break;
+      const delay = calculateDelay(attempt, config.baseDelay, config.backoffFactor, config.maxDelay);
+      await sleep(delay);
+    }
+  }
+  throw lastError;
 };
 
 /**

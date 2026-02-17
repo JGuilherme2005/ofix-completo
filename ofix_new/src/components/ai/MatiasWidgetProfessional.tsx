@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { X, MessageCircle, Send, Mic, MicOff, Settings, History, User, Wrench, Phone, Calendar, FileText, AlertTriangle, CheckCircle, Clock, DollarSign, Volume2, VolumeX, Pause, Play } from 'lucide-react';
 import { useSpeechToText } from '../../hooks/useSpeechToText';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
+import apiClient from '../../services/api';
 
 /**
  * 🤖 MATIAS - Assistente Virtual Profissional da Ofix
@@ -159,29 +160,17 @@ Com **15 anos de experiência** em automóveis, sou responsável por toda a oper
     setIsLoading(true);
     
     try {
-  const response = await fetch('/api/matias/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          action: action,
-          language: 'pt-BR',
-          context: {
-            userProfile,
-            activeTab,
-            conversationHistory: messages.slice(-5) // Últimas 5 mensagens para contexto
-          }
-        })
+      const { data } = await apiClient.post('/matias/chat', {
+        message: userMessage,
+        action: action,
+        language: 'pt-BR',
+        context: {
+          userProfile,
+          activeTab,
+          conversationHistory: messages.slice(-5) // Últimas 5 mensagens para contexto
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`Erro ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
       if (data.success) {
         return {
           response: data.response,
