@@ -53,13 +53,18 @@ from matias_agno.knowledge.base import get_knowledge_base
 from matias_agno.storage.memory import get_memory_storage
 from matias_agno.tools.simulate import simulate_vehicle_scenario
 
-# M3-AI-07: buscar_conhecimento — optional, depends on LanceDB runtime availability.
+# M3-AI-07: buscar_conhecimento — only available when LanceDB is configured.
+_kb_tool = None
 try:
-    from matias_agno.tools.search import buscar_conhecimento
-    _kb_tool = buscar_conhecimento
-    print("[matias] buscar_conhecimento tool loaded")
+    from matias_agno.knowledge.base import LANCEDB_URI, LANCEDB_API_KEY
+    _lance_cloud = LANCEDB_URI.startswith("db://") if LANCEDB_URI else False
+    if LANCEDB_URI and (not _lance_cloud or LANCEDB_API_KEY):
+        from matias_agno.tools.search import buscar_conhecimento
+        _kb_tool = buscar_conhecimento
+        print("[matias] buscar_conhecimento tool loaded (LanceDB configured)")
+    else:
+        print("[matias] buscar_conhecimento skipped — LanceDB not configured")
 except Exception as _kb_err:
-    _kb_tool = None
     print(f"[matias] buscar_conhecimento tool unavailable: {_kb_err}")
 
 # ─────────────────────────────────────────────────────────────────────────────
