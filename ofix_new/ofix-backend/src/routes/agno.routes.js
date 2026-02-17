@@ -607,15 +607,48 @@ router.post('/chat-public', publicLimiter, validateMessage, async (req, res) => 
         const userId = `public_${oficinaId}_${publicSessionId}`;
         const sessionId = `of_${oficinaId}_anon_${publicSessionId}`;
 
-        // Public endpoint: never bubble upstream errors as 500 (clients tend to retry and amplify cost).
-        // We return the internal fallback message instead and let the circuit breaker protect the upstream.
-        const result = await processarComAgnoAI(message, userId, AGNO_PUBLIC_AGENT_ID, sessionId, {
-            throwOnError: false,
-            dependencies: {
-                oficina_id: oficinaId,
-                public: true
+        // M3-AI-06: Public endpoint now uses throwOnError:true + warm-retry, like authenticated chat.
+        // This avoids returning a generic fallback on cold starts and gives the Agno container
+        // a chance to wake up before giving up.
+        let result;
+        try {
+            result = await processarComAgnoAI(message, userId, AGNO_PUBLIC_AGENT_ID, sessionId, {
+                throwOnError: true,
+                dependencies: { oficina_id: oficinaId, public: true }
+            });
+        } catch (agnoErr) {
+            const errMsg = String(agnoErr?.message || '');
+            const code = Number(agnoErr?.status);
+            const isRateLimit = Boolean(agnoErr?.is_rate_limit) || (code === 429 && /rate\s*limit/i.test(errMsg));
+            const isColdStart = Boolean(agnoErr?.is_cold_start) || (code === 429 && !isRateLimit);
+            const isNetwork = /econnrefused|enotfound|fetch failed|network/i.test(errMsg);
+            const isTimeout = Boolean(agnoErr?.is_timeout) || /aborted|timeout/i.test(errMsg);
+            const isServer = Number.isFinite(code) && code >= 500;
+
+            if (isColdStart || (!isRateLimit && (isTimeout || isServer || isNetwork))) {
+                try {
+                    safeLog('[CHAT-PUBLIC] Cold start detectado, aquecendo...');
+                    const warm = await warmAgnoService({ reason: 'chat_public_retry', maxWaitMs: AGNO_CHAT_WARM_MAX_WAIT_MS });
+                    if (warm?.ok) {
+                        result = await processarComAgnoAI(message, userId, AGNO_PUBLIC_AGENT_ID, sessionId, {
+                            throwOnError: false,
+                            dependencies: { oficina_id: oficinaId, public: true }
+                        });
+                    }
+                } catch (_retryErr) {
+                    safeLog('[CHAT-PUBLIC] Retry apos warm falhou');
+                }
             }
-        });
+
+            // Ultimate fallback — return a polite unavailable message.
+            if (!result) {
+                return res.status(503).json({
+                    success: false,
+                    error: 'Assistente temporariamente indisponivel. Tente novamente em instantes.',
+                    oficina: { id: oficina.id, nome: oficina.nome, slug: oficina.slug }
+                });
+            }
+        }
 
         const responseTextRaw = result.response || result.content || result.message || 'Resposta do assistente';
         const responseText = normalizarTextoResposta(responseTextRaw);

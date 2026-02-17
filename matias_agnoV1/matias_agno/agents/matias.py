@@ -202,6 +202,12 @@ def _select_model():
 # Agent factories
 # ─────────────────────────────────────────────────────────────────────────────
 
+# M3-AI-05: IDs lidos de env para manter consistência com o Node backend,
+# que usa AGNO_DEFAULT_AGENT_ID e AGNO_PUBLIC_AGENT_ID.
+_AGENT_ID = os.getenv("AGNO_DEFAULT_AGENT_ID", "matias")
+_PUBLIC_AGENT_ID = os.getenv("AGNO_PUBLIC_AGENT_ID", "matias-public")
+
+
 def create_matias_agent():
     """Authenticated agent — full toolset, memory, knowledge, tenant-aware."""
     knowledge_base = get_knowledge_base()
@@ -212,7 +218,7 @@ def create_matias_agent():
         _tools.append(_kb_tool)
 
     return Agent(
-        id="matias",
+        id=_AGENT_ID,
         name="Matias",
         role="Assistente Tecnico de Oficina Automotiva",
         instructions=INSTRUCTIONS,
@@ -242,7 +248,7 @@ def create_matias_agent():
 def create_matias_public_agent():
     """Public agent — no memory, no knowledge, read-only orientation."""
     return Agent(
-        id="matias-public",
+        id=_PUBLIC_AGENT_ID,
         name="Matias Public",
         role="Assistente Tecnico de Oficina Automotiva (Publico)",
         instructions=PUBLIC_INSTRUCTIONS,

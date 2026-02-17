@@ -119,8 +119,11 @@ const createRateLimiter = (config) => {
     standardHeaders: config.standardHeaders || true,
     legacyHeaders: config.legacyHeaders || false,
     keyGenerator: (req) => {
-      // Usar IP + User ID se autenticado
-      const baseKey = req.ip;
+      // M1-SEC-08: Normalizar IPv6 para evitar bypass por endereços distintos
+      // no mesmo bloco. Agrupa por /64 subnet.
+      let baseKey = req.ip || req.connection?.remoteAddress || 'unknown';
+      // Strip IPv4-mapped prefix (::ffff:)
+      if (baseKey.startsWith('::ffff:')) baseKey = baseKey.slice(7);
       const userKey = req.user ? `_${req.user.id}` : '';
       return `${baseKey}${userKey}`;
     },
