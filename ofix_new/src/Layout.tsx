@@ -73,21 +73,27 @@ const USER_ROLES = {
 
 // --- Subcomponentes ---
 const HeaderBranding = () => (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-4">
         <div className="relative flex-shrink-0">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
-                <Wrench className="w-[18px] h-[18px] text-white" />
+            <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/25">
+                <Wrench className="w-5.5 h-5.5 text-white" />
             </div>
             <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-900"></div>
         </div>
         <div>
-            <h1 className="text-base font-bold text-slate-900 dark:text-white tracking-tight leading-none">
-                Pista
+            <h1 className="text-2xl font-extrabold tracking-tight leading-none">
+                <span className="text-blue-600 dark:text-blue-400">P</span>
+                <span className="text-slate-400 dark:text-slate-500 text-lg font-bold">.</span>
+                <span className="text-blue-600 dark:text-blue-400">I</span>
+                <span className="text-slate-400 dark:text-slate-500 text-lg font-bold">.</span>
+                <span className="text-blue-600 dark:text-blue-400">S</span>
+                <span className="text-slate-400 dark:text-slate-500 text-lg font-bold">.</span>
+                <span className="text-blue-600 dark:text-blue-400">T</span>
+                <span className="text-slate-400 dark:text-slate-500 text-lg font-bold">.</span>
+                <span className="text-blue-600 dark:text-blue-400">A</span>
             </h1>
-            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
-                <span className="tracking-[0.15em]">P.I.S.T.A</span>
-                <span className="mx-1 text-slate-300 dark:text-slate-600">·</span>
-                <span className="tracking-wide">Automecânica</span>
+            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 tracking-wide">
+                Plataforma Inteligente · <span className="text-slate-500 dark:text-slate-400 font-semibold">Automecânica</span>
             </p>
         </div>
     </div>
