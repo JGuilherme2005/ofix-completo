@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { aiService } from '../services/ai.service';
 import { useAuth } from '../context/AuthContext';
 import { getApiBaseUrl } from '../utils/api';
+import { getAuthToken } from '../services/auth.service.js';
 
 export function useAIAssistant(options = {}) {
     const {
@@ -57,7 +58,7 @@ export function useAIAssistant(options = {}) {
         const loadSuggestions = async () => {
             try {
                 // Verificar se usuário está autenticado
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 if (!token) {
                     return; // Não carregar sugestões se não estiver autenticado
                 }
@@ -148,7 +149,7 @@ export function useAIAssistant(options = {}) {
         try {
             const response = await fetch(buildUrl(`/api/ai/conversations/${conversationId}`), {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getAuthToken()}`
                 }
             });
 
@@ -189,7 +190,7 @@ export function useAIAssistant(options = {}) {
         try {
             const response = await fetch(buildUrl(`/api/ai/suggestions?context=${encodeURIComponent(JSON.stringify(context))}`), {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getAuthToken()}`
                 }
             });
 
@@ -241,7 +242,7 @@ export function useAIAssistant(options = {}) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getAuthToken()}`
                 },
                 body: JSON.stringify({
                     message: messageText,
@@ -331,7 +332,7 @@ export function useAIAssistant(options = {}) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getAuthToken()}`
                 },
                 body: JSON.stringify({
                     ...diagnosticData,
@@ -378,7 +379,7 @@ export function useAIAssistant(options = {}) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getAuthToken()}`
                 },
                 body: JSON.stringify({
                     action,
@@ -429,7 +430,7 @@ export function useAIAssistant(options = {}) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getAuthToken()}`
                 },
                 body: JSON.stringify({
                     conversationId,
@@ -489,7 +490,7 @@ export function useAIAssistant(options = {}) {
                 await fetch(buildUrl(`/api/ai/conversations/${conversationId}/end`), {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getAuthToken()}`
                     }
                 });
             } catch (error) {

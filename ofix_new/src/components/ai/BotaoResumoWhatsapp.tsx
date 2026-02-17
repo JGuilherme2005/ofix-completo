@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Copy, ExternalLink, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { getAuthToken } from '../../services/auth.service.js';
 
 /**
  * Botão para Gerar Resumo WhatsApp
@@ -30,7 +31,7 @@ const BotaoResumoWhatsapp = ({ osId, dadosOS, onResumoGerado }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         },
         body: JSON.stringify(dadosOS || {})
       });

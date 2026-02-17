@@ -3,7 +3,7 @@
   command = "npm run build"
 
 [build.environment]
-  VITE_API_BASE_URL = "https://ofix-backend-prod.onrender.com"
+  VITE_API_BASE_URL = "https://ofix-backend-r556.onrender.com"
 
 [[redirects]]
   from = "/*"
@@ -28,10 +28,10 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
 
 [context.production.environment]
-  VITE_API_BASE_URL = "https://ofix-backend-prod.onrender.com"
+  VITE_API_BASE_URL = "https://ofix-backend-r556.onrender.com"
 
 [context.deploy-preview.environment]
-  VITE_API_BASE_URL = "https://ofix-backend-prod.onrender.com"
+  VITE_API_BASE_URL = "https://ofix-backend-r556.onrender.com"
 
 [context.branch-deploy.environment]
-  VITE_API_BASE_URL = "https://ofix-backend-prod.onrender.com"
+  VITE_API_BASE_URL = "https://ofix-backend-r556.onrender.com"

@@ -20,6 +20,7 @@ import {
   FileText,
   Link
 } from 'lucide-react';
+import { getAuthToken } from '../../services/auth.service.js';
 
 /**
  * Sistema de Gestão de Base de Conhecimento
@@ -96,7 +97,7 @@ const KnowledgeManagement = ({ className = '' }) => {
       setLoading(true);
       const response = await fetch('/api/ai/knowledge', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       
@@ -118,7 +119,7 @@ const KnowledgeManagement = ({ className = '' }) => {
     try {
       const response = await fetch('/api/ai/knowledge/categories', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       
@@ -146,7 +147,7 @@ const KnowledgeManagement = ({ className = '' }) => {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         },
         body: JSON.stringify(newItem)
       });
@@ -179,7 +180,7 @@ const KnowledgeManagement = ({ className = '' }) => {
       const response = await fetch(`/api/ai/knowledge/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
 

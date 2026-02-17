@@ -4,13 +4,14 @@
  */
 
 import { getApiBaseUrl } from './api.js';
+import { getAuthToken } from '../services/auth.service.js';
 
 /**
  * Salvar uma conversa individual
  */
 export const salvarConversa = async (tipo, conteudo, metadata = null) => {
   try {
-    const token = localStorage.getItem('token');
+    const token = getAuthToken();
     
     if (!token) {
       throw new Error('Token de autenticação não encontrado');
@@ -46,7 +47,7 @@ export const salvarConversa = async (tipo, conteudo, metadata = null) => {
  */
 export const salvarSessaoCompleta = async (conversas, sessaoId = null) => {
   try {
-    const token = localStorage.getItem('token');
+    const token = getAuthToken();
     
     if (!token) {
       throw new Error('Token de autenticação não encontrado');
@@ -81,7 +82,7 @@ export const salvarSessaoCompleta = async (conversas, sessaoId = null) => {
  */
 export const buscarHistoricoConversas = async (limite = 50, offset = 0) => {
   try {
-    const token = localStorage.getItem('token');
+    const token = getAuthToken();
     
     if (!token) {
       throw new Error('Token de autenticação não encontrado');
@@ -114,7 +115,7 @@ export const buscarHistoricoConversas = async (limite = 50, offset = 0) => {
  */
 export const buscarConversasSessao = async (sessaoId) => {
   try {
-    const token = localStorage.getItem('token');
+    const token = getAuthToken();
     
     if (!token) {
       throw new Error('Token de autenticação não encontrado');
@@ -147,7 +148,7 @@ export const buscarConversasSessao = async (sessaoId) => {
  */
 export const obterEstatisticasConversas = async () => {
   try {
-    const token = localStorage.getItem('token');
+    const token = getAuthToken();
     
     if (!token) {
       throw new Error('Token de autenticação não encontrado');

@@ -13,13 +13,10 @@ export const login = async (credentials) => {
         token: response.data.token,
         user: response.data.user
       }));
-      // Backward-compat: partes antigas do front leem `localStorage.getItem('token')` direto.
-      localStorage.setItem('token', response.data.token);
+      // M4-FE-01: removido backward-compat localStorage.setItem('token') — getAuthToken() é a fonte canônica.
     }
     return response.data; // Retorna { user, token }
   } catch (error) {
-    // O interceptor de resposta em api.js já pode ter lidado com alguns erros (ex: log).
-    // Aqui, relançamos o erro para que o componente que chamou possa tratá-lo (ex: exibir toast).
     console.error("Erro no serviço de login:", error.response?.data?.error || error.message);
     throw error.response?.data || { message: error.message || "Erro desconhecido no login." };
   }
@@ -37,9 +34,8 @@ export const register = async (userData) => {
 };
 
 export const logout = () => {
-  // Remove o token do localStorage
+  // Remove o token do localStorage (chave canônica única)
   localStorage.removeItem(AUTH_TOKEN_KEY);
-  localStorage.removeItem('token');
   // Adicionalmente, se houver um estado global de autenticação, ele deve ser resetado.
   // O AuthContext cuidará disso.
   // Não há chamada de API para logout no backend JWT stateless, a menos que haja uma blacklist de tokens.
@@ -58,6 +54,17 @@ export const getCurrentUser = () => {
     }
   }
   return null;
+};
+
+/**
+ * M4-FE-01: Helper centralizado para obter apenas o JWT string.
+ * Substitui todos os `localStorage.getItem('token')` espalhados pelo frontend.
+ * Lê da chave canônica `authToken` (JSON {token, user}) e extrai apenas o token.
+ * @returns {string|null} O JWT string ou null se não autenticado.
+ */
+export const getAuthToken = () => {
+  const data = getCurrentUser();
+  return data?.token ?? null;
 };
 
 export const isAuthenticated = () => {
@@ -99,7 +106,7 @@ export const loginWithInvite = async (token) => {
         token: response.data.token,
         user: response.data.user
       }));
-      localStorage.setItem('token', response.data.token);
+      // M4-FE-01: removido backward-compat localStorage.setItem('token')
     }
     return response.data;
   } catch (error) {

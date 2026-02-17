@@ -2,6 +2,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Play, Pause, RotateCcw, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { getAuthToken } from '../../services/auth.service.js';
 
 /**
  * Componente de Triagem por Voz - Implementação da Tarefa 1
@@ -143,7 +144,7 @@ const TriagemPorVoz = ({ onAnaliseCompleta, dadosIniciais = {} }) => {
         method: 'POST',
         body: formData,
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
 

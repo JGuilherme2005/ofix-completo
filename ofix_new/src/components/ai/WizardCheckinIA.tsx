@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, ArrowRight, CheckCircle2, Edit3, RotateCcw } from 'lucide-react';
+import { getAuthToken } from '../../services/auth.service.js';
 
 /**
  * Wizard de Check-in Guiado por IA
@@ -33,7 +34,7 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         },
         body: JSON.stringify({
           etapaAtual: 'inicio',

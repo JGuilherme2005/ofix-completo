@@ -13,6 +13,7 @@ import {
   TrendingUp,
   TrendingDown
 } from 'lucide-react';
+import { getAuthToken } from '../../services/auth.service.js';
 
 /**
  * Sistema de Feedback e Avaliação do Assistente Virtual
@@ -78,7 +79,7 @@ const FeedbackDashboard = ({ className = '' }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         },
         body: JSON.stringify(newFeedback)
       });

@@ -18,6 +18,7 @@ import {
   Clock,
   Globe
 } from 'lucide-react';
+import { getAuthToken } from '../../services/auth.service.js';
 
 /**
  * Sistema de Personalização do Assistente Virtual
@@ -85,7 +86,7 @@ const AssistantPersonalization = ({ className = '' }) => {
     try {
       const response = await fetch('/api/ai/user/settings', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       
@@ -105,7 +106,7 @@ const AssistantPersonalization = ({ className = '' }) => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         },
         body: JSON.stringify(settings)
       });

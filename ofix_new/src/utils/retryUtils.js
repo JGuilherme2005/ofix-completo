@@ -1,3 +1,4 @@
+import { getAuthToken } from '../services/auth.service.js';
 /**
  * Utilitário para retry com backoff exponencial
  * Implementa retry inteligente para chamadas de API que falham
@@ -127,7 +128,7 @@ export const aiApiCall = async (url, data, options = {}) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Authorization': `Bearer ${getAuthToken()}`,
       ...options.headers
     },
     body: JSON.stringify(data),
@@ -154,7 +155,7 @@ export const uploadWithRetry = async (url, formData, options = {}) => {
   return fetchWithRetry(url, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Authorization': `Bearer ${getAuthToken()}`,
       ...options.headers
     },
     body: formData,

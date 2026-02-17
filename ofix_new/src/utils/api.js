@@ -22,8 +22,10 @@ export const getApiBaseUrl = () => {
     return "";
   }
 
-  // Default fallback
-  return normalizeBaseUrl("https://ofix-backend-r556.onrender.com");
+  // M4-FE-03: Sem fallback hardcoded. Em produção, VITE_API_BASE_URL deve ser definido
+  // no ambiente (Vercel/Netlify). Se ausente, usa proxy relativo (funciona com rewrites).
+  console.warn('[OFIX] VITE_API_BASE_URL não definido e não é localhost — usando proxy relativo');
+  return "";
 };
 
 const API_BASE_URL = getApiBaseUrl();

@@ -19,6 +19,7 @@ import {
   Lightbulb
 } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
+import { getAuthToken } from '../../services/auth.service.js';
 
 const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true }) => {
   const [formData, setFormData] = useState({
@@ -99,7 +100,7 @@ const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true })
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         },
         body: JSON.stringify(diagnosisData)
       });

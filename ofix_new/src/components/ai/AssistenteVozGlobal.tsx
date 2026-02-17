@@ -2,6 +2,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Volume2, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { getAuthToken } from '../../services/auth.service.js';
 
 /**
  * Assistente de Voz Global - Ícone flutuante para comandos de voz
@@ -108,7 +109,7 @@ const AssistenteVozGlobal = ({ onComandoExecutado }) => {
         method: 'POST',
         body: formData,
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
 

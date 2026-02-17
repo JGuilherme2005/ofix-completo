@@ -12,6 +12,7 @@ import {
   Download,
   RefreshCw
 } from 'lucide-react';
+import { getAuthToken } from '../../services/auth.service.js';
 
 /**
  * Dashboard de Conversas do Assistente Virtual
@@ -36,7 +37,7 @@ const ConversationDashboard = ({ className = '' }) => {
       setLoading(true);
       const response = await fetch('/api/ai/analytics/metrics', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       
@@ -55,7 +56,7 @@ const ConversationDashboard = ({ className = '' }) => {
     try {
       const response = await fetch('/api/ai/conversations', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       

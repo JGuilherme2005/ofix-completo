@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { useAuth } from '../../context/AuthContext';
+import { getAuthToken } from '../../services/auth.service.js';
 
 export default function DebugPanel() {
   const { isAuthenticated, token, user } = useAuth();
@@ -149,7 +150,7 @@ export default function DebugPanel() {
         <div>
           <h3 className="font-semibold mb-2">LocalStorage</h3>
           <div className="text-xs">
-            <div>Token no localStorage: <code>{localStorage.getItem('token') ? 'Presente' : 'Ausente'}</code></div>
+            <div>Token no localStorage: <code>{getAuthToken() ? 'Presente' : 'Ausente'}</code></div>
             <div>User no localStorage: <code>{localStorage.getItem('user') ? 'Presente' : 'Ausente'}</code></div>
           </div>
         </div>

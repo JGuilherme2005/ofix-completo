@@ -80,7 +80,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser({ ...data.user, isGuest });
       setToken(data.token);
       setIsAuthenticated(true);
-      navigate('/dashboard'); // Redireciona para o dashboard após login
+      // M4-FE-04: redirect removido daqui — o componente chamador (LoginPage) decide o destino
+      // para suportar redirect-back (from) corretamente.
       return data;
     } catch (error) {
       // Erro já logado pelo authService, aqui podemos apenas garantir estado limpo

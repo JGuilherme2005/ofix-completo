@@ -20,8 +20,8 @@ export default defineConfig({
       ]
     },
     include: [
-      'src/**/*.{test,spec}.{js,jsx}',
-      'src/**/__tests__/**/*.{js,jsx}'
+      'src/**/*.{test,spec}.{js,jsx,ts,tsx}',
+      'src/**/__tests__/**/*.{js,jsx,ts,tsx}'
     ],
     exclude: [
       'node_modules/**',

@@ -17,6 +17,7 @@ import {
   Clock,
   Search
 } from 'lucide-react';
+import { getAuthToken } from '../../services/auth.service.js';
 
 const QuickSuggestions = ({ 
   userType = 'cliente', 
@@ -36,7 +37,7 @@ const QuickSuggestions = ({
     try {
       const response = await fetch(`/api/ai/suggestions?context=${encodeURIComponent(JSON.stringify({ userType, ...context }))}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
 
@@ -63,7 +64,7 @@ const QuickSuggestions = ({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${getAuthToken()}`
           },
           body: JSON.stringify({
             action: suggestion.action,

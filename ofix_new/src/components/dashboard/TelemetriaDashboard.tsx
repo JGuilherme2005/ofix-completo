@@ -9,6 +9,7 @@ import {
   Brain,
   MessageSquare
 } from 'lucide-react';
+import { getAuthToken } from '../../services/auth.service.js';
 
 /**
  * Dashboard de Telemetria de IA (Versão Simplificada)
@@ -31,13 +32,13 @@ const TelemetriaDashboard = () => {
     try {
       const [iaResponse, automacaoResponse, alertasResponse] = await Promise.all([
         fetch(`/api/telemetria/ia/dashboard?periodo=${periodo}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         }),
         fetch(`/api/telemetria/automacao/dashboard?periodo=${periodo}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         }),
         fetch('/api/telemetria/alertas', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         })
       ]);
 

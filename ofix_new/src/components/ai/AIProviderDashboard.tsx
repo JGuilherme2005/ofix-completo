@@ -18,6 +18,7 @@ import {
   Download,
   Brain
 } from 'lucide-react';
+import { getAuthToken } from '../../services/auth.service.js';
 
 /**
  * Dashboard para gestão de provedores de IA
@@ -41,7 +42,7 @@ const AIProviderDashboard = ({ className = '' }) => {
       setLoading(true);
       const response = await fetch('/api/ai/providers/status', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       
@@ -61,7 +62,7 @@ const AIProviderDashboard = ({ className = '' }) => {
     try {
       const response = await fetch('/api/ai/models/ollama/list', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       });
       
@@ -81,7 +82,7 @@ const AIProviderDashboard = ({ className = '' }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         },
         body: JSON.stringify({
           provider: providerName,
@@ -111,7 +112,7 @@ const AIProviderDashboard = ({ className = '' }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         },
         body: JSON.stringify({
           prompt: testPrompt,
@@ -134,7 +135,7 @@ const AIProviderDashboard = ({ className = '' }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getAuthToken()}`
         },
         body: JSON.stringify({ modelName })
       });
