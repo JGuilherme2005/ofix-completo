@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { StandardButton, StandardCard } from '@/components/ui';
+import logger from '@/utils/logger';
 
 type ErrorBoundaryProps = {
   children?: React.ReactNode;
@@ -32,8 +33,14 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       errorInfo: errorInfo
     });
 
-    // Aqui você poderia enviar o erro para um serviço de monitoramento
-    // como Sentry, LogRocket, etc.
+    // M6-OBS-02: Enviar erro capturado para o backend via logger.
+    // Em produção os logs são enfileirados e enviados em batch para /api/logs.
+    logger.error('React ErrorBoundary', {
+      type: 'react_error_boundary',
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
+      componentStack: errorInfo.componentStack ?? undefined,
+    });
   }
 
   handleReload = () => {

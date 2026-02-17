@@ -1,9 +1,10 @@
 /**
  * Testes unitários para useChatAPI hook
  * M6-QA-02: Atualizado para apiClient (axios) após migração Bloco J.
+ * M6-QA-05: Fake timers para retry/backoff (de ~11s para <100ms).
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useChatAPI } from '../useChatAPI';
 import logger from '../../utils/logger';
@@ -35,6 +36,9 @@ vi.mock('../../services/api', () => ({
 
 describe('useChatAPI', () => {
   beforeEach(() => {
+    // M6-QA-05: Fake timers — retry delays resolvem instantaneamente.
+    vi.useFakeTimers();
+
     // Mock validarMensagem para retornar válido por padrão
     messageValidator.validarMensagem.mockReturnValue({
       valid: true,
@@ -44,6 +48,10 @@ describe('useChatAPI', () => {
     });
 
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe('enviarMensagem', () => {
@@ -132,7 +140,10 @@ describe('useChatAPI', () => {
 
       let response;
       await act(async () => {
-        response = await result.current.enviarMensagem('Teste retry');
+        const promise = result.current.enviarMensagem('Teste retry');
+        // Avançar timers para resolver os delays de retry
+        await vi.runAllTimersAsync();
+        response = await promise;
       });
 
       expect(response.success).toBe(true);
@@ -149,11 +160,11 @@ describe('useChatAPI', () => {
       const { result } = renderHook(() => useChatAPI());
 
       await act(async () => {
-        try {
-          await result.current.enviarMensagem('Teste');
-        } catch (error) {
-          expect(error.message).toBe('Network error');
-        }
+        // Capturar a rejeição antes de avançar timers para evitar unhandled rejection.
+        const promise = result.current.enviarMensagem('Teste').catch(e => e);
+        await vi.runAllTimersAsync();
+        const error = await promise;
+        expect(error.message).toBe('Network error');
       });
 
       // Deve ter tentado 3 vezes (configuração padrão)
@@ -232,11 +243,10 @@ describe('useChatAPI', () => {
       const { result } = renderHook(() => useChatAPI());
 
       await act(async () => {
-        try {
-          await result.current.enviarMensagem('Teste');
-        } catch (error) {
-          expect(error.message).toBe('Internal Server Error');
-        }
+        const promise = result.current.enviarMensagem('Teste').catch(e => e);
+        await vi.runAllTimersAsync();
+        const error = await promise;
+        expect(error.message).toBe('Internal Server Error');
       });
 
       expect(result.current.error).toBe('Internal Server Error');
@@ -274,7 +284,9 @@ describe('useChatAPI', () => {
 
       let isConnected;
       await act(async () => {
-        isConnected = await result.current.verificarConexao();
+        const promise = result.current.verificarConexao();
+        await vi.runAllTimersAsync();
+        isConnected = await promise;
       });
 
       expect(isConnected).toBe(false);
@@ -290,7 +302,9 @@ describe('useChatAPI', () => {
 
       let isConnected;
       await act(async () => {
-        isConnected = await result.current.verificarConexao();
+        const promise = result.current.verificarConexao();
+        await vi.runAllTimersAsync();
+        isConnected = await promise;
       });
 
       expect(isConnected).toBe(true);
@@ -388,6 +402,9 @@ describe('useChatAPI', () => {
 
   describe('loading state', () => {
     it('deve definir loading como true durante requisição', async () => {
+      // Usar real timers para este teste — não há retry/backoff envolvido.
+      vi.useRealTimers();
+
       let resolvePromise;
       apiClient.post.mockImplementation(() =>
         new Promise((resolve) => {

@@ -15,9 +15,21 @@ const apiClient = axios.create({
   timeout: 30000,
 });
 
-// Interceptor de Requisição: Adiciona o token JWT a cada requisição
+// --- Helpers ---
+
+/** Gera um ID curto (22 chars, base-36) para correlation. */
+function generateRequestId() {
+  const ts = Date.now().toString(36);
+  const rand = Math.random().toString(36).substring(2, 10);
+  return `${ts}-${rand}`;
+}
+
+// Interceptor de Requisição: Adiciona JWT + X-Request-Id a cada requisição
 apiClient.interceptors.request.use(
   (config) => {
+    // M6-OBS-01: Correlation ID — permite rastrear request FE→BE→Python.
+    config.headers["X-Request-Id"] = generateRequestId();
+
     const tokenDataString = localStorage.getItem("authToken"); // Pega a string JSON
 
     if (tokenDataString) {
