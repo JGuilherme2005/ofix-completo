@@ -53,11 +53,13 @@ apiClient.interceptors.response.use(
       const { status } = error.response;
       if (status === 401) {
         console.warn(
-          "Erro 401: Não autorizado. Limpando token e redirecionando para login."
+          "Erro 401: Não autorizado. Limpando token e notificando AuthContext."
         );
         localStorage.removeItem("authToken");
-        // Redireciona para a página de login para forçar um novo login
-        window.location.href = "/login";
+        // M4-FE-04: Dispara evento customizado em vez de hard redirect.
+        // AuthContext ouve este evento e faz logout via React Router,
+        // preservando o state "from" para redirect-back após re-login.
+        window.dispatchEvent(new Event("auth:logout"));
       }
     } else if (error.request) {
       console.error("Erro de rede ou servidor não respondeu:", error.message);

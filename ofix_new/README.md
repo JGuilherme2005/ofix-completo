@@ -1,167 +1,167 @@
-# 🏢 OFIX - Sistema de Gestão para Oficinas
+﻿# ðŸ¢ OFIX - Sistema de GestÃ£o para Oficinas
 
-Sistema completo de gestão para oficinas mecânicas desenvolvido com React + Node.js.
+Sistema completo de gestÃ£o para oficinas mecÃ¢nicas desenvolvido com React + Node.js.
 
-## ✨ Funcionalidades
+## âœ¨ Funcionalidades
 
-- 📊 **Dashboard** - Visão geral operacional com Kanban de OS
-- 👥 **Gestão de Clientes** - Cadastro e histórico completo
-- 🚗 **Controle de Veículos** - Informações detalhadas dos veículos
-- 📋 **Ordens de Serviço** - Criação e acompanhamento de OS
-- 📦 **Controle de Estoque** - Gestão de peças e componentes
-- 💰 **Financeiro** - Controle de receitas e despesas
-- 🤖 **IA Integrada** - Assistente virtual para suporte
+- ðŸ“Š **Dashboard** - VisÃ£o geral operacional com Kanban de OS
+- ðŸ‘¥ **GestÃ£o de Clientes** - Cadastro e histÃ³rico completo
+- ðŸš— **Controle de VeÃ­culos** - InformaÃ§Ãµes detalhadas dos veÃ­culos
+- ðŸ“‹ **Ordens de ServiÃ§o** - CriaÃ§Ã£o e acompanhamento de OS
+- ðŸ“¦ **Controle de Estoque** - GestÃ£o de peÃ§as e componentes
+- ðŸ’° **Financeiro** - Controle de receitas e despesas
+- ðŸ¤– **IA Integrada** - Assistente virtual para suporte
 
-## 🚀 Demo Online
+## ðŸš€ Demo Online
 
-- **Frontend**: Em breve após o deploy
-- **Backend**: [https://ofix-backend-prod.onrender.com](https://ofix-backend-prod.onrender.com)
+- **Frontend**: Em breve apÃ³s o deploy
+- **Backend**: [https://ofix-backend-r556.onrender.com](https://ofix-backend-r556.onrender.com)
 
-## 🛠️ Tecnologias
+## ðŸ› ï¸ Tecnologias
 
 ### Frontend
-- ⚛️ **React 18** - Interface de usuário
-- 🎨 **Tailwind CSS** - Estilização moderna
-- 🚀 **Vite** - Build tool ultrarrápido
-- 📱 **Responsive Design** - Mobile-first
-- 🎭 **Framer Motion** - Animações fluidas
+- âš›ï¸ **React 18** - Interface de usuÃ¡rio
+- ðŸŽ¨ **Tailwind CSS** - EstilizaÃ§Ã£o moderna
+- ðŸš€ **Vite** - Build tool ultrarrÃ¡pido
+- ðŸ“± **Responsive Design** - Mobile-first
+- ðŸŽ­ **Framer Motion** - AnimaÃ§Ãµes fluidas
 ### Backend
-- 🟢 **Node.js + Express** - API RESTful robusta
-- 🗄️ **PostgreSQL** - Banco de dados confiável
-- 🔐 **JWT Authentication** - Autenticação segura
-- 📡 **CORS habilitado** - Integração frontend/backend
-- ☁️ **Deploy Render** - Hospedagem em nuvem
+- ðŸŸ¢ **Node.js + Express** - API RESTful robusta
+- ðŸ—„ï¸ **PostgreSQL** - Banco de dados confiÃ¡vel
+- ðŸ” **JWT Authentication** - AutenticaÃ§Ã£o segura
+- ðŸ“¡ **CORS habilitado** - IntegraÃ§Ã£o frontend/backend
+- â˜ï¸ **Deploy Render** - Hospedagem em nuvem
 
-## 📦 Instalação e Uso
+## ðŸ“¦ InstalaÃ§Ã£o e Uso
 
-### Pré-requisitos
+### PrÃ©-requisitos
 - Node.js 18+ 
 - npm ou yarn
 
-### 1️⃣ Clone o repositório
+### 1ï¸âƒ£ Clone o repositÃ³rio
 ```bash
 git clone https://github.com/seu-usuario/ofix-frontend.git
 cd ofix-frontend
 ```
 
-### 2️⃣ Instale as dependências
+### 2ï¸âƒ£ Instale as dependÃªncias
 ```bash
 npm install
 ```
 
-### 3️⃣ Configure as variáveis de ambiente
+### 3ï¸âƒ£ Configure as variÃ¡veis de ambiente
 ```bash
 # Copie o arquivo de exemplo
 cp .env.example .env
 
 # Configure a URL do backend
-VITE_API_BASE_URL=https://ofix-backend-prod.onrender.com
+VITE_API_BASE_URL=https://ofix-backend-r556.onrender.com
 ```
 
-### 4️⃣ Execute o projeto
+### 4ï¸âƒ£ Execute o projeto
 ```bash
 # Desenvolvimento
 npm run dev
 
-# Build para produção
+# Build para produÃ§Ã£o
 npm run build
 
 # Preview do build
 npm run preview
 ```
 
-## 🚀 Deploy Gratuito
+## ðŸš€ Deploy Gratuito
 
-Este projeto está configurado para deploy em plataformas gratuitas:
+Este projeto estÃ¡ configurado para deploy em plataformas gratuitas:
 
 ### Netlify (Recomendado)
-1. Conecte seu repositório GitHub
+1. Conecte seu repositÃ³rio GitHub
 2. Configure o build command: `npm run build`
 3. Configure o publish directory: `dist`
-4. Adicione as variáveis de ambiente
+4. Adicione as variÃ¡veis de ambiente
 
 ### Vercel
 1. Importe o projeto do GitHub
-2. As configurações são detectadas automaticamente
-3. Adicione as variáveis de ambiente
+2. As configuraÃ§Ãµes sÃ£o detectadas automaticamente
+3. Adicione as variÃ¡veis de ambiente
 
-## 📱 Principais Telas
+## ðŸ“± Principais Telas
 
-### 🏠 Dashboard
-- Visão geral em tempo real
-- Kanban de Ordens de Serviço
-- Métricas principais
-- Gráficos de performance
+### ðŸ  Dashboard
+- VisÃ£o geral em tempo real
+- Kanban de Ordens de ServiÃ§o
+- MÃ©tricas principais
+- GrÃ¡ficos de performance
 
-### 👤 Gestão de Clientes
+### ðŸ‘¤ GestÃ£o de Clientes
 - Listagem com busca e filtros
 - Cadastro completo
-- Histórico de serviços
-- Informações de contato
+- HistÃ³rico de serviÃ§os
+- InformaÃ§Ãµes de contato
 
-### 🚗 Controle de Veículos
-- Cadastro de veículos
-- Vinculação com clientes
-- Histórico de manutenções
-- Dados técnicos
+### ðŸš— Controle de VeÃ­culos
+- Cadastro de veÃ­culos
+- VinculaÃ§Ã£o com clientes
+- HistÃ³rico de manutenÃ§Ãµes
+- Dados tÃ©cnicos
 
-### 📋 Ordens de Serviço
-- Criação automatizada
+### ðŸ“‹ Ordens de ServiÃ§o
+- CriaÃ§Ã£o automatizada
 - Status em tempo real
-- Gestão de peças e serviços
+- GestÃ£o de peÃ§as e serviÃ§os
 - Controle de prazos
 
-## 🤖 IA Integrada
+## ðŸ¤– IA Integrada
 
-O sistema possui um assistente virtual inteligente que auxilia nas operações:
-- Sugestões de serviços
-- Análise de padrões
-- Alertas automáticos
+O sistema possui um assistente virtual inteligente que auxilia nas operaÃ§Ãµes:
+- SugestÃµes de serviÃ§os
+- AnÃ¡lise de padrÃµes
+- Alertas automÃ¡ticos
 - Suporte em tempo real
 
-## 🔧 Scripts Disponíveis
+## ðŸ”§ Scripts DisponÃ­veis
 
 ```bash
 npm run dev        # Servidor de desenvolvimento
-npm run build      # Build para produção
+npm run build      # Build para produÃ§Ã£o
 npm run preview    # Preview do build
-npm run lint       # Análise de código
+npm run lint       # AnÃ¡lise de cÃ³digo
 npm test           # Executa testes
 ```
 
-## 📂 Estrutura do Projeto
+## ðŸ“‚ Estrutura do Projeto
 
 ```
 src/
-├── components/     # Componentes reutilizáveis
-├── pages/         # Páginas da aplicação
-├── services/      # APIs e serviços
-├── utils/         # Utilitários e helpers
-├── styles/        # Estilos globais
-└── assets/        # Imagens e recursos
+â”œâ”€â”€ components/     # Componentes reutilizÃ¡veis
+â”œâ”€â”€ pages/         # PÃ¡ginas da aplicaÃ§Ã£o
+â”œâ”€â”€ services/      # APIs e serviÃ§os
+â”œâ”€â”€ utils/         # UtilitÃ¡rios e helpers
+â”œâ”€â”€ styles/        # Estilos globais
+â””â”€â”€ assets/        # Imagens e recursos
 ```
 
-## 🤝 Contribuindo
+## ðŸ¤ Contribuindo
 
-1. Faça um fork do projeto
+1. FaÃ§a um fork do projeto
 2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
-3. Commit suas mudanças (`git commit -m 'Add: nova feature'`)
+3. Commit suas mudanÃ§as (`git commit -m 'Add: nova feature'`)
 4. Push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
 
-## 📄 Licença
+## ðŸ“„ LicenÃ§a
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto estÃ¡ sob a licenÃ§a MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-## 🌟 Apoie o Projeto
+## ðŸŒŸ Apoie o Projeto
 
-Se este projeto foi útil para você, considere dar uma ⭐ no repositório!
+Se este projeto foi Ãºtil para vocÃª, considere dar uma â­ no repositÃ³rio!
 
 ---
 
 <div align="center">
-  <p>Desenvolvido com ❤️ para revolucionar a gestão de oficinas mecânicas</p>
+  <p>Desenvolvido com â¤ï¸ para revolucionar a gestÃ£o de oficinas mecÃ¢nicas</p>
   <p>
-    <a href="#-ofix---sistema-de-gestão-para-oficinas">Voltar ao topo</a>
+    <a href="#-ofix---sistema-de-gestÃ£o-para-oficinas">Voltar ao topo</a>
   </p>
 </div>

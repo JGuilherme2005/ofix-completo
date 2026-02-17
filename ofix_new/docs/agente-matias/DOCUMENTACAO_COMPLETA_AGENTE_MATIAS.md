@@ -1,49 +1,49 @@
-# 🤖 DOCUMENTAÇÃO COMPLETA - AGENTE MATIAS
+﻿# ðŸ¤– DOCUMENTAÃ‡ÃƒO COMPLETA - AGENTE MATIAS
 
-## 📋 ÍNDICE
+## ðŸ“‹ ÃNDICE
 
-1. [Visão Geral](#visão-geral)
-2. [Arquitetura Técnica](#arquitetura-técnica)
+1. [VisÃ£o Geral](#visÃ£o-geral)
+2. [Arquitetura TÃ©cnica](#arquitetura-tÃ©cnica)
 3. [Funcionalidades Implementadas](#funcionalidades-implementadas)
 4. [Capacidades de Processamento](#capacidades-de-processamento)
-5. [Integração com Agno AI](#integração-com-agno-ai)
+5. [IntegraÃ§Ã£o com Agno AI](#integraÃ§Ã£o-com-agno-ai)
 6. [Sistema de NLP](#sistema-de-nlp)
-7. [Fluxos de Conversação](#fluxos-de-conversação)
+7. [Fluxos de ConversaÃ§Ã£o](#fluxos-de-conversaÃ§Ã£o)
 8. [Endpoints da API](#endpoints-da-api)
 9. [Bases de Conhecimento](#bases-de-conhecimento)
-10. [Métricas e Monitoramento](#métricas-e-monitoramento)
+10. [MÃ©tricas e Monitoramento](#mÃ©tricas-e-monitoramento)
 11. [Roadmap e Melhorias Futuras](#roadmap-e-melhorias-futuras)
 
 ---
 
-## 🎯 VISÃO GERAL
+## ðŸŽ¯ VISÃƒO GERAL
 
-### O que é o Agente Matias?
+### O que Ã© o Agente Matias?
 
-**Matias** é um assistente virtual inteligente especializado em oficinas automotivas, desenvolvido para o sistema **OFIX**. Ele combina processamento de linguagem natural (NLP) local com inteligência artificial avançada através da plataforma **Agno AI**, oferecendo uma experiência conversacional completa para gestão de oficinas.
+**Matias** Ã© um assistente virtual inteligente especializado em oficinas automotivas, desenvolvido para o sistema **OFIX**. Ele combina processamento de linguagem natural (NLP) local com inteligÃªncia artificial avanÃ§ada atravÃ©s da plataforma **Agno AI**, oferecendo uma experiÃªncia conversacional completa para gestÃ£o de oficinas.
 
-### Propósito
+### PropÃ³sito
 
 - **Automatizar** atendimento e agendamentos
-- **Facilitar** consultas de ordens de serviço, estoque e clientes
-- **Fornecer** diagnósticos e recomendações técnicas automotivas
-- **Otimizar** fluxo de trabalho da oficina através de linguagem natural
-- **Aprender** com cada interação para melhorar continuamente
+- **Facilitar** consultas de ordens de serviÃ§o, estoque e clientes
+- **Fornecer** diagnÃ³sticos e recomendaÃ§Ãµes tÃ©cnicas automotivas
+- **Otimizar** fluxo de trabalho da oficina atravÃ©s de linguagem natural
+- **Aprender** com cada interaÃ§Ã£o para melhorar continuamente
 
-### Características Principais
+### CaracterÃ­sticas Principais
 
-- ✅ **Disponível 24/7** - Sempre online para atender clientes e funcionários
-- ✅ **Bilíngue** - Português fluente com suporte técnico especializado
-- ✅ **Contextual** - Mantém histórico de conversas para continuidade
-- ✅ **Inteligente** - Aprende padrões e se adapta ao negócio
-- ✅ **Integrado** - Conectado a todos os sistemas da oficina (OS, estoque, clientes, agendamentos)
-- ✅ **Resiliente** - Sistema de fallback para garantir disponibilidade contínua
+- âœ… **DisponÃ­vel 24/7** - Sempre online para atender clientes e funcionÃ¡rios
+- âœ… **BilÃ­ngue** - PortuguÃªs fluente com suporte tÃ©cnico especializado
+- âœ… **Contextual** - MantÃ©m histÃ³rico de conversas para continuidade
+- âœ… **Inteligente** - Aprende padrÃµes e se adapta ao negÃ³cio
+- âœ… **Integrado** - Conectado a todos os sistemas da oficina (OS, estoque, clientes, agendamentos)
+- âœ… **Resiliente** - Sistema de fallback para garantir disponibilidade contÃ­nua
 
 ---
 
-## 🏗️ ARQUITETURA TÉCNICA
+## ðŸ—ï¸ ARQUITETURA TÃ‰CNICA
 
-### Stack Tecnológico
+### Stack TecnolÃ³gico
 
 #### Backend (Node.js + Express)
 ```javascript
@@ -51,7 +51,7 @@ Framework: Express 4.x
 Linguagem: JavaScript (ES Modules)
 ORM: Prisma 5.22.0
 Banco de Dados: PostgreSQL (Railway/Supabase)
-Serviços: Node-fetch para HTTP requests
+ServiÃ§os: Node-fetch para HTTP requests
 ```
 
 #### Frontend (React + Vite)
@@ -75,217 +75,217 @@ Hosting: Render (matias-agno-assistant.onrender.com)
 ### Diagrama de Arquitetura
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     CLIENTE (Browser)                        │
-│                     Frontend React/Vite                      │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         │ HTTPS
-                         │
-┌────────────────────────▼────────────────────────────────────┐
-│                  BACKEND (ofix-backend)                      │
-│                  Node.js + Express                           │
-│                                                              │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │         AGNO ROUTER (agno.routes.js)                 │  │
-│  │                                                       │  │
-│  │  • Detecção de Intenção (NLP Local)                 │  │
-│  │  • Roteamento Inteligente                           │  │
-│  │  • Sistema de Fallback                              │  │
-│  │  • Retry Logic (2 tentativas)                       │  │
-│  │  • Timeout Management (45s/30s)                     │  │
-│  └──────────────┬───────────────────────┬───────────────┘  │
-│                 │                       │                   │
-│    ┌────────────▼──────────┐  ┌────────▼─────────────┐    │
-│    │   NLP Service         │  │  Conversas Service   │    │
-│    │  • Extração Entidades │  │  • Histórico Chat    │    │
-│    │  • Validação Dados    │  │  • Contexto Usuário  │    │
-│    └───────────────────────┘  └──────────────────────┘    │
-│                                                              │
-│    ┌────────────────────────────────────────────────────┐  │
-│    │         SERVIÇOS DE NEGÓCIO                        │  │
-│    │  • AgendamentosService (criar/listar/atualizar)   │  │
-│    │  • ConsultasOSService (status/busca/estatísticas) │  │
-│    │  • ClientesService (CRUD clientes)                │  │
-│    │  • EstoqueService (consultas peças)               │  │
-│    └────────────────────┬───────────────────────────────┘  │
-│                         │                                   │
-└─────────────────────────┼───────────────────────────────────┘
-                          │
-                 ┌────────▼────────┐
-                 │   PostgreSQL    │
-                 │   (Database)    │
-                 └─────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                     CLIENTE (Browser)                        â”‚
+â”‚                     Frontend React/Vite                      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                         â”‚
+                         â”‚ HTTPS
+                         â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                  BACKEND (ofix-backend)                      â”‚
+â”‚                  Node.js + Express                           â”‚
+â”‚                                                              â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚         AGNO ROUTER (agno.routes.js)                 â”‚  â”‚
+â”‚  â”‚                                                       â”‚  â”‚
+â”‚  â”‚  â€¢ DetecÃ§Ã£o de IntenÃ§Ã£o (NLP Local)                 â”‚  â”‚
+â”‚  â”‚  â€¢ Roteamento Inteligente                           â”‚  â”‚
+â”‚  â”‚  â€¢ Sistema de Fallback                              â”‚  â”‚
+â”‚  â”‚  â€¢ Retry Logic (2 tentativas)                       â”‚  â”‚
+â”‚  â”‚  â€¢ Timeout Management (45s/30s)                     â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚                 â”‚                       â”‚                   â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚    â”‚   NLP Service         â”‚  â”‚  Conversas Service   â”‚    â”‚
+â”‚    â”‚  â€¢ ExtraÃ§Ã£o Entidades â”‚  â”‚  â€¢ HistÃ³rico Chat    â”‚    â”‚
+â”‚    â”‚  â€¢ ValidaÃ§Ã£o Dados    â”‚  â”‚  â€¢ Contexto UsuÃ¡rio  â”‚    â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â”‚                                                              â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚    â”‚         SERVIÃ‡OS DE NEGÃ“CIO                        â”‚  â”‚
+â”‚    â”‚  â€¢ AgendamentosService (criar/listar/atualizar)   â”‚  â”‚
+â”‚    â”‚  â€¢ ConsultasOSService (status/busca/estatÃ­sticas) â”‚  â”‚
+â”‚    â”‚  â€¢ ClientesService (CRUD clientes)                â”‚  â”‚
+â”‚    â”‚  â€¢ EstoqueService (consultas peÃ§as)               â”‚  â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚                         â”‚                                   â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                          â”‚
+                 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”
+                 â”‚   PostgreSQL    â”‚
+                 â”‚   (Database)    â”‚
+                 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
-         ┌────────────────────────────────────┐
-         │   AGNO AI AGENT (Externo)          │
-         │   matias-agno-assistant.onrender   │
-         │                                    │
-         │  • LLaMA 3.1 70B (via Groq)       │
-         │  • LanceDB (Vector Store)         │
-         │  • Base de Conhecimento:          │
-         │    - Diagnósticos Automotivos     │
-         │    - Procedimentos Técnicos       │
-         │    - Manutenções Preventivas      │
-         │    - Peças e Compatibilidade      │
-         └────────────────────────────────────┘
+         â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+         â”‚   AGNO AI AGENT (Externo)          â”‚
+         â”‚   matias-agno-assistant.onrender   â”‚
+         â”‚                                    â”‚
+         â”‚  â€¢ LLaMA 3.1 70B (via Groq)       â”‚
+         â”‚  â€¢ LanceDB (Vector Store)         â”‚
+         â”‚  â€¢ Base de Conhecimento:          â”‚
+         â”‚    - DiagnÃ³sticos Automotivos     â”‚
+         â”‚    - Procedimentos TÃ©cnicos       â”‚
+         â”‚    - ManutenÃ§Ãµes Preventivas      â”‚
+         â”‚    - PeÃ§as e Compatibilidade      â”‚
+         â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-### Fluxo de Requisição
+### Fluxo de RequisiÃ§Ã£o
 
 ```
-1. Usuário → Mensagem de chat
-2. Frontend → POST /api/agno/chat
-3. Backend → Detecta intenção (NLP)
-4. Backend → Roteamento:
-   ├─ Local Processing (AGENDAMENTO, CONSULTA_OS, etc)
-   └─ Agno AI (CONSULTA_PRECO, AJUDA, CONVERSA_GERAL)
-5. Agno AI → Processa com LLM + Knowledge Base
-6. Backend → Recebe resposta + salva histórico
-7. Frontend → Exibe resposta formatada
+1. UsuÃ¡rio â†’ Mensagem de chat
+2. Frontend â†’ POST /api/agno/chat
+3. Backend â†’ Detecta intenÃ§Ã£o (NLP)
+4. Backend â†’ Roteamento:
+   â”œâ”€ Local Processing (AGENDAMENTO, CONSULTA_OS, etc)
+   â””â”€ Agno AI (CONSULTA_PRECO, AJUDA, CONVERSA_GERAL)
+5. Agno AI â†’ Processa com LLM + Knowledge Base
+6. Backend â†’ Recebe resposta + salva histÃ³rico
+7. Frontend â†’ Exibe resposta formatada
 ```
 
 ---
 
-## ⚙️ FUNCIONALIDADES IMPLEMENTADAS
+## âš™ï¸ FUNCIONALIDADES IMPLEMENTADAS
 
-### 1. 📅 AGENDAMENTO DE SERVIÇOS
+### 1. ðŸ“… AGENDAMENTO DE SERVIÃ‡OS
 
-**Status:** ✅ Totalmente Funcional
+**Status:** âœ… Totalmente Funcional
 
 **Capacidades:**
-- Criar agendamentos através de linguagem natural
-- Extrair automaticamente: cliente, veículo, data, hora, tipo de serviço
+- Criar agendamentos atravÃ©s de linguagem natural
+- Extrair automaticamente: cliente, veÃ­culo, data, hora, tipo de serviÃ§o
 - Validar dados antes de criar agendamento
-- Sugerir horários disponíveis
+- Sugerir horÃ¡rios disponÃ­veis
 - Confirmar agendamentos com resumo completo
-- Detectar urgências e priorizar
+- Detectar urgÃªncias e priorizar
 
 **Exemplos de Uso:**
 ```
-✅ "Agendar revisão para o Gol do João na segunda às 14h"
-✅ "Marcar troca de óleo para terça 16h cliente Maria placa ABC-1234"
-✅ "Preciso fazer alinhamento no Civic para sexta de manhã"
-✅ "Agendar manutenção do ar condicionado para quinta 10h"
+âœ… "Agendar revisÃ£o para o Gol do JoÃ£o na segunda Ã s 14h"
+âœ… "Marcar troca de Ã³leo para terÃ§a 16h cliente Maria placa ABC-1234"
+âœ… "Preciso fazer alinhamento no Civic para sexta de manhÃ£"
+âœ… "Agendar manutenÃ§Ã£o do ar condicionado para quinta 10h"
 ```
 
-**Entidades Extraídas:**
-- **Cliente:** Nome completo (ex: João Silva)
-- **Veículo:** Modelo + Placa (ex: Gol, ABC-1234)
-- **Data:** Dia da semana ou data específica (ex: segunda, 15/11/2025)
+**Entidades ExtraÃ­das:**
+- **Cliente:** Nome completo (ex: JoÃ£o Silva)
+- **VeÃ­culo:** Modelo + Placa (ex: Gol, ABC-1234)
+- **Data:** Dia da semana ou data especÃ­fica (ex: segunda, 15/11/2025)
 - **Hora:** Formato 24h (ex: 14:00, 16h)
-- **Serviço:** Tipo de manutenção (revisão, troca de óleo, alinhamento, etc)
-- **Urgência:** Detecta palavras como "urgente", "hoje", "agora"
+- **ServiÃ§o:** Tipo de manutenÃ§Ã£o (revisÃ£o, troca de Ã³leo, alinhamento, etc)
+- **UrgÃªncia:** Detecta palavras como "urgente", "hoje", "agora"
 
-**Validações:**
-- Horário comercial (7h às 18h)
-- Data futura (não permite agendar no passado)
+**ValidaÃ§Ãµes:**
+- HorÃ¡rio comercial (7h Ã s 18h)
+- Data futura (nÃ£o permite agendar no passado)
 - Cliente existe no sistema ou cria novo
-- Veículo vinculado ao cliente
-- Slot disponível na agenda
+- VeÃ­culo vinculado ao cliente
+- Slot disponÃ­vel na agenda
 
-**Código Responsável:**
-- `ofix-backend/src/routes/agno.routes.js` - Função `processarAgendamento()`
-- `ofix-backend/src/services/nlp.service.js` - Função `extrairEntidadesAgendamento()`
+**CÃ³digo ResponsÃ¡vel:**
+- `ofix-backend/src/routes/agno.routes.js` - FunÃ§Ã£o `processarAgendamento()`
+- `ofix-backend/src/services/nlp.service.js` - FunÃ§Ã£o `extrairEntidadesAgendamento()`
 - `ofix-backend/src/services/agendamentos.service.js`
 
 ---
 
-### 2. 🔍 CONSULTA DE ORDENS DE SERVIÇO
+### 2. ðŸ” CONSULTA DE ORDENS DE SERVIÃ‡O
 
-**Status:** ✅ Totalmente Funcional
+**Status:** âœ… Totalmente Funcional
 
 **Capacidades:**
-- Buscar OS por número, placa ou cliente
-- Filtrar por status (em andamento, concluído, aguardando)
-- Mostrar detalhes completos (serviços, peças, valores)
-- Histórico de serviços do veículo
-- Estatísticas de atendimento
+- Buscar OS por nÃºmero, placa ou cliente
+- Filtrar por status (em andamento, concluÃ­do, aguardando)
+- Mostrar detalhes completos (serviÃ§os, peÃ§as, valores)
+- HistÃ³rico de serviÃ§os do veÃ­culo
+- EstatÃ­sticas de atendimento
 
 **Exemplos de Uso:**
 ```
-✅ "Status da OS #1234"
-✅ "Ordens de serviço do João"
-✅ "Meu carro está pronto? Placa ABC-1234"
-✅ "Mostrar serviços em andamento"
-✅ "Histórico do Gol placa XYZ-5678"
+âœ… "Status da OS #1234"
+âœ… "Ordens de serviÃ§o do JoÃ£o"
+âœ… "Meu carro estÃ¡ pronto? Placa ABC-1234"
+âœ… "Mostrar serviÃ§os em andamento"
+âœ… "HistÃ³rico do Gol placa XYZ-5678"
 ```
 
 **Dados Retornados:**
-- Número da OS
-- Status atual (Aguardando, Em Andamento, Concluído)
-- Cliente e veículo
-- Serviços realizados/pendentes
-- Peças utilizadas
+- NÃºmero da OS
+- Status atual (Aguardando, Em Andamento, ConcluÃ­do)
+- Cliente e veÃ­culo
+- ServiÃ§os realizados/pendentes
+- PeÃ§as utilizadas
 - Valor total
-- Data de entrada/previsão de conclusão
-- Mecânico responsável
+- Data de entrada/previsÃ£o de conclusÃ£o
+- MecÃ¢nico responsÃ¡vel
 
-**Código Responsável:**
-- `ofix-backend/src/routes/agno.routes.js` - Função `processarConsultaOS()`
+**CÃ³digo ResponsÃ¡vel:**
+- `ofix-backend/src/routes/agno.routes.js` - FunÃ§Ã£o `processarConsultaOS()`
 - `ofix-backend/src/services/consultasOS.service.js`
 
 ---
 
-### 3. 📦 CONSULTA DE ESTOQUE/PEÇAS
+### 3. ðŸ“¦ CONSULTA DE ESTOQUE/PEÃ‡AS
 
-**Status:** ✅ Totalmente Funcional
+**Status:** âœ… Totalmente Funcional
 
 **Capacidades:**
-- Verificar disponibilidade de peças
-- Buscar peças por nome ou código
+- Verificar disponibilidade de peÃ§as
+- Buscar peÃ§as por nome ou cÃ³digo
 - Informar quantidade em estoque
-- Sugerir peças alternativas
-- Alertar sobre peças em falta
+- Sugerir peÃ§as alternativas
+- Alertar sobre peÃ§as em falta
 
 **Exemplos de Uso:**
 ```
-✅ "Tem filtro de óleo disponível?"
-✅ "Verificar estoque de pastilhas de freio"
-✅ "Peças para revisão do Corolla"
-✅ "Quanto tem de óleo 5W30?"
-✅ "Preciso de bateria 60A"
+âœ… "Tem filtro de Ã³leo disponÃ­vel?"
+âœ… "Verificar estoque de pastilhas de freio"
+âœ… "PeÃ§as para revisÃ£o do Corolla"
+âœ… "Quanto tem de Ã³leo 5W30?"
+âœ… "Preciso de bateria 60A"
 ```
 
-**Informações Fornecidas:**
-- Nome da peça
-- Código/referência
-- Quantidade disponível
-- Preço unitário
-- Localização no estoque
-- Aplicação/compatibilidade
+**InformaÃ§Ãµes Fornecidas:**
+- Nome da peÃ§a
+- CÃ³digo/referÃªncia
+- Quantidade disponÃ­vel
+- PreÃ§o unitÃ¡rio
+- LocalizaÃ§Ã£o no estoque
+- AplicaÃ§Ã£o/compatibilidade
 
-**Código Responsável:**
-- `ofix-backend/src/routes/agno.routes.js` - Função `processarConsultaEstoque()`
+**CÃ³digo ResponsÃ¡vel:**
+- `ofix-backend/src/routes/agno.routes.js` - FunÃ§Ã£o `processarConsultaEstoque()`
 
 ---
 
-### 4. 👥 GERENCIAMENTO DE CLIENTES
+### 4. ðŸ‘¥ GERENCIAMENTO DE CLIENTES
 
-**Status:** ✅ Totalmente Funcional
+**Status:** âœ… Totalmente Funcional
 
 **Capacidades:**
 - Cadastrar novos clientes
 - Buscar clientes por nome, CPF ou telefone
 - Atualizar dados cadastrais
-- Listar veículos do cliente
-- Histórico de serviços
+- Listar veÃ­culos do cliente
+- HistÃ³rico de serviÃ§os
 
 **Exemplos de Uso:**
 
 **Cadastro:**
 ```
-✅ "Cadastrar cliente João Silva"
-✅ "Novo cliente: Nome: Maria Costa, Tel: (85) 99999-9999, CPF: 123.456.789-00"
-✅ "Adicionar cliente Pedro Santos, telefone 85988887777"
+âœ… "Cadastrar cliente JoÃ£o Silva"
+âœ… "Novo cliente: Nome: Maria Costa, Tel: (85) 99999-9999, CPF: 123.456.789-00"
+âœ… "Adicionar cliente Pedro Santos, telefone 85988887777"
 ```
 
 **Consulta:**
 ```
-✅ "Dados do cliente João"
-✅ "Telefone da Maria"
-✅ "Buscar cliente CPF 123.456.789-00"
-✅ "Clientes cadastrados hoje"
+âœ… "Dados do cliente JoÃ£o"
+âœ… "Telefone da Maria"
+âœ… "Buscar cliente CPF 123.456.789-00"
+âœ… "Clientes cadastrados hoje"
 ```
 
 **Dados do Cliente:**
@@ -293,258 +293,258 @@ Hosting: Render (matias-agno-assistant.onrender.com)
 - CPF/CNPJ
 - Telefone(s)
 - Email
-- Endereço
-- Veículos vinculados
-- Histórico de serviços
+- EndereÃ§o
+- VeÃ­culos vinculados
+- HistÃ³rico de serviÃ§os
 - Valor total gasto
 
-**Código Responsável:**
-- `ofix-backend/src/routes/agno.routes.js` - Funções `processarConsultaCliente()` e `processarCadastroCliente()`
-- `ofix-backend/src/services/nlp.service.js` - Função `extrairDadosCliente()`
+**CÃ³digo ResponsÃ¡vel:**
+- `ofix-backend/src/routes/agno.routes.js` - FunÃ§Ãµes `processarConsultaCliente()` e `processarCadastroCliente()`
+- `ofix-backend/src/services/nlp.service.js` - FunÃ§Ã£o `extrairDadosCliente()`
 
 ---
 
-### 5. 💰 CONSULTA DE PREÇOS E ORÇAMENTOS
+### 5. ðŸ’° CONSULTA DE PREÃ‡OS E ORÃ‡AMENTOS
 
-**Status:** ✅ Funcional (com Agno AI)
+**Status:** âœ… Funcional (com Agno AI)
 
 **Capacidades:**
-- Fornecer preços estimados de serviços
-- Calcular orçamentos completos
-- Explicar composição de valores (mão de obra + peças)
-- Comparar preços entre modelos
+- Fornecer preÃ§os estimados de serviÃ§os
+- Calcular orÃ§amentos completos
+- Explicar composiÃ§Ã£o de valores (mÃ£o de obra + peÃ§as)
+- Comparar preÃ§os entre modelos
 - Sugerir pacotes/combos
 
 **Exemplos de Uso:**
 ```
-✅ "Quanto custa uma revisão?"
-✅ "Preço de troca de óleo para o Gol"
-✅ "Orçamento completo para alinhamento e balanceamento"
-✅ "Valor da manutenção de 10 mil km do Civic"
+âœ… "Quanto custa uma revisÃ£o?"
+âœ… "PreÃ§o de troca de Ã³leo para o Gol"
+âœ… "OrÃ§amento completo para alinhamento e balanceamento"
+âœ… "Valor da manutenÃ§Ã£o de 10 mil km do Civic"
 ```
 
 **Processamento:**
 - **Primeira tentativa:** Agno AI (resposta detalhada com contexto)
-- **Fallback:** Resposta local com valores genéricos
+- **Fallback:** Resposta local com valores genÃ©ricos
 - **Timeout:** 45s primeira tentativa, 30s retry
 
-**Código Responsável:**
-- `ofix-backend/src/routes/agno.routes.js` - Integração com Agno
-- Agno AI processa com base de conhecimento de preços
+**CÃ³digo ResponsÃ¡vel:**
+- `ofix-backend/src/routes/agno.routes.js` - IntegraÃ§Ã£o com Agno
+- Agno AI processa com base de conhecimento de preÃ§os
 
 ---
 
-### 6. 📊 ESTATÍSTICAS E RELATÓRIOS
+### 6. ðŸ“Š ESTATÃSTICAS E RELATÃ“RIOS
 
-**Status:** ✅ Totalmente Funcional
+**Status:** âœ… Totalmente Funcional
 
 **Capacidades:**
-- Resumo diário/semanal/mensal
+- Resumo diÃ¡rio/semanal/mensal
 - Quantidade de atendimentos
 - Faturamento total
-- Serviços mais realizados
+- ServiÃ§os mais realizados
 - Clientes mais frequentes
-- Peças mais usadas
-- Taxa de conclusão de OS
+- PeÃ§as mais usadas
+- Taxa de conclusÃ£o de OS
 
 **Exemplos de Uso:**
 ```
-✅ "Quantos carros atendemos hoje?"
-✅ "Resumo do mês"
-✅ "Faturamento da semana"
-✅ "Estatísticas da oficina"
-✅ "Serviços mais realizados no mês"
+âœ… "Quantos carros atendemos hoje?"
+âœ… "Resumo do mÃªs"
+âœ… "Faturamento da semana"
+âœ… "EstatÃ­sticas da oficina"
+âœ… "ServiÃ§os mais realizados no mÃªs"
 ```
 
-**Métricas Disponíveis:**
-- Total de OS (abertas/concluídas/em andamento)
+**MÃ©tricas DisponÃ­veis:**
+- Total de OS (abertas/concluÃ­das/em andamento)
 - Valor total faturado
-- Ticket médio por OS
-- Tempo médio de atendimento
+- Ticket mÃ©dio por OS
+- Tempo mÃ©dio de atendimento
 - Taxa de retorno de clientes
-- Satisfação (quando disponível)
+- SatisfaÃ§Ã£o (quando disponÃ­vel)
 
-**Código Responsável:**
-- `ofix-backend/src/routes/agno.routes.js` - Função `processarEstatisticas()`
+**CÃ³digo ResponsÃ¡vel:**
+- `ofix-backend/src/routes/agno.routes.js` - FunÃ§Ã£o `processarEstatisticas()`
 
 ---
 
-### 7. 🆘 AJUDA E ORIENTAÇÃO
+### 7. ðŸ†˜ AJUDA E ORIENTAÃ‡ÃƒO
 
-**Status:** ✅ Totalmente Funcional
+**Status:** âœ… Totalmente Funcional
 
 **Capacidades:**
-- Listar comandos disponíveis
+- Listar comandos disponÃ­veis
 - Explicar como usar cada funcionalidade
-- Dar exemplos práticos
-- Orientar sobre melhores práticas
+- Dar exemplos prÃ¡ticos
+- Orientar sobre melhores prÃ¡ticas
 
 **Exemplos de Uso:**
 ```
-✅ "Ajuda"
-✅ "O que você pode fazer?"
-✅ "Como funciona?"
-✅ "Comandos disponíveis"
-✅ "Menu"
+âœ… "Ajuda"
+âœ… "O que vocÃª pode fazer?"
+âœ… "Como funciona?"
+âœ… "Comandos disponÃ­veis"
+âœ… "Menu"
 ```
 
-**Resposta Padrão:**
+**Resposta PadrÃ£o:**
 ```markdown
-🤖 **Assistente Matias - Como posso ajudar:**
+ðŸ¤– **Assistente Matias - Como posso ajudar:**
 
-**📅 AGENDAMENTOS**
-• "Agendar revisão para o Gol do João na segunda às 14h"
-• "Marcar troca de óleo para terça 16h"
+**ðŸ“… AGENDAMENTOS**
+â€¢ "Agendar revisÃ£o para o Gol do JoÃ£o na segunda Ã s 14h"
+â€¢ "Marcar troca de Ã³leo para terÃ§a 16h"
 
-**🔍 CONSULTAR SERVIÇOS**
-• "Status da OS do Gol placa ABC-1234"
-• "Ordens de serviço do João"
+**ðŸ” CONSULTAR SERVIÃ‡OS**
+â€¢ "Status da OS do Gol placa ABC-1234"
+â€¢ "Ordens de serviÃ§o do JoÃ£o"
 
-**📦 CONSULTAR ESTOQUE**
-• "Tem filtro de óleo disponível?"
-• "Verificar estoque de pastilhas de freio"
+**ðŸ“¦ CONSULTAR ESTOQUE**
+â€¢ "Tem filtro de Ã³leo disponÃ­vel?"
+â€¢ "Verificar estoque de pastilhas de freio"
 
-**📊 ESTATÍSTICAS**
-• "Quantos carros atendemos hoje?"
-• "Resumo do mês"
+**ðŸ“Š ESTATÃSTICAS**
+â€¢ "Quantos carros atendemos hoje?"
+â€¢ "Resumo do mÃªs"
 
-**👤 CLIENTES**
-• "Dados do cliente João"
-• "Cadastrar novo cliente"
+**ðŸ‘¤ CLIENTES**
+â€¢ "Dados do cliente JoÃ£o"
+â€¢ "Cadastrar novo cliente"
 
-💡 **Dica:** Quanto mais detalhes você fornecer, melhor consigo ajudar!
+ðŸ’¡ **Dica:** Quanto mais detalhes vocÃª fornecer, melhor consigo ajudar!
 ```
 
-**Código Responsável:**
-- `ofix-backend/src/services/nlp.service.js` - Função `gerarMensagemAjuda()`
+**CÃ³digo ResponsÃ¡vel:**
+- `ofix-backend/src/services/nlp.service.js` - FunÃ§Ã£o `gerarMensagemAjuda()`
 
 ---
 
-### 8. 💬 CONVERSA GERAL E DIAGNÓSTICOS
+### 8. ðŸ’¬ CONVERSA GERAL E DIAGNÃ“STICOS
 
-**Status:** ✅ Funcional (via Agno AI)
+**Status:** âœ… Funcional (via Agno AI)
 
 **Capacidades:**
 - Responder perguntas conversacionais
-- Fornecer diagnósticos automotivos
-- Explicar procedimentos técnicos
-- Recomendar manutenções preventivas
+- Fornecer diagnÃ³sticos automotivos
+- Explicar procedimentos tÃ©cnicos
+- Recomendar manutenÃ§Ãµes preventivas
 - Identificar problemas por sintomas
 
 **Exemplos de Uso:**
 ```
-✅ "Olá, como você está?"
-✅ "Meu carro está fazendo um barulho estranho"
-✅ "Quando devo trocar o óleo?"
-✅ "O que é alinhamento e balanceamento?"
-✅ "Luz do motor acendeu, o que pode ser?"
+âœ… "OlÃ¡, como vocÃª estÃ¡?"
+âœ… "Meu carro estÃ¡ fazendo um barulho estranho"
+âœ… "Quando devo trocar o Ã³leo?"
+âœ… "O que Ã© alinhamento e balanceamento?"
+âœ… "Luz do motor acendeu, o que pode ser?"
 ```
 
 **Base de Conhecimento (Agno AI):**
-- **Diagnósticos:** Sintomas → Possíveis causas → Soluções
-- **Manutenção Preventiva:** Intervalos e procedimentos
-- **Peças Automotivas:** Função, vida útil, compatibilidade
-- **Procedimentos Técnicos:** Passo a passo detalhado
-- **Troubleshooting:** Problemas comuns e resoluções
+- **DiagnÃ³sticos:** Sintomas â†’ PossÃ­veis causas â†’ SoluÃ§Ãµes
+- **ManutenÃ§Ã£o Preventiva:** Intervalos e procedimentos
+- **PeÃ§as Automotivas:** FunÃ§Ã£o, vida Ãºtil, compatibilidade
+- **Procedimentos TÃ©cnicos:** Passo a passo detalhado
+- **Troubleshooting:** Problemas comuns e resoluÃ§Ãµes
 
-**Código Responsável:**
-- `ofix-backend/src/routes/agno.routes.js` - Função `processarConversaGeral()`
+**CÃ³digo ResponsÃ¡vel:**
+- `ofix-backend/src/routes/agno.routes.js` - FunÃ§Ã£o `processarConversaGeral()`
 - Agno AI com LLaMA 3.1 70B e base de conhecimento especializada
 
 ---
 
-## 🧠 CAPACIDADES DE PROCESSAMENTO
+## ðŸ§  CAPACIDADES DE PROCESSAMENTO
 
 ### Sistema de NLP (Processamento de Linguagem Natural)
 
-#### Detecção de Intenções
+#### DetecÃ§Ã£o de IntenÃ§Ãµes
 
-O Matias utiliza um sistema híbrido de detecção de intenções:
+O Matias utiliza um sistema hÃ­brido de detecÃ§Ã£o de intenÃ§Ãµes:
 
-1. **NLP Frontend** (opcional): Cliente pode enviar intenção pré-detectada
-2. **NLP Backend** (sempre ativo): Validação e detecção de fallback
-3. **Contexto Ativo** (prioritário): Mantém contexto de conversas multi-etapa
+1. **NLP Frontend** (opcional): Cliente pode enviar intenÃ§Ã£o prÃ©-detectada
+2. **NLP Backend** (sempre ativo): ValidaÃ§Ã£o e detecÃ§Ã£o de fallback
+3. **Contexto Ativo** (prioritÃ¡rio): MantÃ©m contexto de conversas multi-etapa
 
-**Intenções Reconhecidas:**
-- `AGENDAMENTO` - Marcação de serviços
-- `CONSULTA_OS` - Status de ordens de serviço
-- `CONSULTA_ESTOQUE` - Disponibilidade de peças
+**IntenÃ§Ãµes Reconhecidas:**
+- `AGENDAMENTO` - MarcaÃ§Ã£o de serviÃ§os
+- `CONSULTA_OS` - Status de ordens de serviÃ§o
+- `CONSULTA_ESTOQUE` - Disponibilidade de peÃ§as
 - `CONSULTA_CLIENTE` - Dados cadastrais
 - `CADASTRAR_CLIENTE` - Novo registro
-- `CONSULTA_PRECO` - Orçamentos e valores
-- `ESTATISTICAS` - Relatórios e métricas
-- `AJUDA` - Orientação e comandos
-- `CONVERSA_GERAL` - Diálogo livre e diagnósticos
+- `CONSULTA_PRECO` - OrÃ§amentos e valores
+- `ESTATISTICAS` - RelatÃ³rios e mÃ©tricas
+- `AJUDA` - OrientaÃ§Ã£o e comandos
+- `CONVERSA_GERAL` - DiÃ¡logo livre e diagnÃ³sticos
 
-**Algoritmo de Detecção:**
+**Algoritmo de DetecÃ§Ã£o:**
 ```javascript
-// Padrões Regex para cada intenção
+// PadrÃµes Regex para cada intenÃ§Ã£o
 const padroes = {
     AJUDA: /\b(ajuda|help|o que pode|como funciona|comandos|menu)\b/i,
-    AGENDAMENTO: /\b(agendar|marcar|reservar|horário|data|revisão)\b/i,
-    CONSULTA_OS: /\b(ordem|serviço|os|status|andamento|pronto)\b/i,
-    CONSULTA_ESTOQUE: /\b(peça|estoque|disponível|filtro|óleo|pneu)\b/i,
-    ESTATISTICAS: /\b(quantos|total|relatório|resumo|estatística)\b/i,
+    AGENDAMENTO: /\b(agendar|marcar|reservar|horÃ¡rio|data|revisÃ£o)\b/i,
+    CONSULTA_OS: /\b(ordem|serviÃ§o|os|status|andamento|pronto)\b/i,
+    CONSULTA_ESTOQUE: /\b(peÃ§a|estoque|disponÃ­vel|filtro|Ã³leo|pneu)\b/i,
+    ESTATISTICAS: /\b(quantos|total|relatÃ³rio|resumo|estatÃ­stica)\b/i,
     CADASTRAR_CLIENTE: /\b(cadastrar|novo cliente|adicionar cliente)\b/i,
     CONSULTA_CLIENTE: /\b(cliente|telefone|cpf|dados do cliente)\b/i
 };
 
-// Priorização: Contexto Ativo > Frontend NLP > Backend NLP
+// PriorizaÃ§Ã£o: Contexto Ativo > Frontend NLP > Backend NLP
 ```
 
-#### Extração de Entidades
+#### ExtraÃ§Ã£o de Entidades
 
-**Técnicas Utilizadas:**
+**TÃ©cnicas Utilizadas:**
 - **Regex Patterns:** Para dados estruturados (datas, horas, placas, CPF)
-- **Dicionários:** Para dias da semana, modelos de veículos, tipos de serviço
-- **Análise Contextual:** "do João", "para o Gol", "na segunda"
-- **Validação:** Verifica consistência e valores válidos
+- **DicionÃ¡rios:** Para dias da semana, modelos de veÃ­culos, tipos de serviÃ§o
+- **AnÃ¡lise Contextual:** "do JoÃ£o", "para o Gol", "na segunda"
+- **ValidaÃ§Ã£o:** Verifica consistÃªncia e valores vÃ¡lidos
 
 **Entidades Suportadas:**
 
 | Entidade | Formatos Aceitos | Exemplos |
 |----------|------------------|----------|
-| **Nome Cliente** | "do João", "cliente Maria", "Nome: Pedro" | João Silva, Maria Costa |
-| **Veículo** | Modelos comuns brasileiros | Gol, Civic, Corolla, HB20 |
+| **Nome Cliente** | "do JoÃ£o", "cliente Maria", "Nome: Pedro" | JoÃ£o Silva, Maria Costa |
+| **VeÃ­culo** | Modelos comuns brasileiros | Gol, Civic, Corolla, HB20 |
 | **Placa** | ABC-1234 ou ABC1234 | ABC-1234, XYZ-9876 |
 | **Data** | Dia semana ou DD/MM/YYYY | segunda, 15/11/2025 |
-| **Hora** | 14h, 14:00, às 14 | 14:00, 16h, 10:30 |
-| **Serviço** | Manutenções comuns | revisão, troca de óleo, alinhamento |
-| **CPF/CNPJ** | Com ou sem formatação | 123.456.789-00, 12345678900 |
-| **Telefone** | Vários formatos | (85) 99999-9999, 85988887777 |
-| **Email** | Padrão RFC | joao@email.com |
+| **Hora** | 14h, 14:00, Ã s 14 | 14:00, 16h, 10:30 |
+| **ServiÃ§o** | ManutenÃ§Ãµes comuns | revisÃ£o, troca de Ã³leo, alinhamento |
+| **CPF/CNPJ** | Com ou sem formataÃ§Ã£o | 123.456.789-00, 12345678900 |
+| **Telefone** | VÃ¡rios formatos | (85) 99999-9999, 85988887777 |
+| **Email** | PadrÃ£o RFC | joao@email.com |
 
-**Exemplo de Extração:**
+**Exemplo de ExtraÃ§Ã£o:**
 ```
-Entrada: "Agendar revisão para o Gol do João na segunda às 14h"
+Entrada: "Agendar revisÃ£o para o Gol do JoÃ£o na segunda Ã s 14h"
 
-Entidades Extraídas:
+Entidades ExtraÃ­das:
 {
-  cliente: "João",
+  cliente: "JoÃ£o",
   veiculo: "Gol",
   diaSemana: 1,
   diaTexto: "segunda",
   hora: "14:00",
   horaTexto: "14h",
-  servico: "revisão"
+  servico: "revisÃ£o"
 }
 ```
 
 ---
 
-## 🔗 INTEGRAÇÃO COM AGNO AI
+## ðŸ”— INTEGRAÃ‡ÃƒO COM AGNO AI
 
-### Visão Geral
+### VisÃ£o Geral
 
-O Matias utiliza o **Agno AI** como cérebro avançado para:
-- Conversação natural complexa
-- Diagnósticos técnicos automotivos
-- Consultas de preço contextualizadas
-- Recomendações personalizadas
+O Matias utiliza o **Agno AI** como cÃ©rebro avanÃ§ado para:
+- ConversaÃ§Ã£o natural complexa
+- DiagnÃ³sticos tÃ©cnicos automotivos
+- Consultas de preÃ§o contextualizadas
+- RecomendaÃ§Ãµes personalizadas
 
-### Configuração
+### ConfiguraÃ§Ã£o
 
-**Variáveis de Ambiente:**
+**VariÃ¡veis de Ambiente:**
 ```bash
 # Backend (.env)
 AGNO_API_URL=https://matias-agno-assistant.onrender.com
@@ -552,7 +552,7 @@ AGNO_API_TOKEN=<token_opcional>
 AGNO_DEFAULT_AGENT_ID=oficinaia
 ```
 
-**Verificação de Status:**
+**VerificaÃ§Ã£o de Status:**
 ```bash
 GET /api/agno/config
 
@@ -569,7 +569,7 @@ Response:
 
 ### Sistema de Retry e Timeout
 
-**Estratégia Implementada:**
+**EstratÃ©gia Implementada:**
 
 1. **Primeira Tentativa:**
    - Timeout: 45 segundos
@@ -578,14 +578,14 @@ Response:
 2. **Segunda Tentativa (Retry):**
    - Delay: 2 segundos
    - Timeout: 30 segundos
-   - Serviço já deve estar acordado
+   - ServiÃ§o jÃ¡ deve estar acordado
 
 3. **Fallback Local:**
    - Se ambas falharem
-   - Resposta genérica mas útil
-   - Mantém UX positivo
+   - Resposta genÃ©rica mas Ãºtil
+   - MantÃ©m UX positivo
 
-**Código de Retry:**
+**CÃ³digo de Retry:**
 ```javascript
 async function chamarAgnoAI(mensagem, usuario_id, intencao, nlp) {
     const maxTentativas = 2;
@@ -624,9 +624,9 @@ async function chamarAgnoAI(mensagem, usuario_id, intencao, nlp) {
 
 ### Sistema de Warming
 
-**Problema:** Render coloca serviços em sleep após 15 minutos de inatividade (free tier)
+**Problema:** Render coloca serviÃ§os em sleep apÃ³s 15 minutos de inatividade (free tier)
 
-**Solução:** Cache de warming com cooldown
+**SoluÃ§Ã£o:** Cache de warming com cooldown
 
 ```javascript
 const agnoWarmCache = new Map();
@@ -658,118 +658,118 @@ async function warmAgnoService() {
 POST /api/agno/warm
 
 # Uso recomendado: Cron job a cada 10 minutos
-*/10 * * * * curl -X POST https://ofix-backend-prod.onrender.com/api/agno/warm
+*/10 * * * * curl -X POST https://ofix-backend-r556.onrender.com/api/agno/warm
 ```
 
 ### Base de Conhecimento do Agno
 
 **Arquivos Markdown (.md):**
-- `diagnosticos_barulhos.md` - Barulhos metálicos, assobios, estalos
-- `diagnosticos_vibracao.md` - Vibrações no volante, pedal, carroceria
+- `diagnosticos_barulhos.md` - Barulhos metÃ¡licos, assobios, estalos
+- `diagnosticos_vibracao.md` - VibraÃ§Ãµes no volante, pedal, carroceria
 - `manutencao_preventiva.md` - Intervalos e procedimentos por km
-- `pecas_comuns.md` - Função, vida útil, compatibilidade
+- `pecas_comuns.md` - FunÃ§Ã£o, vida Ãºtil, compatibilidade
 - `procedimentos_tecnicos.md` - Passo a passo de reparos
 
 **Embeddings:**
 - Modelo: OpenAI text-embedding-3-small
-- Dimensões: 1536
+- DimensÃµes: 1536
 - Storage: LanceDB (vector database)
 
 **Retrieval:**
 - Top-k: 5 documentos mais relevantes
 - Threshold: 0.7 similaridade
-- Reranking: Por relevância contextual
+- Reranking: Por relevÃ¢ncia contextual
 
 ---
 
-## 🎭 FLUXOS DE CONVERSAÇÃO
+## ðŸŽ­ FLUXOS DE CONVERSAÃ‡ÃƒO
 
-### 1. Fluxo Simples (Pergunta → Resposta)
+### 1. Fluxo Simples (Pergunta â†’ Resposta)
 
 ```
-Usuário: "Tem filtro de óleo disponível?"
-   ↓
+UsuÃ¡rio: "Tem filtro de Ã³leo disponÃ­vel?"
+   â†“
 NLP: Detecta CONSULTA_ESTOQUE
-   ↓
+   â†“
 Backend: processarConsultaEstoque()
-   ↓
-Database: SELECT * FROM pecas WHERE nome LIKE '%filtro óleo%'
-   ↓
-Resposta: "✅ Sim! Temos 5 filtros de óleo em estoque..."
+   â†“
+Database: SELECT * FROM pecas WHERE nome LIKE '%filtro Ã³leo%'
+   â†“
+Resposta: "âœ… Sim! Temos 5 filtros de Ã³leo em estoque..."
 ```
 
 ### 2. Fluxo Multi-etapa (Contexto Ativo)
 
 ```
-Usuário: "Buscar cliente João"
-   ↓
+UsuÃ¡rio: "Buscar cliente JoÃ£o"
+   â†“
 NLP: Detecta CONSULTA_CLIENTE
-   ↓
-Backend: Busca clientes com "João" → Encontra 3 resultados
-   ↓
+   â†“
+Backend: Busca clientes com "JoÃ£o" â†’ Encontra 3 resultados
+   â†“
 Resposta: Lista 3 clientes + contexto_ativo: 'buscar_cliente'
-   ↓
-Usuário: "2" (seleciona o segundo)
-   ↓
-Backend: Usa contexto para saber que é seleção de cliente
-   ↓
+   â†“
+UsuÃ¡rio: "2" (seleciona o segundo)
+   â†“
+Backend: Usa contexto para saber que Ã© seleÃ§Ã£o de cliente
+   â†“
 Resposta: Dados completos do cliente selecionado
 ```
 
 ### 3. Fluxo com Agno AI
 
 ```
-Usuário: "Meu carro está fazendo um barulho estranho no motor"
-   ↓
-NLP: Detecta CONVERSA_GERAL (não é intenção específica)
-   ↓
-Backend: processarConversaGeral() → chama Agno AI
-   ↓
+UsuÃ¡rio: "Meu carro estÃ¡ fazendo um barulho estranho no motor"
+   â†“
+NLP: Detecta CONVERSA_GERAL (nÃ£o Ã© intenÃ§Ã£o especÃ­fica)
+   â†“
+Backend: processarConversaGeral() â†’ chama Agno AI
+   â†“
 Agno: 
   1. Busca knowledge base (diagnosticos_barulhos.md)
   2. LLM processa contexto + conhecimento
-  3. Gera resposta técnica personalizada
-   ↓
-Backend: Recebe resposta + salva histórico
-   ↓
+  3. Gera resposta tÃ©cnica personalizada
+   â†“
+Backend: Recebe resposta + salva histÃ³rico
+   â†“
 Resposta: "Barulhos no motor podem indicar..."
 ```
 
-### 4. Fluxo com Validação e Ambiguidade
+### 4. Fluxo com ValidaÃ§Ã£o e Ambiguidade
 
 ```
-Usuário: "Agendar revisão segunda 14h"
-   ↓
+UsuÃ¡rio: "Agendar revisÃ£o segunda 14h"
+   â†“
 NLP: Detecta AGENDAMENTO + Extrai entidades
-   ↓
-Validação: Falta cliente e veículo
-   ↓
-Resposta: "Para agendar, preciso saber: Qual cliente? Qual veículo?"
-   ↓
-Usuário: "João, Gol"
-   ↓
-Backend: Busca "João" → Encontra 2 clientes
-   ↓
+   â†“
+ValidaÃ§Ã£o: Falta cliente e veÃ­culo
+   â†“
+Resposta: "Para agendar, preciso saber: Qual cliente? Qual veÃ­culo?"
+   â†“
+UsuÃ¡rio: "JoÃ£o, Gol"
+   â†“
+Backend: Busca "JoÃ£o" â†’ Encontra 2 clientes
+   â†“
 Resposta: Lista clientes + contexto_ativo: 'agendamento_pendente'
-   ↓
-Usuário: "1"
-   ↓
+   â†“
+UsuÃ¡rio: "1"
+   â†“
 Backend: Cria agendamento com todos os dados
-   ↓
-Resposta: "✅ Agendamento confirmado! João Silva - Gol - Segunda 14:00"
+   â†“
+Resposta: "âœ… Agendamento confirmado! JoÃ£o Silva - Gol - Segunda 14:00"
 ```
 
 ---
 
-## 📡 ENDPOINTS DA API
+## ðŸ“¡ ENDPOINTS DA API
 
 ### Base URL
 ```
-Produção: https://ofix-backend-prod.onrender.com/api/agno
+ProduÃ§Ã£o: https://ofix-backend-r556.onrender.com/api/agno
 Desenvolvimento: http://localhost:3001/api/agno
 ```
 
-### Autenticação
+### AutenticaÃ§Ã£o
 ```
 Header: Authorization: Bearer <JWT_TOKEN>
 Obtido via: POST /api/auth/login
@@ -781,7 +781,7 @@ Obtido via: POST /api/auth/login
 
 **Endpoint:** `POST /api/agno/chat`
 
-**Descrição:** Endpoint principal para interação com o Matias
+**DescriÃ§Ã£o:** Endpoint principal para interaÃ§Ã£o com o Matias
 
 **Headers:**
 ```json
@@ -794,17 +794,17 @@ Obtido via: POST /api/auth/login
 **Body:**
 ```json
 {
-  "message": "Agendar revisão para o Gol do João na segunda às 14h",
+  "message": "Agendar revisÃ£o para o Gol do JoÃ£o na segunda Ã s 14h",
   "usuario_id": "uuid-do-usuario",
   "nlp": {
     "intencao": "agendamento",
     "confianca": 0.95,
     "entidades": {
-      "cliente": "João",
+      "cliente": "JoÃ£o",
       "veiculo": "Gol",
       "dia": "segunda",
       "hora": "14h",
-      "servico": "revisão"
+      "servico": "revisÃ£o"
     }
   },
   "contexto_ativo": null,
@@ -816,7 +816,7 @@ Obtido via: POST /api/auth/login
 ```json
 {
   "success": true,
-  "response": "✅ Agendamento confirmado!\n\n📋 **Detalhes:**\n• Cliente: João Silva\n• Veículo: Gol - ABC-1234\n• Data: Segunda, 13/11/2025\n• Hora: 14:00\n• Serviço: Revisão completa\n\n🔔 **Lembrete:** Chegue 10 minutos antes.",
+  "response": "âœ… Agendamento confirmado!\n\nðŸ“‹ **Detalhes:**\nâ€¢ Cliente: JoÃ£o Silva\nâ€¢ VeÃ­culo: Gol - ABC-1234\nâ€¢ Data: Segunda, 13/11/2025\nâ€¢ Hora: 14:00\nâ€¢ ServiÃ§o: RevisÃ£o completa\n\nðŸ”” **Lembrete:** Chegue 10 minutos antes.",
   "tipo": "agendamento",
   "agendamento_criado": {
     "id": 123,
@@ -838,23 +838,23 @@ Obtido via: POST /api/auth/login
 {
   "success": false,
   "error": "Dados insuficientes para agendamento",
-  "faltando": ["cliente", "veículo"],
-  "response": "Para agendar, preciso saber:\n• Nome do cliente\n• Modelo do veículo"
+  "faltando": ["cliente", "veÃ­culo"],
+  "response": "Para agendar, preciso saber:\nâ€¢ Nome do cliente\nâ€¢ Modelo do veÃ­culo"
 }
 ```
 
 ---
 
-### 2. Histórico de Conversas
+### 2. HistÃ³rico de Conversas
 
 **Endpoint:** `GET /api/agno/historico-conversa`
 
-**Descrição:** Recupera histórico de conversas do usuário
+**DescriÃ§Ã£o:** Recupera histÃ³rico de conversas do usuÃ¡rio
 
 **Query Parameters:**
 ```
-?limite=50        # Quantidade de mensagens (padrão: 50)
-&offset=0         # Paginação (padrão: 0)
+?limite=50        # Quantidade de mensagens (padrÃ£o: 50)
+&offset=0         # PaginaÃ§Ã£o (padrÃ£o: 0)
 ```
 
 **Response:**
@@ -866,14 +866,14 @@ Obtido via: POST /api/auth/login
       "id": 1,
       "tipo": "user",
       "tipo_remetente": "user",
-      "conteudo": "Agendar revisão para segunda 14h",
+      "conteudo": "Agendar revisÃ£o para segunda 14h",
       "timestamp": "2025-11-08T10:00:00.000Z"
     },
     {
       "id": 2,
       "tipo": "matias",
       "tipo_remetente": "matias",
-      "conteudo": "✅ Agendamento confirmado!...",
+      "conteudo": "âœ… Agendamento confirmado!...",
       "timestamp": "2025-11-08T10:00:05.000Z"
     }
   ],
@@ -885,11 +885,11 @@ Obtido via: POST /api/auth/login
 
 ---
 
-### 3. Configuração do Agno
+### 3. ConfiguraÃ§Ã£o do Agno
 
 **Endpoint:** `GET /api/agno/config`
 
-**Descrição:** Verifica status e configuração do Agno AI (público, sem auth)
+**DescriÃ§Ã£o:** Verifica status e configuraÃ§Ã£o do Agno AI (pÃºblico, sem auth)
 
 **Response:**
 ```json
@@ -907,11 +907,11 @@ Obtido via: POST /api/auth/login
 
 ---
 
-### 4. Aquecer Serviço Agno
+### 4. Aquecer ServiÃ§o Agno
 
 **Endpoint:** `POST /api/agno/warm`
 
-**Descrição:** Acorda o serviço Agno AI (útil para cron jobs)
+**DescriÃ§Ã£o:** Acorda o serviÃ§o Agno AI (Ãºtil para cron jobs)
 
 **Response:**
 ```json
@@ -920,18 +920,18 @@ Obtido via: POST /api/auth/login
   "warmed": true,
   "agno_url": "https://matias-agno-assistant.onrender.com",
   "response_time": 1523,
-  "message": "Serviço Agno aquecido com sucesso",
+  "message": "ServiÃ§o Agno aquecido com sucesso",
   "timestamp": "2025-11-08T12:00:00.000Z"
 }
 ```
 
 ---
 
-### 5. Listar Agentes Disponíveis
+### 5. Listar Agentes DisponÃ­veis
 
 **Endpoint:** `GET /api/agno/agents`
 
-**Descrição:** Lista agentes Agno disponíveis
+**DescriÃ§Ã£o:** Lista agentes Agno disponÃ­veis
 
 **Response:**
 ```json
@@ -941,7 +941,7 @@ Obtido via: POST /api/auth/login
     {
       "id": "oficinaia",
       "name": "Matias - Assistente Oficina",
-      "description": "Especialista em diagnósticos automotivos e gestão de oficina",
+      "description": "Especialista em diagnÃ³sticos automotivos e gestÃ£o de oficina",
       "status": "active",
       "model": "groq/llama-3.1-70b-versatile",
       "knowledge_base_size": 25,
@@ -957,12 +957,12 @@ Obtido via: POST /api/auth/login
 
 **Endpoint:** `POST /api/agno/chat-agent`
 
-**Descrição:** Chama Agno AI diretamente, sem processamento local
+**DescriÃ§Ã£o:** Chama Agno AI diretamente, sem processamento local
 
 **Body:**
 ```json
 {
-  "message": "O que é alinhamento?",
+  "message": "O que Ã© alinhamento?",
   "agent_id": "oficinaia",
   "session_id": "optional-session-id"
 }
@@ -972,7 +972,7 @@ Obtido via: POST /api/auth/login
 ```json
 {
   "success": true,
-  "response": "Alinhamento é o ajuste dos ângulos das rodas...",
+  "response": "Alinhamento Ã© o ajuste dos Ã¢ngulos das rodas...",
   "session_id": "session-uuid",
   "metadata": {
     "agent_id": "oficinaia",
@@ -990,7 +990,7 @@ Obtido via: POST /api/auth/login
 
 **Endpoint:** `POST /api/agno/chat-debug`
 
-**Descrição:** Testa Agno com parâmetros customizados
+**DescriÃ§Ã£o:** Testa Agno com parÃ¢metros customizados
 
 **Body:**
 ```json
@@ -1007,103 +1007,103 @@ Obtido via: POST /api/auth/login
 
 ---
 
-## 📚 BASES DE CONHECIMENTO
+## ðŸ“š BASES DE CONHECIMENTO
 
 ### Documentos no Agno AI
 
 #### 1. diagnosticos_barulhos.md
-**Conteúdo:**
-- Barulhos metálicos (crítico)
-- Assobios e chiados (médio)
+**ConteÃºdo:**
+- Barulhos metÃ¡licos (crÃ­tico)
+- Assobios e chiados (mÃ©dio)
 - Estalos e rangidos
-- Relação: Sintoma → Causa → Solução
+- RelaÃ§Ã£o: Sintoma â†’ Causa â†’ SoluÃ§Ã£o
 
 **Exemplo:**
 ```markdown
-## Barulho Metálico no Motor
+## Barulho MetÃ¡lico no Motor
 
 **Sintomas:**
 - Som de metal batendo
-- Aumenta com aceleração
+- Aumenta com aceleraÃ§Ã£o
 - Pode ser intermitente
 
-**Causas Possíveis:**
-1. Folga em biela (crítico)
+**Causas PossÃ­veis:**
+1. Folga em biela (crÃ­tico)
 2. Tensor da correia frouxo
-3. Proteção solta
+3. ProteÃ§Ã£o solta
 
-**Diagnóstico:**
-- Verificar nível de óleo
+**DiagnÃ³stico:**
+- Verificar nÃ­vel de Ã³leo
 - Inspecionar correias
-- Teste de compressão
+- Teste de compressÃ£o
 
-**Solução:**
-- Biela: Retífica motor (urgente)
+**SoluÃ§Ã£o:**
+- Biela: RetÃ­fica motor (urgente)
 - Tensor: Substituir tensor
-- Proteção: Reaperto
+- ProteÃ§Ã£o: Reaperto
 ```
 
 #### 2. manutencao_preventiva.md
-**Conteúdo:**
+**ConteÃºdo:**
 - Intervalos por quilometragem
-- Checklist de revisões
-- Peças com vida útil
+- Checklist de revisÃµes
+- PeÃ§as com vida Ãºtil
 - Fluidos a trocar
 
-**Tabela de Manutenção:**
-| KM | Serviços |
+**Tabela de ManutenÃ§Ã£o:**
+| KM | ServiÃ§os |
 |----|----------|
-| 5.000 | Troca óleo + filtro óleo |
-| 10.000 | Óleo, filtros (óleo, ar, combustível), revisão geral |
-| 20.000 | Óleo, filtros, pastilhas freio, alinhamento |
-| 40.000 | Óleo, filtros, velas, correia dentada, fluido freio |
-| 60.000 | Revisão completa + suspensão |
+| 5.000 | Troca Ã³leo + filtro Ã³leo |
+| 10.000 | Ã“leo, filtros (Ã³leo, ar, combustÃ­vel), revisÃ£o geral |
+| 20.000 | Ã“leo, filtros, pastilhas freio, alinhamento |
+| 40.000 | Ã“leo, filtros, velas, correia dentada, fluido freio |
+| 60.000 | RevisÃ£o completa + suspensÃ£o |
 
 #### 3. pecas_comuns.md
-**Conteúdo:**
-- Função de cada peça
-- Vida útil média
+**ConteÃºdo:**
+- FunÃ§Ã£o de cada peÃ§a
+- Vida Ãºtil mÃ©dia
 - Sintomas de desgaste
 - Compatibilidade entre modelos
 
-**Exemplo - Filtro de Óleo:**
+**Exemplo - Filtro de Ã“leo:**
 ```markdown
-## Filtro de Óleo
+## Filtro de Ã“leo
 
-**Função:**
-Remove impurezas do óleo lubrificante do motor
+**FunÃ§Ã£o:**
+Remove impurezas do Ã³leo lubrificante do motor
 
-**Vida Útil:**
+**Vida Ãštil:**
 - Normal: 5.000 km ou 6 meses
 - Severo: 3.000 km ou 3 meses
 
-**Sintomas de Saturação:**
-- Pressão de óleo baixa
-- Luz de óleo acende
-- Ruídos no motor
+**Sintomas de SaturaÃ§Ã£o:**
+- PressÃ£o de Ã³leo baixa
+- Luz de Ã³leo acende
+- RuÃ­dos no motor
 
 **Tipos:**
-- Cartucho descartável (mais comum)
+- Cartucho descartÃ¡vel (mais comum)
 - Elemento (apenas elemento interno)
 
 **Compatibilidade:**
-- Verificar rosca e diâmetro
+- Verificar rosca e diÃ¢metro
 - Usar sempre original ou equivalente certificado
 ```
 
 #### 4. procedimentos_tecnicos.md
-**Conteúdo:**
+**ConteÃºdo:**
 - Passo a passo de reparos
-- Ferramentas necessárias
+- Ferramentas necessÃ¡rias
 - Tempo estimado
-- Nível de dificuldade
+- NÃ­vel de dificuldade
 
 #### 5. diagnosticos_vibracao.md
-**Conteúdo:**
-- Vibrações no volante
-- Trepidações no pedal de freio
-- Oscilações na carroceria
-- Testes de diagnóstico
+**ConteÃºdo:**
+- VibraÃ§Ãµes no volante
+- TrepidaÃ§Ãµes no pedal de freio
+- OscilaÃ§Ãµes na carroceria
+- Testes de diagnÃ³stico
 
 ---
 
@@ -1112,64 +1112,64 @@ Remove impurezas do óleo lubrificante do motor
 **Fluxo RAG (Retrieval Augmented Generation):**
 
 ```
-1. Usuário: "Meu carro tá fazendo um barulho no motor"
-   ↓
-2. Embedding: Converte texto em vetor (1536 dimensões)
-   ↓
+1. UsuÃ¡rio: "Meu carro tÃ¡ fazendo um barulho no motor"
+   â†“
+2. Embedding: Converte texto em vetor (1536 dimensÃµes)
+   â†“
 3. Vector Search: Busca top-5 documentos similares no LanceDB
-   ↓
+   â†“
 4. Retrieval: 
    - diagnosticos_barulhos.md (score: 0.92)
    - procedimentos_tecnicos.md (score: 0.78)
-   ↓
+   â†“
 5. Context Building: Monta prompt com documentos relevantes
-   ↓
+   â†“
 6. LLM Generation: LLaMA 3.1 70B gera resposta contextualizada
-   ↓
+   â†“
 7. Response: "Com base nos sintomas, pode ser..."
 ```
 
 **Vantagens:**
-- ✅ Respostas baseadas em conhecimento real
-- ✅ Reduz alucinações do LLM
-- ✅ Atualização fácil (basta adicionar .md)
-- ✅ Rastreabilidade (sabe de onde veio info)
+- âœ… Respostas baseadas em conhecimento real
+- âœ… Reduz alucinaÃ§Ãµes do LLM
+- âœ… AtualizaÃ§Ã£o fÃ¡cil (basta adicionar .md)
+- âœ… Rastreabilidade (sabe de onde veio info)
 
 ---
 
-## 📊 MÉTRICAS E MONITORAMENTO
+## ðŸ“Š MÃ‰TRICAS E MONITORAMENTO
 
-### Métricas Implementadas
+### MÃ©tricas Implementadas
 
 #### 1. Conversas
 - Total de mensagens processadas
-- Mensagens por usuário
-- Mensagens por intenção
+- Mensagens por usuÃ¡rio
+- Mensagens por intenÃ§Ã£o
 - Taxa de sucesso/erro
 
 #### 2. Performance Agno AI
-- Tempo de resposta médio
+- Tempo de resposta mÃ©dio
 - Taxa de timeout
 - Taxa de retry bem-sucedido
-- Uptime do serviço
+- Uptime do serviÃ§o
 
 #### 3. Agendamentos
 - Agendamentos criados
-- Taxa de confirmação
-- Horários mais procurados
-- Serviços mais agendados
+- Taxa de confirmaÃ§Ã£o
+- HorÃ¡rios mais procurados
+- ServiÃ§os mais agendados
 
 #### 4. Consultas
 - OS consultadas
 - Clientes buscados
-- Peças consultadas
-- Estatísticas solicitadas
+- PeÃ§as consultadas
+- EstatÃ­sticas solicitadas
 
 ### Logs Estruturados
 
 **Formato:**
 ```javascript
-console.log('🤖 [CHAT]', {
+console.log('ðŸ¤– [CHAT]', {
   timestamp: new Date().toISOString(),
   user_id: 'uuid',
   intencao: 'AGENDAMENTO',
@@ -1181,11 +1181,11 @@ console.log('🤖 [CHAT]', {
 ```
 
 **Categorias:**
-- `🤖 [CHAT]` - Interações principais
-- `🔌 [AGNO]` - Chamadas ao Agno AI
-- `⚠️ [ERROR]` - Erros e exceções
-- `✅ [SUCCESS]` - Operações bem-sucedidas
-- `🔍 [NLP]` - Detecção de intenções
+- `ðŸ¤– [CHAT]` - InteraÃ§Ãµes principais
+- `ðŸ”Œ [AGNO]` - Chamadas ao Agno AI
+- `âš ï¸ [ERROR]` - Erros e exceÃ§Ãµes
+- `âœ… [SUCCESS]` - OperaÃ§Ãµes bem-sucedidas
+- `ðŸ” [NLP]` - DetecÃ§Ã£o de intenÃ§Ãµes
 
 ### Health Checks
 
@@ -1203,38 +1203,38 @@ Verifica: configured, warmed, last_warming
 
 ---
 
-## 🚀 ROADMAP E MELHORIAS FUTURAS
+## ðŸš€ ROADMAP E MELHORIAS FUTURAS
 
 ### Em Desenvolvimento
 
-#### 1. ✨ Melhorias de NLP
-- [ ] Detecção de sentimento (satisfação do cliente)
-- [ ] Correção automática de erros de digitação
-- [ ] Suporte a múltiplos idiomas (inglês, espanhol)
-- [ ] Sinônimos e variações regionais
+#### 1. âœ¨ Melhorias de NLP
+- [ ] DetecÃ§Ã£o de sentimento (satisfaÃ§Ã£o do cliente)
+- [ ] CorreÃ§Ã£o automÃ¡tica de erros de digitaÃ§Ã£o
+- [ ] Suporte a mÃºltiplos idiomas (inglÃªs, espanhol)
+- [ ] SinÃ´nimos e variaÃ§Ãµes regionais
 
-#### 2. 🎯 Funcionalidades Novas
-- [ ] Notificações proativas (OS concluída, agendamento próximo)
-- [ ] Recomendações inteligentes (manutenção preventiva)
-- [ ] Orçamentos automáticos baseados em histórico
-- [ ] Busca semântica em histórico de conversas
+#### 2. ðŸŽ¯ Funcionalidades Novas
+- [ ] NotificaÃ§Ãµes proativas (OS concluÃ­da, agendamento prÃ³ximo)
+- [ ] RecomendaÃ§Ãµes inteligentes (manutenÃ§Ã£o preventiva)
+- [ ] OrÃ§amentos automÃ¡ticos baseados em histÃ³rico
+- [ ] Busca semÃ¢ntica em histÃ³rico de conversas
 
-#### 3. 🔗 Integrações
+#### 3. ðŸ”— IntegraÃ§Ãµes
 - [ ] WhatsApp Business API
 - [ ] Telegram Bot
-- [ ] Integração com calendário (Google Calendar)
+- [ ] IntegraÃ§Ã£o com calendÃ¡rio (Google Calendar)
 - [ ] Sistema de pagamentos online
 
-#### 4. 📊 Analytics Avançado
-- [ ] Dashboard de métricas do Matias
-- [ ] Análise de satisfação (NPS)
-- [ ] Identificação de gargalos operacionais
-- [ ] Previsão de demanda (ML)
+#### 4. ðŸ“Š Analytics AvanÃ§ado
+- [ ] Dashboard de mÃ©tricas do Matias
+- [ ] AnÃ¡lise de satisfaÃ§Ã£o (NPS)
+- [ ] IdentificaÃ§Ã£o de gargalos operacionais
+- [ ] PrevisÃ£o de demanda (ML)
 
-#### 5. 🤖 Agno AI Enhancements
+#### 5. ðŸ¤– Agno AI Enhancements
 - [ ] Fine-tuning do modelo para oficinas brasileiras
-- [ ] Expansão da base de conhecimento (mais marcas/modelos)
-- [ ] Suporte a imagens (diagnóstico por foto)
+- [ ] ExpansÃ£o da base de conhecimento (mais marcas/modelos)
+- [ ] Suporte a imagens (diagnÃ³stico por foto)
 - [ ] Voice-to-text (comandos por voz)
 
 ### Melhorias de Performance
@@ -1242,46 +1242,46 @@ Verifica: configured, warmed, last_warming
 #### 1. Cache Inteligente
 - [ ] Cache de respostas frequentes (ex: "Ajuda")
 - [ ] Cache de consultas de estoque
-- [ ] Invalidação seletiva por mudanças
+- [ ] InvalidaÃ§Ã£o seletiva por mudanÃ§as
 
-#### 2. Otimização de Queries
-- [ ] Índices adicionais no PostgreSQL
+#### 2. OtimizaÃ§Ã£o de Queries
+- [ ] Ãndices adicionais no PostgreSQL
 - [ ] Query optimization (N+1, joins)
 - [ ] Pagination em todas as listagens
 
 #### 3. Escalabilidade
-- [ ] Load balancing para múltiplas instâncias
-- [ ] Redis para sessões e cache
-- [ ] CDN para assets estáticos
+- [ ] Load balancing para mÃºltiplas instÃ¢ncias
+- [ ] Redis para sessÃµes e cache
+- [ ] CDN para assets estÃ¡ticos
 - [ ] Database read replicas
 
 ### Melhorias de UX
 
 #### 1. Interface
 - [ ] Typing indicator (Matias digitando...)
-- [ ] Reações rápidas (👍 👎)
-- [ ] Sugestões de perguntas
+- [ ] ReaÃ§Ãµes rÃ¡pidas (ðŸ‘ ðŸ‘Ž)
+- [ ] SugestÃµes de perguntas
 - [ ] Atalhos de teclado
 
 #### 2. Acessibilidade
 - [ ] Screen reader support
 - [ ] Contraste alto
-- [ ] Tamanho de fonte ajustável
-- [ ] Navegação por teclado
+- [ ] Tamanho de fonte ajustÃ¡vel
+- [ ] NavegaÃ§Ã£o por teclado
 
 #### 3. Mobile
 - [ ] App nativo (React Native)
-- [ ] Notificações push
+- [ ] NotificaÃ§Ãµes push
 - [ ] Modo offline (cache local)
-- [ ] Geolocalização (oficinas próximas)
+- [ ] GeolocalizaÃ§Ã£o (oficinas prÃ³ximas)
 
 ---
 
-## 🛠️ CONFIGURAÇÃO E DEPLOYMENT
+## ðŸ› ï¸ CONFIGURAÃ‡ÃƒO E DEPLOYMENT
 
 ### Desenvolvimento Local
 
-**Pré-requisitos:**
+**PrÃ©-requisitos:**
 ```bash
 Node.js >= 18.x
 PostgreSQL >= 14.x
@@ -1293,7 +1293,7 @@ npm ou yarn
 cd ofix-backend
 npm install
 cp .env.example .env
-# Configurar variáveis em .env
+# Configurar variÃ¡veis em .env
 npx prisma generate
 npx prisma migrate dev
 npm run dev
@@ -1308,7 +1308,7 @@ cp .env.example .env
 npm run dev
 ```
 
-### Produção (Render)
+### ProduÃ§Ã£o (Render)
 
 **Backend:**
 ```yaml
@@ -1351,21 +1351,21 @@ services:
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "env": {
-    "VITE_API_BASE_URL": "https://ofix-backend-prod.onrender.com"
+    "VITE_API_BASE_URL": "https://ofix-backend-r556.onrender.com"
   }
 }
 ```
 
 ---
 
-## 📞 SUPORTE E CONTATO
+## ðŸ“ž SUPORTE E CONTATO
 
-### Documentação Adicional
-- `AGNO_TIMEOUT_FIX.md` - Solução de timeouts
-- `IMPLEMENTACAO_COMPLETA_MATIAS.md` - Detalhes técnicos
+### DocumentaÃ§Ã£o Adicional
+- `AGNO_TIMEOUT_FIX.md` - SoluÃ§Ã£o de timeouts
+- `IMPLEMENTACAO_COMPLETA_MATIAS.md` - Detalhes tÃ©cnicos
 - `COMO_TESTAR_AGNO_CORRIGIDO.md` - Testes
 
-### Repositório
+### RepositÃ³rio
 ```
 GitHub: PedroVictor26/Ofix_version1
 Branch: main
@@ -1373,9 +1373,9 @@ Branch: main
 
 ### Ambientes
 
-**Produção:**
+**ProduÃ§Ã£o:**
 - Frontend: https://ofix-frontend.vercel.app
-- Backend: https://ofix-backend-prod.onrender.com
+- Backend: https://ofix-backend-r556.onrender.com
 - Agno AI: https://matias-agno-assistant.onrender.com
 
 **Desenvolvimento:**
@@ -1384,182 +1384,182 @@ Branch: main
 
 ---
 
-## 📝 CHANGELOG
+## ðŸ“ CHANGELOG
 
 ### v2.1.0 (2025-11-08) - ATUAL
-- ✅ **Conversa Geral com Agno**: Agora responde perguntas simples
-- ✅ **Sistema de Retry**: 2 tentativas automáticas
-- ✅ **Warming Inteligente**: Cache de 60s
-- ✅ **Fallback Robusto**: Mensagens úteis em caso de timeout
-- ✅ **Histórico Corrigido**: Renderização correta de mensagens
-- ✅ **Campos Prisma**: Compatibilidade com schema
+- âœ… **Conversa Geral com Agno**: Agora responde perguntas simples
+- âœ… **Sistema de Retry**: 2 tentativas automÃ¡ticas
+- âœ… **Warming Inteligente**: Cache de 60s
+- âœ… **Fallback Robusto**: Mensagens Ãºteis em caso de timeout
+- âœ… **HistÃ³rico Corrigido**: RenderizaÃ§Ã£o correta de mensagens
+- âœ… **Campos Prisma**: Compatibilidade com schema
 
 ### v2.0.0 (2025-11-01)
-- ✅ Integração completa com Agno AI
-- ✅ Base de conhecimento automotiva
-- ✅ Sistema de NLP híbrido
-- ✅ Contexto ativo multi-etapa
+- âœ… IntegraÃ§Ã£o completa com Agno AI
+- âœ… Base de conhecimento automotiva
+- âœ… Sistema de NLP hÃ­brido
+- âœ… Contexto ativo multi-etapa
 
 ### v1.5.0 (2025-10-15)
-- ✅ Agendamento inteligente
-- ✅ Consulta de OS
-- ✅ Gerenciamento de clientes
+- âœ… Agendamento inteligente
+- âœ… Consulta de OS
+- âœ… Gerenciamento de clientes
 
 ### v1.0.0 (2025-10-01)
-- ✅ Chat básico funcional
-- ✅ Consulta de estoque
-- ✅ Estatísticas simples
+- âœ… Chat bÃ¡sico funcional
+- âœ… Consulta de estoque
+- âœ… EstatÃ­sticas simples
 
 ---
 
-## 🎓 CASOS DE USO REAIS
+## ðŸŽ“ CASOS DE USO REAIS
 
 ### Caso 1: Agendamento Completo
 ```
-Cliente: "Oi, preciso agendar uma revisão"
-Matias: "Olá! Vou ajudar com o agendamento. Preciso de algumas informações:
-         • Qual o seu nome?
-         • Modelo do veículo?
-         • Que dia prefere?
-         • Qual horário?"
+Cliente: "Oi, preciso agendar uma revisÃ£o"
+Matias: "OlÃ¡! Vou ajudar com o agendamento. Preciso de algumas informaÃ§Ãµes:
+         â€¢ Qual o seu nome?
+         â€¢ Modelo do veÃ­culo?
+         â€¢ Que dia prefere?
+         â€¢ Qual horÃ¡rio?"
 
-Cliente: "João Silva, Gol, segunda de tarde"
-Matias: "Perfeito! Qual horário à tarde prefere? (13h, 14h, 15h, 16h, 17h)"
+Cliente: "JoÃ£o Silva, Gol, segunda de tarde"
+Matias: "Perfeito! Qual horÃ¡rio Ã  tarde prefere? (13h, 14h, 15h, 16h, 17h)"
 
-Cliente: "14h tá bom"
-Matias: "✅ Agendamento confirmado!
+Cliente: "14h tÃ¡ bom"
+Matias: "âœ… Agendamento confirmado!
          
-         📋 Detalhes:
-         • Cliente: João Silva
-         • Veículo: Gol
-         • Data: Segunda, 13/11/2025
-         • Hora: 14:00
-         • Serviço: Revisão completa
+         ðŸ“‹ Detalhes:
+         â€¢ Cliente: JoÃ£o Silva
+         â€¢ VeÃ­culo: Gol
+         â€¢ Data: Segunda, 13/11/2025
+         â€¢ Hora: 14:00
+         â€¢ ServiÃ§o: RevisÃ£o completa
          
-         🔔 Lembrete enviado! Chegue 10 minutos antes."
+         ðŸ”” Lembrete enviado! Chegue 10 minutos antes."
 ```
 
-### Caso 2: Diagnóstico de Problema
+### Caso 2: DiagnÃ³stico de Problema
 ```
-Cliente: "Meu carro tá fazendo um barulho estranho quando eu freio"
-Matias: "Vou ajudar com esse diagnóstico. Barulhos ao frear geralmente 
+Cliente: "Meu carro tÃ¡ fazendo um barulho estranho quando eu freio"
+Matias: "Vou ajudar com esse diagnÃ³stico. Barulhos ao frear geralmente 
          indicam desgaste nas pastilhas de freio. Vou fazer algumas perguntas:
          
-         1. É um chiado agudo ou um rangido mais grave?
-         2. Acontece sempre que freia ou só em freadas fortes?
-         3. Há quanto tempo começou?"
+         1. Ã‰ um chiado agudo ou um rangido mais grave?
+         2. Acontece sempre que freia ou sÃ³ em freadas fortes?
+         3. HÃ¡ quanto tempo comeÃ§ou?"
 
-Cliente: "É um chiado agudo, acontece sempre, começou essa semana"
+Cliente: "Ã‰ um chiado agudo, acontece sempre, comeÃ§ou essa semana"
 Matias: "Com base nos sintomas, provavelmente as pastilhas de freio 
-         estão no limite do desgaste. O chiado é um indicador sonoro 
+         estÃ£o no limite do desgaste. O chiado Ã© um indicador sonoro 
          instalado justamente para avisar isso.
          
-         🔴 IMPORTANTE: Não deixe para depois! Pastilhas muito gastas 
+         ðŸ”´ IMPORTANTE: NÃ£o deixe para depois! Pastilhas muito gastas 
          podem danificar os discos de freio, aumentando o custo do reparo.
          
-         💡 Recomendação:
-         • Troca imediata das pastilhas (dianteiras e traseiras)
-         • Inspeção dos discos de freio
-         • Verificação do fluido de freio
+         ðŸ’¡ RecomendaÃ§Ã£o:
+         â€¢ Troca imediata das pastilhas (dianteiras e traseiras)
+         â€¢ InspeÃ§Ã£o dos discos de freio
+         â€¢ VerificaÃ§Ã£o do fluido de freio
          
-         📅 Posso agendar para você? Tenho vaga amanhã às 10h."
+         ðŸ“… Posso agendar para vocÃª? Tenho vaga amanhÃ£ Ã s 10h."
 
 Cliente: "Sim, agenda"
-Matias: "✅ Agendado! João Silva - Amanhã 10h - Troca de pastilhas
+Matias: "âœ… Agendado! JoÃ£o Silva - AmanhÃ£ 10h - Troca de pastilhas
          
-         📞 Caso precise remarcar: (85) 99999-9999"
+         ðŸ“ž Caso precise remarcar: (85) 99999-9999"
 ```
 
-### Caso 3: Consulta Rápida
+### Caso 3: Consulta RÃ¡pida
 ```
-Cliente: "Tem óleo 5W30 aí?"
+Cliente: "Tem Ã³leo 5W30 aÃ­?"
 Matias: "Sim! Temos em estoque:
          
-         ✅ Óleo 5W30 Sintético
-         • Quantidade: 12 litros
-         • Marca: Mobil 1, Castrol Edge
-         • Preço: R$ 45,00/litro
+         âœ… Ã“leo 5W30 SintÃ©tico
+         â€¢ Quantidade: 12 litros
+         â€¢ Marca: Mobil 1, Castrol Edge
+         â€¢ PreÃ§o: R$ 45,00/litro
          
-         💡 Para troca completa (4L): R$ 180,00
+         ðŸ’¡ Para troca completa (4L): R$ 180,00
          
          Quer agendar a troca?"
 ```
 
 ---
 
-## 🏆 DIFERENCIAIS COMPETITIVOS
+## ðŸ† DIFERENCIAIS COMPETITIVOS
 
-### 1. Inteligência Contextual
+### 1. InteligÃªncia Contextual
 - Entende **contexto da conversa**
-- Lembra **interações anteriores**
-- Mantém **fluxos multi-etapa**
+- Lembra **interaÃ§Ãµes anteriores**
+- MantÃ©m **fluxos multi-etapa**
 
 ### 2. Conhecimento Especializado
-- **Base técnica automotiva** completa
-- Atualizada com **melhores práticas**
-- Validada por **mecânicos experientes**
+- **Base tÃ©cnica automotiva** completa
+- Atualizada com **melhores prÃ¡ticas**
+- Validada por **mecÃ¢nicos experientes**
 
-### 3. Disponibilidade Máxima
+### 3. Disponibilidade MÃ¡xima
 - **24/7** sem paradas
 - **Fallback robusto** em caso de falhas
-- **Retry automático** transparente
+- **Retry automÃ¡tico** transparente
 
-### 4. Experiência do Usuário
-- Respostas **rápidas** (< 5s após warming)
-- Linguagem **clara e acessível**
-- Formatação **visual rica** (emojis, formatação)
+### 4. ExperiÃªncia do UsuÃ¡rio
+- Respostas **rÃ¡pidas** (< 5s apÃ³s warming)
+- Linguagem **clara e acessÃ­vel**
+- FormataÃ§Ã£o **visual rica** (emojis, formataÃ§Ã£o)
 
 ### 5. Escalabilidade
 - Arquitetura **serverless**
 - **Cache inteligente**
-- **Stateless** (fácil scaling horizontal)
+- **Stateless** (fÃ¡cil scaling horizontal)
 
 ---
 
-## 📖 GLOSSÁRIO TÉCNICO
+## ðŸ“– GLOSSÃRIO TÃ‰CNICO
 
 | Termo | Significado |
 |-------|-------------|
 | **NLP** | Natural Language Processing - Processamento de Linguagem Natural |
 | **LLM** | Large Language Model - Modelo de Linguagem Grande |
-| **RAG** | Retrieval Augmented Generation - Geração Aumentada por Recuperação |
-| **Embedding** | Representação vetorial de texto para busca semântica |
+| **RAG** | Retrieval Augmented Generation - GeraÃ§Ã£o Aumentada por RecuperaÃ§Ã£o |
+| **Embedding** | RepresentaÃ§Ã£o vetorial de texto para busca semÃ¢ntica |
 | **Vector DB** | Banco de dados otimizado para busca vetorial (LanceDB) |
-| **Cold Start** | Primeira inicialização após período de inatividade |
+| **Cold Start** | Primeira inicializaÃ§Ã£o apÃ³s perÃ­odo de inatividade |
 | **Fallback** | Resposta alternativa quando sistema principal falha |
-| **Intent** | Intenção detectada na mensagem do usuário |
-| **Entity** | Informação específica extraída (nome, data, hora, etc) |
+| **Intent** | IntenÃ§Ã£o detectada na mensagem do usuÃ¡rio |
+| **Entity** | InformaÃ§Ã£o especÃ­fica extraÃ­da (nome, data, hora, etc) |
 | **Context** | Estado mantido entre mensagens de uma conversa |
-| **Webhook** | Chamada HTTP automática para notificações |
-| **JWT** | JSON Web Token - Token de autenticação |
+| **Webhook** | Chamada HTTP automÃ¡tica para notificaÃ§Ãµes |
+| **JWT** | JSON Web Token - Token de autenticaÃ§Ã£o |
 | **ORM** | Object-Relational Mapping - Prisma no caso |
 
 ---
 
-## ✅ CONCLUSÃO
+## âœ… CONCLUSÃƒO
 
-O **Agente Matias** é um assistente virtual completo e robusto, desenvolvido especificamente para oficinas automotivas. Combina **processamento local eficiente** com **inteligência artificial avançada** via Agno AI, oferecendo:
+O **Agente Matias** Ã© um assistente virtual completo e robusto, desenvolvido especificamente para oficinas automotivas. Combina **processamento local eficiente** com **inteligÃªncia artificial avanÃ§ada** via Agno AI, oferecendo:
 
-✅ **Funcionalidades completas** de gestão de oficina  
-✅ **Conversação natural** e contextual  
-✅ **Conhecimento técnico especializado**  
-✅ **Alta disponibilidade** com sistema de fallback  
-✅ **Escalabilidade** para crescimento  
-✅ **Fácil manutenção** e atualização  
+âœ… **Funcionalidades completas** de gestÃ£o de oficina  
+âœ… **ConversaÃ§Ã£o natural** e contextual  
+âœ… **Conhecimento tÃ©cnico especializado**  
+âœ… **Alta disponibilidade** com sistema de fallback  
+âœ… **Escalabilidade** para crescimento  
+âœ… **FÃ¡cil manutenÃ§Ã£o** e atualizaÃ§Ã£o  
 
-O sistema está **pronto para produção** e já demonstra resultados significativos em:
-- Redução de tempo de atendimento
-- Automação de agendamentos
-- Melhoria na experiência do cliente
-- Otimização do fluxo de trabalho
+O sistema estÃ¡ **pronto para produÃ§Ã£o** e jÃ¡ demonstra resultados significativos em:
+- ReduÃ§Ã£o de tempo de atendimento
+- AutomaÃ§Ã£o de agendamentos
+- Melhoria na experiÃªncia do cliente
+- OtimizaÃ§Ã£o do fluxo de trabalho
 
 ---
 
-**Última Atualização:** 08/11/2025  
-**Versão do Documento:** 1.0  
+**Ãšltima AtualizaÃ§Ã£o:** 08/11/2025  
+**VersÃ£o do Documento:** 1.0  
 **Autor:** Sistema OFIX  
-**Status:** ✅ Ativo em Produção
+**Status:** âœ… Ativo em ProduÃ§Ã£o
 
 ---
 
-🤖 **"Matias: Seu assistente inteligente para oficinas automotivas"**
+ðŸ¤– **"Matias: Seu assistente inteligente para oficinas automotivas"**

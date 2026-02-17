@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
     LayoutDashboard,
     Users,
@@ -72,9 +72,7 @@ const LogoIcon = () => (
     </div>
 );
 
-const SystemStatusPanel = ({ onEstoqueBaixoClick }) => {
-    const { servicos } = useDashboardData();
-    const { pecas } = useEstoqueData();
+const SystemStatusPanel = ({ servicos, pecas, onEstoqueBaixoClick }) => {
 
     // Calcular serviços ativos (mesma lógica do dashboard)
     const servicosAtivos = useMemo(() => {
@@ -174,6 +172,7 @@ const UserPanel = ({ user, isAuthenticated, isLoadingAuth, logout }) => (
 // --- Componente principal ---
 export default function Layout() {
     const location = useLocation();
+    const navigate = useNavigate();
     const { user, logout, isAuthenticated, isLoadingAuth } = useAuth();
     const [showEstoqueBaixoModal, setShowEstoqueBaixoModal] = useState(false);
     const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
@@ -241,7 +240,7 @@ export default function Layout() {
             if (e.altKey && e.key.toLowerCase() === 'm') {
                 e.preventDefault();
                 if (location.pathname !== '/assistente-ia') {
-                    window.location.href = '/assistente-ia';
+                    navigate('/assistente-ia');
                 }
             }
             // Alt + H: Mostrar atalhos (Help)
@@ -530,6 +529,8 @@ export default function Layout() {
                             </SidebarGroup>
 
                             <SystemStatusPanel
+                                servicos={servicos}
+                                pecas={pecas}
                                 onEstoqueBaixoClick={() => setShowEstoqueBaixoModal(true)}
                             />
                         </SidebarContent>

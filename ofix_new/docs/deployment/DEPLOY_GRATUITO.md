@@ -1,59 +1,59 @@
-# 🚀 DEPLOY GRATUITO - PROJETO OFIX
+﻿# ðŸš€ DEPLOY GRATUITO - PROJETO OFIX
 
-## 📋 STATUS ATUAL
-- ✅ **Backend**: Render (`https://ofix-backend-prod.onrender.com`)
-- 🔄 **Frontend**: Vamos deployar agora!
-- 💰 **Custo**: R$ 0,00 (Totalmente gratuito)
+## ðŸ“‹ STATUS ATUAL
+- âœ… **Backend**: Render (`https://ofix-backend-r556.onrender.com`)
+- ðŸ”„ **Frontend**: Vamos deployar agora!
+- ðŸ’° **Custo**: R$ 0,00 (Totalmente gratuito)
 
 ---
 
-## 🎯 ESCOLHA SUA OPÇÃO DE DEPLOY
+## ðŸŽ¯ ESCOLHA SUA OPÃ‡ÃƒO DE DEPLOY
 
-### 🥇 **OPÇÃO 1: NETLIFY (RECOMENDADA)**
+### ðŸ¥‡ **OPÃ‡ÃƒO 1: NETLIFY (RECOMENDADA)**
 
 **Por que Netlify?**
-- ✅ Mais fácil de configurar
-- ✅ Deploy automático do GitHub
-- ✅ SSL gratuito
-- ✅ CDN global
-- ✅ 100GB bandwidth/mês grátis
+- âœ… Mais fÃ¡cil de configurar
+- âœ… Deploy automÃ¡tico do GitHub
+- âœ… SSL gratuito
+- âœ… CDN global
+- âœ… 100GB bandwidth/mÃªs grÃ¡tis
 
 **Como deployar:**
 
 1. **Acesse [netlify.com](https://netlify.com)**
-2. **Faça login com GitHub**
+2. **FaÃ§a login com GitHub**
 3. **Clique "New site from Git"**
-4. **Selecione seu repositório OFIX**
+4. **Selecione seu repositÃ³rio OFIX**
 5. **Configure:**
    ```
    Build command: npm run build
    Publish directory: dist
    ```
-6. **Adicione variáveis de ambiente:**
+6. **Adicione variÃ¡veis de ambiente:**
    ```
-   VITE_API_BASE_URL = https://ofix-backend-prod.onrender.com
+   VITE_API_BASE_URL = https://ofix-backend-r556.onrender.com
    ```
 7. **Deploy!**
 
 ---
 
-### 🥈 **OPÇÃO 2: VERCEL**
+### ðŸ¥ˆ **OPÃ‡ÃƒO 2: VERCEL**
 
 **Como deployar:**
 
 1. **Acesse [vercel.com](https://vercel.com)**
-2. **Faça login com GitHub**
+2. **FaÃ§a login com GitHub**
 3. **Clique "New Project"**
-4. **Selecione seu repositório**
+4. **Selecione seu repositÃ³rio**
 5. **Framework: Vite**
 6. **Adicione env vars:**
    ```
-   VITE_API_BASE_URL = https://ofix-backend-prod.onrender.com
+   VITE_API_BASE_URL = https://ofix-backend-r556.onrender.com
    ```
 
 ---
 
-### 🥉 **OPÇÃO 3: RENDER (FRONTEND)**
+### ðŸ¥‰ **OPÃ‡ÃƒO 3: RENDER (FRONTEND)**
 
 **Se quiser tudo na mesma plataforma:**
 
@@ -68,7 +68,7 @@
 
 ---
 
-## ⚙️ CONFIGURAÇÕES IMPORTANTES
+## âš™ï¸ CONFIGURAÃ‡Ã•ES IMPORTANTES
 
 ### **Arquivos criados para deploy:**
 
@@ -76,33 +76,33 @@
 2. **vercel.json** (Para Vercel)
 3. **render.yaml** (Para Render)
 
-### **Variáveis de ambiente necessárias:**
+### **VariÃ¡veis de ambiente necessÃ¡rias:**
 ```env
-VITE_API_BASE_URL=https://ofix-backend-prod.onrender.com
+VITE_API_BASE_URL=https://ofix-backend-r556.onrender.com
 ```
 
 ---
 
-## 🚀 PASSO A PASSO COMPLETO
+## ðŸš€ PASSO A PASSO COMPLETO
 
-### **1. Commit suas alterações:**
+### **1. Commit suas alteraÃ§Ãµes:**
 ```bash
 git add .
-git commit -m "feat: configuração para deploy de produção"
+git commit -m "feat: configuraÃ§Ã£o para deploy de produÃ§Ã£o"
 git push origin main
 ```
 
 ### **2. Escolha uma plataforma acima**
 
-### **3. Configure as variáveis de ambiente**
+### **3. Configure as variÃ¡veis de ambiente**
 
-### **4. Deploy automático será feito!**
+### **4. Deploy automÃ¡tico serÃ¡ feito!**
 
 ---
 
-## 🔧 CONFIGURAÇÃO DO BACKEND (RENDER)
+## ðŸ”§ CONFIGURAÃ‡ÃƒO DO BACKEND (RENDER)
 
-**Se seu backend ainda não está rodando, aqui estão as configurações:**
+**Se seu backend ainda nÃ£o estÃ¡ rodando, aqui estÃ£o as configuraÃ§Ãµes:**
 
 ### **Backend Settings (Render):**
 ```
@@ -120,17 +120,17 @@ CORS_ORIGIN=https://seu-frontend.netlify.app
 
 ---
 
-## 🌐 URLS FINAIS
+## ðŸŒ URLS FINAIS
 
-Após o deploy, você terá:
+ApÃ³s o deploy, vocÃª terÃ¡:
 
 - **Frontend**: `https://seu-projeto.netlify.app`
-- **Backend**: `https://ofix-backend-prod.onrender.com`
+- **Backend**: `https://ofix-backend-r556.onrender.com`
 - **Custo Total**: **R$ 0,00**
 
 ---
 
-## 🆘 TROUBLESHOOTING
+## ðŸ†˜ TROUBLESHOOTING
 
 ### **Erro CORS:**
 No backend, adicione sua URL do frontend:
@@ -155,10 +155,10 @@ npm run preview
 
 ---
 
-## 📞 PRÓXIMOS PASSOS
+## ðŸ“ž PRÃ“XIMOS PASSOS
 
 1. **Escolha Netlify (recomendado)**
 2. **Siga o passo a passo**
-3. **Em 5 minutos estará no ar!**
+3. **Em 5 minutos estarÃ¡ no ar!**
 
-**🎉 Seu OFIX ficará disponível 24/7 gratuitamente!**
+**ðŸŽ‰ Seu OFIX ficarÃ¡ disponÃ­vel 24/7 gratuitamente!**

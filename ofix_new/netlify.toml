@@ -2,8 +2,8 @@
   publish = "dist"
   command = "npm run build"
 
-[build.environment]
-  VITE_API_BASE_URL = "https://ofix-backend-r556.onrender.com"
+# M4-FE-03: VITE_API_BASE_URL definido via painel Netlify ou .env.production.
+# NÃO duplicar aqui — URL hardcoded no TOML impede override pelo dashboard.
 
 [[redirects]]
   from = "/*"
@@ -26,12 +26,3 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-
-[context.production.environment]
-  VITE_API_BASE_URL = "https://ofix-backend-r556.onrender.com"
-
-[context.deploy-preview.environment]
-  VITE_API_BASE_URL = "https://ofix-backend-r556.onrender.com"
-
-[context.branch-deploy.environment]
-  VITE_API_BASE_URL = "https://ofix-backend-r556.onrender.com"

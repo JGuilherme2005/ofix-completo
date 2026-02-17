@@ -1,14 +1,14 @@
-# Stack Tecnológico OFIX
+﻿# Stack TecnolÃ³gico OFIX
 
-## Linguagens de Programação
+## Linguagens de ProgramaÃ§Ã£o
 
 ### JavaScript (ES6+)
-- **Versão**: ES2020+ com módulos ESM
+- **VersÃ£o**: ES2020+ com mÃ³dulos ESM
 - **Uso**: Frontend e Backend
 - **Type**: `"type": "module"` em ambos package.json
 
 ### TypeScript (Parcial)
-- **Arquivos**: Configurações Vite e alguns utilitários
+- **Arquivos**: ConfiguraÃ§Ãµes Vite e alguns utilitÃ¡rios
 - **Configs**: tsconfig.json, tsconfig.node.json
 - **Uso**: Tipagem opcional em arquivos .ts
 
@@ -16,24 +16,24 @@
 
 ### Core Framework
 - **React 18.2.0** - Biblioteca UI com Concurrent Features
-- **React DOM 18.2.0** - Renderização DOM
+- **React DOM 18.2.0** - RenderizaÃ§Ã£o DOM
 - **React Router DOM 6.23.1** - Roteamento SPA
 
 ### Build Tool
-- **Vite 7.1.4** - Build tool ultrarrápido
+- **Vite 7.1.4** - Build tool ultrarrÃ¡pido
   - Hot Module Replacement (HMR)
-  - Build otimizado para produção
+  - Build otimizado para produÃ§Ã£o
   - Plugin React oficial (@vitejs/plugin-react 4.3.0)
 
-### Estilização
+### EstilizaÃ§Ã£o
 - **Tailwind CSS 3.4.4** - Utility-first CSS framework
 - **PostCSS 8.4.38** - Processador CSS
-- **Autoprefixer 10.4.19** - Prefixos CSS automáticos
-- **tailwindcss-animate 1.0.7** - Animações Tailwind
-- **Framer Motion 12.19.2** - Animações avançadas
+- **Autoprefixer 10.4.19** - Prefixos CSS automÃ¡ticos
+- **tailwindcss-animate 1.0.7** - AnimaÃ§Ãµes Tailwind
+- **Framer Motion 12.19.2** - AnimaÃ§Ãµes avanÃ§adas
 
 ### UI Components
-- **Radix UI** - Componentes acessíveis headless
+- **Radix UI** - Componentes acessÃ­veis headless
   - @radix-ui/react-dialog 1.1.14
   - @radix-ui/react-select 2.2.5
   - @radix-ui/react-tabs 1.1.12
@@ -44,33 +44,33 @@
   - @radix-ui/react-separator 1.1.7
   - @radix-ui/react-label 2.1.7
   - @radix-ui/react-slot 1.2.3
-- **Lucide React 0.525.0** - Ícones modernos
-- **Recharts 2.12.7** - Gráficos e visualizações
+- **Lucide React 0.525.0** - Ãcones modernos
+- **Recharts 2.12.7** - GrÃ¡ficos e visualizaÃ§Ãµes
 
 ### Drag and Drop
 - **@dnd-kit/core 6.3.1** - Core DnD
-- **@dnd-kit/sortable 10.0.0** - Listas ordenáveis (Kanban)
+- **@dnd-kit/sortable 10.0.0** - Listas ordenÃ¡veis (Kanban)
 
-### Formulários e Validação
-- **React Hook Form 7.64.0** - Gerenciamento de formulários
-- **@hookform/resolvers 5.2.2** - Resolvers de validação
+### FormulÃ¡rios e ValidaÃ§Ã£o
+- **React Hook Form 7.64.0** - Gerenciamento de formulÃ¡rios
+- **@hookform/resolvers 5.2.2** - Resolvers de validaÃ§Ã£o
 - **Yup 1.7.1** - Schema validation
-- **react-input-mask 2.0.4** - Máscaras de input
+- **react-input-mask 2.0.4** - MÃ¡scaras de input
 
 ### HTTP Client
 - **Axios 1.10.0** - Cliente HTTP com interceptors
 
-### Utilitários
-- **date-fns 4.1.0** - Manipulação de datas
-- **lodash 4.17.21** - Utilitários JavaScript
-- **clsx 2.1.1** - Construção de classNames
+### UtilitÃ¡rios
+- **date-fns 4.1.0** - ManipulaÃ§Ã£o de datas
+- **lodash 4.17.21** - UtilitÃ¡rios JavaScript
+- **clsx 2.1.1** - ConstruÃ§Ã£o de classNames
 - **class-variance-authority 0.7.1** - Variantes de componentes
 - **tailwind-merge 2.3.0** - Merge de classes Tailwind
-- **dompurify 3.3.0** - Sanitização HTML
-- **react-hot-toast 2.5.2** - Notificações toast
+- **dompurify 3.3.0** - SanitizaÃ§Ã£o HTML
+- **react-hot-toast 2.5.2** - NotificaÃ§Ãµes toast
 
 ### Testing
-- **Vitest 3.2.4** - Test runner (compatível com Vite)
+- **Vitest 3.2.4** - Test runner (compatÃ­vel com Vite)
 - **@vitest/ui 3.2.4** - UI para testes
 - **@testing-library/react 16.3.0** - Testing utilities
 - **@testing-library/jest-dom 6.9.1** - Matchers customizados
@@ -78,11 +78,11 @@
 
 ### Linting
 - **ESLint 9.30.0** - Linter JavaScript
-- **@eslint/js 9.30.0** - Configuração base
+- **@eslint/js 9.30.0** - ConfiguraÃ§Ã£o base
 - **eslint-plugin-react 7.37.5** - Regras React
 - **eslint-plugin-react-hooks 5.2.0** - Regras Hooks
 - **eslint-plugin-react-refresh 0.4.20** - Regras HMR
-- **globals 16.3.0** - Variáveis globais
+- **globals 16.3.0** - VariÃ¡veis globais
 
 ## Backend
 
@@ -94,10 +94,10 @@
 - **PostgreSQL** - Banco de dados relacional
 - **Prisma 5.0.0** - ORM moderno
   - @prisma/client 5.0.0 - Cliente Prisma
-  - Migrations automáticas
+  - Migrations automÃ¡ticas
   - Type-safe queries
 
-### Autenticação
+### AutenticaÃ§Ã£o
 - **jsonwebtoken 9.0.0** - JWT tokens
 - **bcryptjs 2.4.3** - Hash de senhas
 
@@ -106,9 +106,9 @@
 - **@huggingface/inference 4.7.1** - Hugging Face API
 - **node-fetch 2.7.0** - HTTP client para IA APIs
 
-### Utilitários Backend
+### UtilitÃ¡rios Backend
 - **cors 2.8.5** - CORS middleware
-- **dotenv 16.6.1** - Variáveis de ambiente
+- **dotenv 16.6.1** - VariÃ¡veis de ambiente
 - **multer 1.4.5-lts.1** - Upload de arquivos
 - **node-cron 4.2.1** - Agendamento de tarefas
 - **ws 8.18.3** - WebSocket server
@@ -116,7 +116,7 @@
 
 ### Development
 - **nodemon 3.1.10** - Auto-restart em desenvolvimento
-- **sucrase 3.29.0** - Transpilador rápido
+- **sucrase 3.29.0** - Transpilador rÃ¡pido
 
 ## Scripts de Desenvolvimento
 
@@ -127,15 +127,15 @@
 npm run dev              # Inicia Vite dev server (porta 5173)
 
 # Build
-npm run build            # Build para produção
-npm run build:prod       # Build com modo production explícito
+npm run build            # Build para produÃ§Ã£o
+npm run build:prod       # Build com modo production explÃ­cito
 npm run preview          # Preview do build
 
-# Qualidade de Código
+# Qualidade de CÃ³digo
 npm run lint             # Executa ESLint
 npm run lint:fix         # Corrige problemas ESLint
-npm run audit:security   # Auditoria de segurança
-npm run audit:lint:json  # Relatório ESLint em JSON
+npm run audit:security   # Auditoria de seguranÃ§a
+npm run audit:lint:json  # RelatÃ³rio ESLint em JSON
 npm run audit:all        # Todas as auditorias
 
 # Testes
@@ -151,7 +151,7 @@ npm run test:coverage    # Cobertura de testes
 # Desenvolvimento
 npm run dev              # Inicia com nodemon (auto-reload)
 
-# Produção
+# ProduÃ§Ã£o
 npm start                # Inicia servidor Node.js
 
 # Database
@@ -159,13 +159,13 @@ npm run prisma:migrate   # Executa migrations
 npm run prisma:studio    # Interface visual do banco
 ```
 
-## Configurações de Build
+## ConfiguraÃ§Ãµes de Build
 
 ### Vite (vite.config.ts)
 - Plugin React com Fast Refresh
 - Alias de paths (@/ para src/)
-- Otimizações de build
-- Configuração de proxy para API
+- OtimizaÃ§Ãµes de build
+- ConfiguraÃ§Ã£o de proxy para API
 
 ### Tailwind (tailwind.config.js)
 - Content paths para purge CSS
@@ -178,15 +178,15 @@ npm run prisma:studio    # Interface visual do banco
 - Autoprefixer
 
 ### ESLint (eslint.config.js)
-- Configuração flat config (ESLint 9)
+- ConfiguraÃ§Ã£o flat config (ESLint 9)
 - Regras React e Hooks
 - Globals para browser
 
-## Variáveis de Ambiente
+## VariÃ¡veis de Ambiente
 
 ### Frontend (.env)
 ```
-VITE_API_BASE_URL=https://ofix-backend-prod.onrender.com
+VITE_API_BASE_URL=https://ofix-backend-r556.onrender.com
 VITE_ENABLE_VOICE=true
 VITE_ENABLE_AI=true
 ```
@@ -208,7 +208,7 @@ NODE_ENV=production
 - **Plataformas**: Netlify, Vercel
 - **Build Command**: `npm run build`
 - **Output Directory**: `dist`
-- **Configurações**: netlify.toml, vercel.json
+- **ConfiguraÃ§Ãµes**: netlify.toml, vercel.json
 
 ### Backend
 - **Plataforma**: Render
@@ -216,20 +216,20 @@ NODE_ENV=production
 - **Build Command**: `npm install && npx prisma generate`
 - **Health Check**: `/api/health`
 
-## Dependências de Sistema
+## DependÃªncias de Sistema
 
-### Requisitos Mínimos
+### Requisitos MÃ­nimos
 - Node.js 18+ (recomendado 20+)
 - npm 9+ ou yarn 1.22+
-- PostgreSQL 14+ (produção)
-- 2GB RAM mínimo
+- PostgreSQL 14+ (produÃ§Ã£o)
+- 2GB RAM mÃ­nimo
 
 ### Desenvolvimento
 - Git 2.30+
 - Editor com ESLint support
 - Navegador moderno (Chrome/Firefox/Edge)
 
-## Estrutura de Módulos
+## Estrutura de MÃ³dulos
 
 ### Frontend (ESM)
 ```javascript
@@ -252,7 +252,7 @@ export const router = express.Router()
 export class AIService { }
 ```
 
-## Padrões de Código
+## PadrÃµes de CÃ³digo
 
 ### Naming Conventions
 - **Componentes**: PascalCase (Dashboard.jsx)

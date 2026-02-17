@@ -1,4 +1,4 @@
-# OFIX Codebase Instructions for AI Agents
+﻿# OFIX Codebase Instructions for AI Agents
 
 ## Architecture Overview
 
@@ -9,20 +9,20 @@ OFIX is a **monorepo** with two main applications:
 
 ### Key Data Flow
 ```
-User → AIPage.jsx → api.js → ofix-backend/agno.routes.js → 
-  ├─ Local NLP (nlp.service.js) → Database (Prisma)
-  └─ Agno AI (external) → LLaMA 3.1 70B + Knowledge Base
+User â†’ AIPage.jsx â†’ api.js â†’ ofix-backend/agno.routes.js â†’ 
+  â”œâ”€ Local NLP (nlp.service.js) â†’ Database (Prisma)
+  â””â”€ Agno AI (external) â†’ LLaMA 3.1 70B + Knowledge Base
 ```
 
 ## Critical Development Patterns
 
-### 1. **Multi-Agent Architecture (NEW - Nov 2025)** 🚀
+### 1. **Multi-Agent Architecture (NEW - Nov 2025)** ðŸš€
 **Philosophy:** Separate responsibilities between Backend (structured actions) and Agno AI (complex conversations)
 
 **Flow:**
 ```
-User Message → Classifier → Backend Local (fast CRUD) 
-                         → Agno AI (intelligent conversation)
+User Message â†’ Classifier â†’ Backend Local (fast CRUD) 
+                         â†’ Agno AI (intelligent conversation)
 ```
 
 **Key Files:**
@@ -31,32 +31,32 @@ User Message → Classifier → Backend Local (fast CRUD)
 - `ofix-backend/src/services/local-response.service.js` - Quick responses
 
 **When to use Backend Local:**
-- ✅ Structured actions (scheduling, CRUD, queries)
-- ✅ Form-like interactions
-- ✅ Direct database queries
-- ✅ Speed is critical (<1s)
+- âœ… Structured actions (scheduling, CRUD, queries)
+- âœ… Form-like interactions
+- âœ… Direct database queries
+- âœ… Speed is critical (<1s)
 
 **When to use Agno AI:**
-- ✅ Complex diagnostics
-- ✅ Technical explanations
-- ✅ Personalized recommendations
-- ✅ Open-ended conversations
+- âœ… Complex diagnostics
+- âœ… Technical explanations
+- âœ… Personalized recommendations
+- âœ… Open-ended conversations
 
-### 2. **API Communication (Frontend ↔ Backend)**
+### 2. **API Communication (Frontend â†” Backend)**
 **File:** `src/utils/api.js`
 - **Never hardcode URLs** - Use `getApiBaseUrl()` which auto-detects environment
-- Production: `https://ofix-backend-prod.onrender.com`
+- Production: `https://ofix-backend-r556.onrender.com`
 - Development: Empty string (uses Vite proxy)
 - All API calls go through `/api/*` prefix
 - Authentication uses JWT in `Authorization: Bearer <token>` header
 
 ```javascript
-// ✅ CORRECT
+// âœ… CORRECT
 import { apiCall } from '@/utils/api';
 const response = await apiCall('agno/chat', { method: 'POST', body: JSON.stringify(data) });
 
-// ❌ WRONG - Never fetch directly
-fetch('https://ofix-backend-prod.onrender.com/api/...')
+// âŒ WRONG - Never fetch directly
+fetch('https://ofix-backend-r556.onrender.com/api/...')
 ```
 
 ### 2. **Agno AI Integration (Matias Assistant)**
@@ -80,11 +80,11 @@ fetch('https://ofix-backend-prod.onrender.com/api/...')
 **Schema:** `ofix-backend/prisma/schema.prisma`
 
 **CRITICAL FIELD NAMING:**
-- ✅ Use: `userId`, `createdAt`, `tipo` (camelCase as in schema)
-- ❌ Never: `usuarioId`, `criadoEm`, `tipoRemetente` (old naming)
+- âœ… Use: `userId`, `createdAt`, `tipo` (camelCase as in schema)
+- âŒ Never: `usuarioId`, `criadoEm`, `tipoRemetente` (old naming)
 
 ```javascript
-// ✅ CORRECT
+// âœ… CORRECT
 const conversas = await prisma.conversaMatias.findMany({
   where: { userId: parseInt(userId) },
   orderBy: { createdAt: 'desc' }
@@ -101,8 +101,8 @@ Extracts: `cliente`, `veiculo`, `placa`, `diaSemana`, `hora`, `servico`, `dataEs
 
 **Pattern:** Uses regex + dictionaries, NOT ML. Example:
 ```javascript
-// Extracts "João" from "Agendar para o João na segunda"
-const padraoNome = /(?:do|da|para o|para a)\s+([A-ZÀ-Üa-zà-ü]+)/i;
+// Extracts "JoÃ£o" from "Agendar para o JoÃ£o na segunda"
+const padraoNome = /(?:do|da|para o|para a)\s+([A-ZÃ€-Ãœa-zÃ -Ã¼]+)/i;
 ```
 
 ## Developer Workflows
@@ -143,7 +143,7 @@ npm run test:coverage     # With coverage report
 
 ## Project-Specific Conventions
 
-### 1. **Message Type Mapping** (Frontend ↔ Backend)
+### 1. **Message Type Mapping** (Frontend â†” Backend)
 Backend returns `tipo: 'user' | 'matias'`
 Frontend uses `tipo: 'usuario' | 'agente'` internally
 
@@ -166,12 +166,12 @@ Multi-step flows use `contexto_ativo`:
 ### 3. **Component Structure**
 ```
 src/
-├── pages/           # Route-level components (e.g., AIPage.jsx)
-├── components/      # Reusable UI (Button, Modal, etc from ShadCN)
-├── services/        # API clients (no business logic)
-├── utils/           # Pure functions (api.js, retryUtils.js)
-├── context/         # React Context (AuthContext)
-└── hooks/           # Custom hooks
+â”œâ”€â”€ pages/           # Route-level components (e.g., AIPage.jsx)
+â”œâ”€â”€ components/      # Reusable UI (Button, Modal, etc from ShadCN)
+â”œâ”€â”€ services/        # API clients (no business logic)
+â”œâ”€â”€ utils/           # Pure functions (api.js, retryUtils.js)
+â”œâ”€â”€ context/         # React Context (AuthContext)
+â””â”€â”€ hooks/           # Custom hooks
 ```
 
 **Import pattern:** Use `@/` alias (configured in `vite.config.ts`)
@@ -184,14 +184,14 @@ import { apiCall } from '@/utils/api';
 
 ### Production Services
 - **Frontend:** Vercel (`ofix.vercel.app`)
-- **Backend:** Render (`ofix-backend-prod.onrender.com`)
+- **Backend:** Render (`ofix-backend-r556.onrender.com`)
 - **Database:** Railway/Supabase (PostgreSQL)
 - **Agno AI:** Render (`matias-agno-assistant.onrender.com`)
 
 ### Environment Variables
 ```bash
 # Frontend (.env)
-VITE_API_BASE_URL=https://ofix-backend-prod.onrender.com
+VITE_API_BASE_URL=https://ofix-backend-r556.onrender.com
 
 # Backend (.env)
 DATABASE_URL=postgresql://...
@@ -210,23 +210,23 @@ JWT_SECRET=...
 | File | Purpose | Lines | Why Critical |
 |------|---------|-------|--------------|
 | `ofix-backend/src/routes/agno.routes.js` | Main AI router | 2100+ | All Matias logic, retry, NLP routing |
-| `ofix-backend/src/services/message-classifier.service.js` | ⭐ **NEW** Classifier | 300+ | Routes messages to correct processor |
-| `ofix-backend/src/services/agendamento-local.service.js` | ⭐ **NEW** Local scheduling | 500+ | Handles scheduling without AI (10x faster) |
-| `ofix-backend/src/services/local-response.service.js` | ⭐ **NEW** Quick responses | 200+ | Greetings, help menu (instant) |
+| `ofix-backend/src/services/message-classifier.service.js` | â­ **NEW** Classifier | 300+ | Routes messages to correct processor |
+| `ofix-backend/src/services/agendamento-local.service.js` | â­ **NEW** Local scheduling | 500+ | Handles scheduling without AI (10x faster) |
+| `ofix-backend/src/services/local-response.service.js` | â­ **NEW** Quick responses | 200+ | Greetings, help menu (instant) |
 | `ofix-backend/src/services/nlp.service.js` | NLP engine | 400+ | Entity extraction patterns |
 | `src/pages/AIPage.jsx` | Chat UI | 1500+ | Message rendering, history loading |
 | `src/utils/api.js` | API client | 130 | Environment detection, fetch wrapper |
 | `ofix-backend/prisma/schema.prisma` | Database schema | 300+ | Field names (userId NOT usuarioId) |
 | `docs/agente-matias/DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md` | Full docs | 1100+ | Complete Matias architecture |
-| `plano_otimizacao/` | ⭐ **NEW** Optimization plan | 4 files | Architecture, checklist, implementation |
+| `plano_otimizacao/` | â­ **NEW** Optimization plan | 4 files | Architecture, checklist, implementation |
 
 ## Common Pitfalls to Avoid
 
-1. ❌ Using old field names (`usuarioId` → ✅ `userId`)
-2. ❌ Hardcoding backend URL → ✅ Use `getApiBaseUrl()`
-3. ❌ Forgetting `npx prisma generate` after schema changes
-4. ❌ Not handling Agno timeout → ✅ Always provide fallback
-5. ❌ Mixing message types → ✅ Map backend `'user'` to frontend `'usuario'`
+1. âŒ Using old field names (`usuarioId` â†’ âœ… `userId`)
+2. âŒ Hardcoding backend URL â†’ âœ… Use `getApiBaseUrl()`
+3. âŒ Forgetting `npx prisma generate` after schema changes
+4. âŒ Not handling Agno timeout â†’ âœ… Always provide fallback
+5. âŒ Mixing message types â†’ âœ… Map backend `'user'` to frontend `'usuario'`
 
 ## MCP Tools (Model Context Protocol)
 
@@ -241,12 +241,12 @@ JWT_SECRET=...
 **Use for:** Git operations, PR management, issue tracking, code search
 
 ```javascript
-// ✅ Search for code patterns across repo
+// âœ… Search for code patterns across repo
 mcp_github_github_search_code({ 
   query: "prisma.conversaMatias language:javascript"
 })
 
-// ✅ Create PR after changes
+// âœ… Create PR after changes
 mcp_github_github_create_pull_request({
   owner: "PedroVictor26",
   repo: "Ofix_version1", 
@@ -255,7 +255,7 @@ mcp_github_github_create_pull_request({
   base: "main"
 })
 
-// ✅ List issues by label
+// âœ… List issues by label
 mcp_github_github_search_issues({
   query: "repo:PedroVictor26/Ofix_version1 label:bug is:open"
 })
@@ -265,17 +265,17 @@ mcp_github_github_search_issues({
 **Use for:** Local git operations (status, commit, push, branch)
 
 ```javascript
-// ✅ Check git status
+// âœ… Check git status
 mcp_gitkraken_git_status({ directory: "c:/path/to/ofix_new" })
 
-// ✅ Commit changes
+// âœ… Commit changes
 mcp_gitkraken_git_add_or_commit({
   action: "commit",
   directory: "c:/path/to/ofix_new",
   message: "Fix: correct Prisma field names in conversation history"
 })
 
-// ✅ Push to remote
+// âœ… Push to remote
 mcp_gitkraken_git_push({ directory: "c:/path/to/ofix_new" })
 ```
 
@@ -283,13 +283,13 @@ mcp_gitkraken_git_push({ directory: "c:/path/to/ofix_new" })
 **Use for:** Python code analysis (if you add Python services)
 
 ```javascript
-// ✅ Check Python syntax
+// âœ… Check Python syntax
 mcp_pylance_mcp_s_pylanceSyntaxErrors({
   code: "def hello():\n  print('world')",
   pythonVersion: "3.11"
 })
 
-// ✅ Get workspace Python files
+// âœ… Get workspace Python files
 mcp_pylance_mcp_s_pylanceWorkspaceUserFiles({
   workspaceRoot: "file:///c:/path/to/project"
 })
@@ -299,7 +299,7 @@ mcp_pylance_mcp_s_pylanceWorkspaceUserFiles({
 **Use for:** AI model search, dataset discovery, ML documentation
 
 ```javascript
-// ✅ Search for models (useful for Agno alternatives)
+// âœ… Search for models (useful for Agno alternatives)
 mcp_evalstate_hf_model_search({
   query: "llama",
   task: "text-generation",
@@ -307,7 +307,7 @@ mcp_evalstate_hf_model_search({
   limit: 5
 })
 
-// ✅ Get documentation for libraries
+// âœ… Get documentation for libraries
 mcp_evalstate_hf_hf_doc_search({
   query: "transformers inference",
   product: "transformers"
@@ -318,7 +318,7 @@ mcp_evalstate_hf_hf_doc_search({
 **Use for:** Library documentation lookup
 
 ```javascript
-// ✅ Get up-to-date docs for dependencies
+// âœ… Get up-to-date docs for dependencies
 mcp_upstash_conte_resolve_library_id({ libraryName: "prisma" })
 mcp_upstash_conte_get_library_docs({ 
   context7CompatibleLibraryID: "/prisma/prisma",

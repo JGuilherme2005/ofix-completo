@@ -1,50 +1,50 @@
-# 📚 DOCUMENTAÇÃO OFIX
+﻿# ðŸ“š DOCUMENTAÃ‡ÃƒO OFIX
 
-Documentação oficial do projeto OFIX - Sistema de Gestão de Oficinas Automotivas
+DocumentaÃ§Ã£o oficial do projeto OFIX - Sistema de GestÃ£o de Oficinas Automotivas
 
 ---
 
-## 📁 ESTRUTURA
+## ðŸ“ ESTRUTURA
 
-### 🤖 [agente-matias/](./agente-matias/)
-Documentação completa do Agente Matias - Assistente Virtual Inteligente
+### ðŸ¤– [agente-matias/](./agente-matias/)
+DocumentaÃ§Ã£o completa do Agente Matias - Assistente Virtual Inteligente
 
-- **[DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md](./agente-matias/DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md)** - Documentação técnica completa (1.100+ linhas)
-- **[AGNO_TIMEOUT_FIX.md](./agente-matias/AGNO_TIMEOUT_FIX.md)** - Solução de timeouts e retry logic
+- **[DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md](./agente-matias/DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md)** - DocumentaÃ§Ã£o tÃ©cnica completa (1.100+ linhas)
+- **[AGNO_TIMEOUT_FIX.md](./agente-matias/AGNO_TIMEOUT_FIX.md)** - SoluÃ§Ã£o de timeouts e retry logic
 
-### 🚀 [deployment/](./deployment/)
-Guias de implantação e configuração de produção
+### ðŸš€ [deployment/](./deployment/)
+Guias de implantaÃ§Ã£o e configuraÃ§Ã£o de produÃ§Ã£o
 
 - **[DEPLOY_GUIDE.md](./deployment/DEPLOY_GUIDE.md)** - Guia oficial de deploy
 - **[DEPLOY_GRATUITO.md](./deployment/DEPLOY_GRATUITO.md)** - Alternativas gratuitas (Render, Vercel, Railway)
 
-### 📜 [historico/](./historico/)
-Histórico de desenvolvimento e decisões técnicas (consolidado)
+### ðŸ“œ [historico/](./historico/)
+HistÃ³rico de desenvolvimento e decisÃµes tÃ©cnicas (consolidado)
 
 ---
 
-## 🎯 ACESSO RÁPIDO
+## ðŸŽ¯ ACESSO RÃPIDO
 
 ### Para Desenvolvedores
-1. **Começar desenvolvimento:** Ver [README.md](../README.md) na raiz
-2. **Entender o Agente Matias:** [Documentação Completa](./agente-matias/DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md)
-3. **Deploy em produção:** [Deploy Guide](./deployment/DEPLOY_GUIDE.md)
+1. **ComeÃ§ar desenvolvimento:** Ver [README.md](../README.md) na raiz
+2. **Entender o Agente Matias:** [DocumentaÃ§Ã£o Completa](./agente-matias/DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md)
+3. **Deploy em produÃ§Ã£o:** [Deploy Guide](./deployment/DEPLOY_GUIDE.md)
 4. **Resolver problemas com Agno:** [Timeout Fix](./agente-matias/AGNO_TIMEOUT_FIX.md)
 
 ### Para Gestores
-1. **Visão geral do projeto:** [README.md](../README.md)
-2. **Capacidades do Matias:** [Seção Funcionalidades](./agente-matias/DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md#funcionalidades-implementadas)
-3. **Roadmap:** [Seção Roadmap](./agente-matias/DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md#roadmap-e-melhorias-futuras)
+1. **VisÃ£o geral do projeto:** [README.md](../README.md)
+2. **Capacidades do Matias:** [SeÃ§Ã£o Funcionalidades](./agente-matias/DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md#funcionalidades-implementadas)
+3. **Roadmap:** [SeÃ§Ã£o Roadmap](./agente-matias/DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md#roadmap-e-melhorias-futuras)
 
 ---
 
-## 🔗 LINKS ÚTEIS
+## ðŸ”— LINKS ÃšTEIS
 
-- **Repositório:** https://github.com/PedroVictor26/Ofix_version1
-- **Frontend Produção:** https://ofix-frontend.vercel.app
-- **Backend Produção:** https://ofix-backend-prod.onrender.com
+- **RepositÃ³rio:** https://github.com/PedroVictor26/Ofix_version1
+- **Frontend ProduÃ§Ã£o:** https://ofix-frontend.vercel.app
+- **Backend ProduÃ§Ã£o:** https://ofix-backend-r556.onrender.com
 - **Agno AI:** https://matias-agno-assistant.onrender.com
 
 ---
 
-**Última atualização:** 08/11/2025
+**Ãšltima atualizaÃ§Ã£o:** 08/11/2025

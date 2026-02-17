@@ -116,26 +116,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     navigate('/login'); // Redireciona para a página de login
   }, [navigate]);
 
-  // Verificar token expirado (exemplo de como o interceptor de API poderia interagir com o AuthContext)
-  // Esta função seria chamada pelo interceptor de resposta do apiClient em api.js ao detectar um 401.
-  const handleUnauthorized = useCallback(() => {
-    console.log("AuthContext: Recebido evento de não autorizado. Fazendo logout.");
-    logout();
-  }, [logout]);
-
-
-  // useEffect para adicionar um listener ao evento de logout do interceptor (se implementado via CustomEvent)
-  // Ou o interceptor pode chamar diretamente authContext.logout() se tiver acesso a ele.
-  // Por simplicidade, o interceptor em api.js já limpa o localStorage e pode redirecionar.
-  // Se o redirecionamento for feito aqui, o interceptor em api.js não precisaria redirecionar.
-  // Exemplo:
-  // useEffect(() => {
-  //   const onUnauthorized = () => handleUnauthorized();
-  //   window.addEventListener('unauthorized', onUnauthorized);
-  //   return () => {
-  //     window.removeEventListener('unauthorized', onUnauthorized);
-  //   };
-  // }, [handleUnauthorized]);
+  // M4-FE-04: O interceptor de API dispara 'auth:logout' ao receber 401.
+  // Aqui apenas limpamos o estado React — o ProtectedRoute se encarrega de
+  // redirecionar para /login com state.from, permitindo redirect-back após re-login.
+  useEffect(() => {
+    const onAuthLogout = () => {
+      console.log("AuthContext: Recebido evento auth:logout (401). Limpando sessão.");
+      authService.logout();
+      setUser(null);
+      setToken(null);
+      setIsAuthenticated(false);
+      // Não chamamos navigate aqui — o ProtectedRoute redireciona automaticamente
+      // com state: { from: location }, preservando a rota original para redirect-back.
+    };
+    window.addEventListener('auth:logout', onAuthLogout);
+    return () => {
+      window.removeEventListener('auth:logout', onAuthLogout);
+    };
+  }, []);
 
 
   const value = {
@@ -146,7 +144,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     login,
     register,
     logout,
-    // handleUnauthorized // Se o interceptor precisar chamar
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
