@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { MessageSquare, ExternalLink } from "lucide-react";
+import toast from 'react-hot-toast';
 import { Button } from "@/components/ui/button";
 
 /**
@@ -13,7 +14,7 @@ import { Button } from "@/components/ui/button";
 export default function WhatsAppNotification({ servico, cliente, veiculo, nomeOficina = "OFIX" }) {
     const handleNotificarCliente = () => {
         if (!cliente?.telefone) {
-            alert('Cliente não possui telefone cadastrado.');
+            toast.error('Cliente não possui telefone cadastrado.');
             return;
         }
 

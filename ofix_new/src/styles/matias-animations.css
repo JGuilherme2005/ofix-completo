@@ -436,7 +436,7 @@
   animation: progressGrow 1s ease-out;
 }
 
-.matiaS-animate-status-online {
+.matias-animate-status-online {
   animation: statusOnline 2s ease-in-out infinite;
 }
 
@@ -497,7 +497,7 @@
   .matias-animate-voice-wave .matias-voice-bar,
   .matias-animate-button-float,
   .matias-animate-button-ring,
-  .matiaS-animate-status-online {
+  .matias-animate-status-online {
     animation: none;
   }
 

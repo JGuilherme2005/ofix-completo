@@ -11,6 +11,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import {
     Camera, Upload, X, FileText, Image, Video, Mic, MicOff,
     Pause, Play, RotateCcw, Maximize2, Download, Share2,
@@ -285,7 +286,7 @@ const MatiasMultimodal = ({
             });
 
             if (validFiles.length === 0) {
-                alert('Nenhum arquivo válido selecionado. Verifique o tipo e o tamanho do arquivo.');
+                toast.error('Nenhum arquivo válido selecionado. Verifique o tipo e o tamanho do arquivo.');
                 return;
             }
 
@@ -547,7 +548,7 @@ const MatiasMultimodal = ({
 
         } catch (error) {
             console.error('Error accessing camera:', error);
-            alert('Não foi possível acessar a câmera. Verifique as permissões.');
+            toast.error('Não foi possível acessar a câmera. Verifique as permissões.');
         }
     };
 
@@ -610,7 +611,7 @@ const MatiasMultimodal = ({
 
         } catch (error) {
             console.error('Error starting recording:', error);
-            alert('Não foi possível acessar o microfone. Verifique as permissões.');
+            toast.error('Não foi possível acessar o microfone. Verifique as permissões.');
         }
     };
 

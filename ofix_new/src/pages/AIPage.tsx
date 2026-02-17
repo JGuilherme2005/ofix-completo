@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { User, Bot, CheckCircle, Loader2, AlertCircle, Volume2, VolumeX, Trash2, MessageSquare, Wrench, MicOff, Mic, Send, Brain, RefreshCw, PanelRightOpen, PanelRightClose, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import DOMPurify from "dompurify";
 import { useAuth } from '../context/AuthContext';
@@ -351,12 +351,12 @@ const AIPage = () => {
   const iniciarGravacao = () => {
     // Não permitir gravar se estiver falando
     if (falando) {
-      alert('Aguarde o assistente terminar de falar antes de gravar.');
+      showToast('Aguarde o assistente terminar de falar antes de gravar.', 'warning');
       return;
     }
 
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      alert('Reconhecimento de voz não é suportado neste navegador.');
+      showToast('Reconhecimento de voz não é suportado neste navegador.', 'error');
       return;
     }
 
@@ -1914,6 +1914,9 @@ const AIPage = () => {
         {/* Container de Mensagens - 💬 Com Scrollbar Personalizada */}
         <div
           ref={chatContainerRef}
+          role="log"
+          aria-live="polite"
+          aria-label="Histórico de conversas com o assistente Matias"
           className="flex-1 min-h-0 min-w-0 overflow-y-auto p-4 sm:p-5 space-y-4 matias-animate-fade-in"
           style={{
             scrollbarWidth: 'thin',
@@ -2317,12 +2320,15 @@ const AIPage = () => {
         <div className="border-t border-slate-200/60 dark:border-slate-800/60 p-4 bg-white/95 dark:bg-slate-950/20">
           <div className="flex gap-3 items-end">
             <div className="flex-1">
-              <Input
+              <Textarea
                 ref={inputRef}
                 value={mensagem}
                 onChange={(e) => {
                   setMensagem(e.target.value);
                   validarInputBusca(e.target.value);
+                  // Autosize: ajusta altura ao conteúdo (max 5 linhas)
+                  e.target.style.height = 'auto';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
                 }}
                 onKeyDown={handleKeyPress}
                 placeholder={gravando ? "🎤 Gravando..." : falando ? "Matias está falando..." : contextoAtivo ? 
@@ -2334,7 +2340,9 @@ const AIPage = () => {
                    "Digite sua mensagem...") : 
                   "Digite sua pergunta ou solicitação..."}
                 disabled={carregando || !podeInteragir || gravando}
-                className="resize-none border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/40 rounded-xl transition-all duration-200 shadow-sm focus:shadow-md"
+                rows={1}
+                aria-label="Mensagem para o assistente Matias"
+                className="min-h-[40px] max-h-[120px] resize-none border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/40 rounded-xl transition-all duration-200 shadow-sm focus:shadow-md"
               />
               {/* ✅ CONTADOR DE CARACTERES */}
               <div className={`text-xs mt-1 ${mensagem.length > AI_CONFIG.CHAT.MAX_MESSAGE_LENGTH ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>

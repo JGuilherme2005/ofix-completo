@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { 
   AlertTriangle, 
   Clock, 
@@ -84,7 +85,7 @@ const AlertaDashboard = () => {
     // Simular verificação
     setTimeout(() => {
       setAtualizando(false);
-      alert(`Verificação ${tipo} executada com sucesso!`);
+      toast.success(`Verificação ${tipo} executada com sucesso!`);
     }, 2000);
   };
 
@@ -92,12 +93,12 @@ const AlertaDashboard = () => {
     console.log('Resolvendo alerta:', alertaId);
     // Remover o alerta da lista
     setAlertas(prev => prev.filter(a => a.id !== alertaId));
-    alert('Alerta resolvido com sucesso!');
+    toast.success('Alerta resolvido com sucesso!');
   };
 
   const executarAcao = async (alertaId) => {
     console.log('Executando ação para alerta:', alertaId);
-    alert('Ação executada com sucesso!');
+    toast.success('Ação executada com sucesso!');
   };
 
   const getSeveridadeColor = (severidade) => {

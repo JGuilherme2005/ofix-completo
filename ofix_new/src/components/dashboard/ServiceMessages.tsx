@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useState } from "react";
+import toast from 'react-hot-toast';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -53,7 +54,7 @@ export default function ServiceMessages({
     const texto = replaceVariables(mensagem.textoMensagem || mensagem.template);
     const telefone = cliente?.telefone?.replace(/\D/g, "") || "";
     if (!telefone) {
-      alert("Telefone do cliente não encontrado!");
+      toast.error('Telefone do cliente não encontrado!');
       return;
     }
     const url = `https://wa.me/${telefone}?text=${encodeURIComponent(texto)}`;
@@ -69,7 +70,7 @@ export default function ServiceMessages({
 
     const telefone = cliente?.telefone?.replace(/\D/g, "") || "";
     if (!telefone) {
-      alert("Telefone do cliente não encontrado!");
+      toast.error('Telefone do cliente não encontrado!');
       return;
     }
     const url = `https://wa.me/${telefone}?text=${encodeURIComponent(

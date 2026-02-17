@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -141,12 +142,12 @@ const AIProviderDashboard = ({ className = '' }) => {
       });
       
       const result = await response.json();
-      alert(result.message);
+      toast.success(result.message);
       
       // Recarregar lista após alguns segundos
       setTimeout(loadOllamaModels, 3000);
     } catch (error) {
-      alert('Erro ao instalar modelo: ' + error.message);
+      toast.error('Erro ao instalar modelo: ' + error.message);
     }
   };
 

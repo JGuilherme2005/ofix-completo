@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { X, MessageCircle, Send, Mic, MicOff, Settings, History, User, Wrench, Phone, Calendar, FileText, AlertTriangle, CheckCircle, Clock, DollarSign, Volume2, VolumeX, Pause, Play } from 'lucide-react';
 import { useSpeechToText } from '../../hooks/useSpeechToText';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
@@ -602,7 +603,7 @@ Como mecânico-chefe com 15 anos de experiência, estou aqui para resolver qualq
 
   const toggleRecording = () => {
     if (!speechSupported) {
-      alert('Seu navegador não suporta reconhecimento de voz. Use o Chrome ou Edge para melhor experiência.');
+      toast.error('Seu navegador não suporta reconhecimento de voz. Use o Chrome ou Edge para melhor experiência.');
       return;
     }
 
