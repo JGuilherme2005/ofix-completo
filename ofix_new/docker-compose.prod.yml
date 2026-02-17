@@ -1,10 +1,7 @@
-/**
- * 🚀 CONFIGURAÇÃO DE PRODUÇÃO - Sistema Matias
- * 
- * Configurações completas para deploy em produção
- */
+# 🚀 CONFIGURAÇÃO DE PRODUÇÃO - Sistema Matias
+# Configurações completas para deploy em produção
 
-// Docker Compose para produção
+# Docker Compose para produção
 version: '3.8'
 
 services:

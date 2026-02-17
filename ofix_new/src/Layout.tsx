@@ -275,7 +275,7 @@ export default function Layout() {
                 } as any}
             />
 
-            <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 flex flex-col">
+            <div className="h-screen w-full bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 flex flex-col">
 
                 {/* Header Global Fixo */}
                 <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 shadow-sm z-30 flex-shrink-0 sticky top-0">
@@ -482,7 +482,7 @@ export default function Layout() {
                 </header>
 
                 {/* Container com Sidebar e Conteúdo */}
-                <div className="flex flex-1 h-full overflow-hidden">
+                <div className="flex flex-1 min-h-0 overflow-hidden">
                     {/* Sidebar */}
                     <Sidebar className="border-r border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-xl z-20 w-64 flex-shrink-0 fixed h-full top-16 left-0 hidden md:flex md:flex-col">
                         <SidebarContent className="p-4 pt-6 flex-1 overflow-y-auto">
@@ -547,7 +547,7 @@ export default function Layout() {
                     {/* Sidebar Mobile - dentro do SidebarProvider já gerencia automaticamente */}
 
                     {/* Conteúdo principal */}
-                    <main className="flex flex-col flex-1 overflow-hidden">
+                    <main className="flex flex-col flex-1 min-h-0 overflow-hidden">
                         <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900">
                             <Outlet />
                         </div>

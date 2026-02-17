@@ -50,8 +50,6 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://localhost:3000",
-        "http://localhost:8000",
-        "http://localhost:7777",
         "https://os.agno.com",
         "https://app.agno.com",
     ],

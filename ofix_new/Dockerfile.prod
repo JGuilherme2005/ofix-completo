@@ -2,7 +2,7 @@
 # Build otimizado para produção com multi-stage
 
 # Stage 1: Build do Frontend
-FROM node:18-alpine AS frontend-builder
+FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 
@@ -27,7 +27,7 @@ COPY postcss.config.js ./
 RUN yarn build
 
 # Stage 2: Build do Backend
-FROM node:18-alpine AS backend-builder
+FROM node:20-alpine AS backend-builder
 
 WORKDIR /app/backend
 
@@ -53,7 +53,7 @@ COPY ofix-backend/package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 # Stage 3: Produção
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 # Instalar dependências do sistema para produção
 RUN apk add --no-cache \
