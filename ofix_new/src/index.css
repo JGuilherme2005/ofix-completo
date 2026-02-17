@@ -125,15 +125,7 @@
 
 @layer components {
   .sidebar-transition {
-    @apply transition-all duration-300 ease-in-out;
-  }
-
-  .nav-item-active {
-    @apply bg-gradient-to-br from-nav-item-active-start to-nav-item-active-end border-l-4 border-primary-blue shadow-sm;
-  }
-
-  .nav-item-hover:hover {
-    @apply bg-gradient-to-br from-nav-item-hover-start to-nav-item-hover-end translate-x-0.5;
+    @apply transition-all duration-200 ease-out;
   }
 
   .status-badge {

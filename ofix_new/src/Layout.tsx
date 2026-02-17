@@ -11,7 +11,9 @@ import {
     Bell,
     LogOut,
     X,
-    AlertTriangle
+    AlertTriangle,
+    ChevronRight,
+    Activity,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./context/AuthContext";
@@ -38,21 +40,30 @@ import { ThemeToggle } from "./components/ui/ThemeToggle";
 
 // --- Constantes ---
 const NAVIGATION_ITEMS = [
-    { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, description: "Visão geral operacional" },
-    { title: "Clientes", url: "/clientes", icon: Users, description: "Gestão de clientes" },
-    { title: "Estoque", url: "/estoque", icon: Package, description: "Controle de peças" },
-    { title: "Financeiro", url: "/financeiro", icon: DollarSign, description: "Gestão financeira" },
-    { title: "Assistente IA", url: "/assistente-ia", icon: Brain, description: "Inteligência artificial com memória" },
-    { title: "Configurações", url: "/configuracoes", icon: Settings, description: "Base de conhecimento" },
+    { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, badge: null },
+    { title: "Clientes", url: "/clientes", icon: Users, badge: null },
+    { title: "Estoque", url: "/estoque", icon: Package, badge: null },
+    { title: "Financeiro", url: "/financeiro", icon: DollarSign, badge: null },
+    { title: "Assistente IA", url: "/assistente-ia", icon: Brain, badge: "IA" },
+    { title: "Configurações", url: "/configuracoes", icon: Settings, badge: null },
 ];
 
-const PAGE_TITLES = {
-    "/dashboard": "Dashboard Operacional",
-    "/clientes": "Gestão de Clientes",
-    "/estoque": "Controle de Estoque",
-    "/financeiro": "Gestão Financeira",
-    "/assistente-ia": "Assistente de IA",
-    "/configuracoes": "Configurações do Sistema",
+const PAGE_TITLES: Record<string, string> = {
+    "/dashboard": "Dashboard",
+    "/clientes": "Clientes",
+    "/estoque": "Estoque",
+    "/financeiro": "Financeiro",
+    "/assistente-ia": "Assistente IA",
+    "/configuracoes": "Configurações",
+};
+
+const PAGE_SUBTITLES: Record<string, string> = {
+    "/dashboard": "Visão geral operacional",
+    "/clientes": "Gestão de clientes",
+    "/estoque": "Controle de peças",
+    "/financeiro": "Gestão financeira",
+    "/assistente-ia": "Inteligência artificial",
+    "/configuracoes": "Configurações do sistema",
 };
 
 const USER_ROLES = {
@@ -61,29 +72,35 @@ const USER_ROLES = {
 };
 
 // --- Subcomponentes ---
-const LogoIcon = () => (
-    <div className="relative group">
-        <div className="w-12 h-12 bg-blue-700 rounded-xl flex items-center justify-center shadow-md">
-            <Wrench className="w-7 h-7 text-white" />
+const SidebarLogo = () => (
+    <div className="flex items-center gap-3 px-2">
+        <div className="relative">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+                <Wrench className="w-5 h-5 text-white" />
+            </div>
+            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-900"></div>
         </div>
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
-            <div className="w-2 h-2 bg-white dark:bg-slate-900 rounded-full"></div>
+        <div>
+            <h1 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight leading-none">
+                Pista
+            </h1>
+            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 tracking-widest uppercase leading-tight">
+                Automecânica
+            </p>
         </div>
     </div>
 );
 
-const SystemStatusPanel = ({ servicos, pecas, onEstoqueBaixoClick }) => {
+const SystemStatusPanel = ({ servicos, pecas, onEstoqueBaixoClick }: { servicos: any; pecas: any; onEstoqueBaixoClick: () => void }) => {
 
-    // Calcular serviços ativos (mesma lógica do dashboard)
     const servicosAtivos = useMemo(() => {
         if (!servicos) return 0;
-        return servicos.filter(servico => servico.status !== 'FINALIZADO').length;
+        return servicos.filter((servico: any) => servico.status !== 'FINALIZADO').length;
     }, [servicos]);
 
-    // Calcular estoque baixo (mesma lógica da tela de peças)
     const estoqueBaixo = useMemo(() => {
         if (!pecas) return 0;
-        return pecas.filter(peca => {
+        return pecas.filter((peca: any) => {
             const quantidade = Number(peca.quantidade || peca.estoqueAtual || 0);
             const estoqueMinimo = Number(peca.estoqueMinimo || 0);
             return quantidade <= estoqueMinimo;
@@ -91,59 +108,52 @@ const SystemStatusPanel = ({ servicos, pecas, onEstoqueBaixoClick }) => {
     }, [pecas]);
 
     return (
-        <SidebarGroup className="mt-8">
-            <SidebarGroupLabel className="text-xs font-bold text-slate-500 uppercase tracking-wider px-3 py-2 flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                Status do Sistema
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-                <div className="px-3 py-2 space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <div>
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Serviços Ativos</span>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">Em andamento</div>
-                        </div>
-                        <span className="font-bold text-blue-600 bg-blue-200 px-3 py-1 rounded-full text-sm">
-                            {servicosAtivos}
-                        </span>
-                    </div>
-                    <div
-                        onClick={() => onEstoqueBaixoClick()}
-                        className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
-                    >
-                        <div>
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Estoque Baixo</span>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
-                                {estoqueBaixo > 0 ? 'Clique para ver detalhes' : 'Requer atenção'}
-                            </div>
-                        </div>
-                        <span className="font-bold text-orange-600 bg-orange-200 px-3 py-1 rounded-full text-sm">
+        <div className="px-3 mt-6">
+            <div className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 px-1 flex items-center gap-2">
+                <Activity className="w-3 h-3" />
+                Status
+            </div>
+            <div className="space-y-2">
+                <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 transition-colors">
+                    <span className="text-[13px] font-medium text-slate-700 dark:text-slate-300">Serviços Ativos</span>
+                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2.5 py-0.5 rounded-full tabular-nums">
+                        {servicosAtivos}
+                    </span>
+                </div>
+                <button
+                    onClick={onEstoqueBaixoClick}
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 hover:bg-amber-100/80 dark:hover:bg-amber-950/40 transition-all duration-200 group"
+                >
+                    <span className="text-[13px] font-medium text-slate-700 dark:text-slate-300">Estoque Baixo</span>
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50 px-2.5 py-0.5 rounded-full tabular-nums">
                             {estoqueBaixo}
                         </span>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                     </div>
-                </div>
-            </SidebarGroupContent>
-        </SidebarGroup>
+                </button>
+            </div>
+        </div>
     );
 };
 
-const UserPanel = ({ user, isAuthenticated, isLoadingAuth, logout }) => (
-    <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
-        <div className="relative">
-            <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
+const UserPanel = ({ user, isAuthenticated, isLoadingAuth, logout }: { user: any; isAuthenticated: boolean; isLoadingAuth: boolean; logout: () => void }) => (
+    <div className="flex items-center gap-3 p-3">
+        <div className="relative flex-shrink-0">
+            <div className="w-9 h-9 bg-gradient-to-br from-slate-700 to-slate-800 dark:from-slate-600 dark:to-slate-700 rounded-lg flex items-center justify-center">
                 <span className="text-white font-semibold text-sm">
                     {user?.nome ? user.nome.charAt(0).toUpperCase() : 'U'}
                 </span>
             </div>
-            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${isAuthenticated ? 'bg-green-500' : 'bg-slate-400'}`}></div>
+            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-50 dark:border-slate-900 ${isAuthenticated ? 'bg-emerald-400' : 'bg-slate-400'}`}></div>
         </div>
         <div className="flex-1 min-w-0">
-            <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">
+            <p className="font-semibold text-slate-900 dark:text-slate-100 text-[13px] truncate leading-tight">
                 {isLoadingAuth ? "Carregando..." : (isAuthenticated && user?.nome ? user.nome : "Visitante")}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate leading-tight">
                 {isAuthenticated && user?.role
-                    ? user.role.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
+                    ? user.role.replace('_', ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())
                     : "Não autenticado"}
             </p>
         </div>
@@ -153,19 +163,11 @@ const UserPanel = ({ user, isAuthenticated, isLoadingAuth, logout }) => (
                 size="icon"
                 onClick={logout}
                 aria-label="Sair"
-                className="text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-all duration-200"
+                className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all duration-200"
             >
-                <LogOut className="w-5 h-5" />
+                <LogOut className="w-4 h-4" />
             </Button>
         )}
-        <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Notificações"
-            className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all duration-200"
-        >
-            <Bell className="w-5 h-5" />
-        </Button>
     </div>
 );
 
@@ -277,162 +279,141 @@ export default function Layout() {
 
             <div className="h-dvh w-full bg-slate-50 dark:bg-slate-950 flex flex-col supports-[height:100dvh]:h-dvh">
 
-                {/* Header Global Fixo */}
-                <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-header flex-shrink-0 sticky top-0">
-                    <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center gap-4 px-6">
-                            <SidebarTrigger className="md:hidden hover:bg-slate-100 dark:bg-slate-800 p-2.5 rounded-lg transition-colors duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center" />
+                {/* Header Global — Glassmorphism */}
+                <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 z-header flex-shrink-0 sticky top-0">
+                    <div className="flex items-center justify-between h-14 px-4 md:px-6">
+                        {/* Esquerda: Trigger mobile + Título da página */}
+                        <div className="flex items-center gap-3">
+                            <SidebarTrigger className="md:hidden hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-lg transition-colors duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center" />
 
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center">
+                            {/* Logo mobile */}
+                            <div className="flex items-center gap-2 md:hidden">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
                                     <Wrench className="w-4 h-4 text-white" />
                                 </div>
-                                <div className="flex items-center gap-2 md:gap-4">
-                                    {/* Parte fixa - P.I.S.T.A */}
-                                    <div className="hidden sm:block">
-                                        <h1 className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                                            Pista
-                                        </h1>
-                                        <p className="text-xs text-slate-500 font-medium tracking-wider leading-tight">
-                                            Plataforma Inteligente para Simplificar a Tarefa da Automecânica
-                                        </p>
+                                <span className="font-bold text-slate-900 dark:text-white text-base">Pista</span>
+                            </div>
+
+                            {/* Título da página - desktop */}
+                            <div className="hidden md:block">
+                                <h2 className="text-base font-semibold text-slate-900 dark:text-white leading-tight">
+                                    {PAGE_TITLES[location.pathname] || "Página"}
+                                </h2>
+                                <p className="text-xs text-slate-400 dark:text-slate-500 leading-tight">
+                                    {PAGE_SUBTITLES[location.pathname] || ""}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Direita: Ações */}
+                        <div className="flex items-center gap-1">
+                            <ThemeToggle />
+
+                            {/* Notificações */}
+                            <div className="relative notifications-container">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
+                                    aria-label="Notificações"
+                                    aria-expanded={showNotificationsDropdown}
+                                    className="h-9 w-9 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
+                                >
+                                    <Bell className="w-[18px] h-[18px]" />
+                                </Button>
+
+                                {notificationsCount > 0 && (
+                                    <div className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-white dark:ring-slate-900">
+                                        {notificationsCount > 99 ? '99+' : notificationsCount}
                                     </div>
-
-                                    {/* Versão mobile - apenas Pista */}
-                                    <div className="block sm:hidden">
-                                        <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                                            Pista
-                                        </h1>
-                                        <p className="text-[11px] text-slate-500 font-medium tracking-widest">
-                                            P.I.S.T.A
-                                        </p>
-                                    </div>
-
-                                    {/* Divisor visual */}
-                                    <div className="h-8 md:h-10 w-px bg-slate-300"></div>
-
-                                    {/* Parte dinâmica - Nome da página */}
-                                    <div>
-                                        <h2 className="text-base md:text-lg font-semibold text-blue-700 tracking-tight">
-                                            {PAGE_TITLES[location.pathname] || "Página"}
-                                        </h2>
-                                        <p className="text-xs text-slate-500 font-medium hidden sm:block">
-                                            Área atual do sistema
-                                        </p>
-                                    </div>
-
-                                    {/* Theme Toggle */}
-                                    <ThemeToggle />
-
-                                    <div className="relative notifications-container">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
-                                            aria-label="Notificações"
-                                            aria-expanded={showNotificationsDropdown}
-                                            className="text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-blue-100 rounded-lg transition-all duration-200"
-                                        >
-                                            <Bell className="w-5 h-5" />
-                                        </Button>
-
-                                        {/* Badge de notificações */}
-                                        {notificationsCount > 0 && (
-                                            <div className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5">
-                                                {notificationsCount > 99 ? '99+' : notificationsCount}
-                                            </div>
-                                        )}
+                                )}
 
                                         {/* Dropdown de Notificações */}
                                         {showNotificationsDropdown && (
-                                            <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 z-dropdown">
-                                                {/* Header do Dropdown */}
-                                                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-                                                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Notificações</h3>
+                                            <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 rounded-xl shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200/80 dark:border-slate-700 z-dropdown">
+                                                <div className="flex items-center justify-between p-3 border-b border-slate-100 dark:border-slate-700/50">
+                                                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Notificações</h3>
                                                     <button
                                                         onClick={() => setShowNotificationsDropdown(false)}
-                                                        className="p-1 hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors duration-200"
+                                                        className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors duration-150"
                                                         aria-label="Fechar notificações"
                                                     >
-                                                        <X className="w-4 h-4 text-slate-500" />
+                                                        <X className="w-3.5 h-3.5 text-slate-400" />
                                                     </button>
                                                 </div>
 
-                                                {/* Lista de Notificações */}
-                                                <div className="max-h-96 overflow-y-auto">
+                                                <div className="max-h-80 overflow-y-auto">
                                                     {notificationsCount > 0 ? (
-                                                        <div className="p-2">
-                                                            {/* Notificações de Estoque Baixo */}
+                                                        <div className="p-1.5">
                                                             {pecasEstoqueBaixo.length > 0 && (
-                                                                <div className="space-y-1">
-                                                                    <div className="px-3 py-2 text-xs font-semibold text-orange-600 uppercase tracking-wider">
+                                                                <div className="space-y-0.5">
+                                                                    <div className="px-3 py-1.5 text-[11px] font-semibold text-amber-600 uppercase tracking-wider">
                                                                         Estoque Baixo ({pecasEstoqueBaixo.length})
                                                                     </div>
-                                                                    {pecasEstoqueBaixo.slice(0, 3).map((peca, index) => (
-                                                                        <div
+                                                                    {pecasEstoqueBaixo.slice(0, 3).map((peca: any, index: number) => (
+                                                                        <button
                                                                             key={peca.id || index}
                                                                             onClick={() => {
                                                                                 setShowNotificationsDropdown(false);
                                                                                 setShowEstoqueBaixoModal(true);
                                                                             }}
-                                                                            className="flex items-center gap-3 p-3 hover:bg-orange-50 rounded-lg cursor-pointer transition-colors duration-200"
+                                                                            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/20 rounded-lg cursor-pointer transition-colors duration-150 text-left"
                                                                         >
-                                                                            <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
+                                                                            <div className="w-1.5 h-1.5 bg-amber-500 rounded-full flex-shrink-0"></div>
                                                                             <div className="flex-1 min-w-0">
-                                                                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+                                                                                <p className="text-[13px] font-medium text-slate-800 dark:text-slate-200 truncate">
                                                                                     {peca.nome || peca.descricao || 'Peça sem nome'}
                                                                                 </p>
-                                                                                <p className="text-xs text-slate-500">
-                                                                                    Estoque: {Number(peca.quantidade || peca.estoqueAtual || 0)} (Mín: {Number(peca.estoqueMinimo || 0)})
+                                                                                <p className="text-[11px] text-slate-400">
+                                                                                    Estoque: {Number(peca.quantidade || peca.estoqueAtual || 0)} / Mín: {Number(peca.estoqueMinimo || 0)}
                                                                                 </p>
                                                                             </div>
-                                                                        </div>
+                                                                        </button>
                                                                     ))}
                                                                     {pecasEstoqueBaixo.length > 3 && (
-                                                                        <div
+                                                                        <button
                                                                             onClick={() => {
                                                                                 setShowNotificationsDropdown(false);
                                                                                 setShowEstoqueBaixoModal(true);
                                                                             }}
-                                                                            className="p-3 text-center text-sm text-orange-600 hover:bg-orange-50 rounded-lg cursor-pointer transition-colors duration-200"
+                                                                            className="w-full p-2 text-center text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20 rounded-lg cursor-pointer transition-colors duration-150"
                                                                         >
                                                                             Ver mais {pecasEstoqueBaixo.length - 3} peças...
-                                                                        </div>
+                                                                        </button>
                                                                     )}
                                                                 </div>
                                                             )}
 
-                                                            {/* Notificações de Serviços Atrasados */}
-                                                            {servicos && servicos.filter(servico => {
+                                                            {servicos && servicos.filter((servico: any) => {
                                                                 const dataInicio = new Date(servico.dataInicio);
                                                                 const hoje = new Date();
                                                                 const diasDecorridos = Math.floor((hoje.getTime() - dataInicio.getTime()) / (1000 * 60 * 60 * 24));
                                                                 return servico.status !== 'FINALIZADO' && diasDecorridos > 7;
                                                             }).length > 0 && (
-                                                                    <div className="space-y-1 mt-4">
-                                                                        <div className="px-3 py-2 text-xs font-semibold text-red-600 uppercase tracking-wider">
+                                                                    <div className="space-y-0.5 mt-2">
+                                                                        <div className="px-3 py-1.5 text-[11px] font-semibold text-red-500 uppercase tracking-wider">
                                                                             Serviços Atrasados
                                                                         </div>
-                                                                        {servicos.filter(servico => {
+                                                                        {servicos.filter((servico: any) => {
                                                                             const dataInicio = new Date(servico.dataInicio);
                                                                             const hoje = new Date();
                                                                             const diasDecorridos = Math.floor((hoje.getTime() - dataInicio.getTime()) / (1000 * 60 * 60 * 24));
                                                                             return servico.status !== 'FINALIZADO' && diasDecorridos > 7;
-                                                                        }).slice(0, 2).map((servico, index) => {
+                                                                        }).slice(0, 2).map((servico: any, index: number) => {
                                                                             const dataInicio = new Date(servico.dataInicio);
                                                                             const hoje = new Date();
                                                                             const diasDecorridos = Math.floor((hoje.getTime() - dataInicio.getTime()) / (1000 * 60 * 60 * 24));
                                                                             return (
                                                                                 <div
                                                                                     key={servico.id || index}
-                                                                                    className="flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg cursor-pointer transition-colors duration-200"
+                                                                                    className="flex items-center gap-3 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg cursor-pointer transition-colors duration-150"
                                                                                 >
-                                                                                    <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                                                                                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full flex-shrink-0"></div>
                                                                                     <div className="flex-1 min-w-0">
-                                                                                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+                                                                                        <p className="text-[13px] font-medium text-slate-800 dark:text-slate-200 truncate">
                                                                                             OS #{servico.numeroOS || servico.id}
                                                                                         </p>
-                                                                                        <p className="text-xs text-slate-500">
+                                                                                        <p className="text-[11px] text-slate-400">
                                                                                             {diasDecorridos} dias em andamento
                                                                                         </p>
                                                                                     </div>
@@ -444,20 +425,19 @@ export default function Layout() {
                                                         </div>
                                                     ) : (
                                                         <div className="p-6 text-center">
-                                                            <Bell className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                                                            <p className="text-slate-500 text-sm">Nenhuma notificação nova</p>
+                                                            <Bell className="w-10 h-10 text-slate-200 dark:text-slate-700 mx-auto mb-2" />
+                                                            <p className="text-slate-400 text-xs">Nenhuma notificação</p>
                                                         </div>
                                                     )}
                                                 </div>
 
-                                                {/* Footer do Dropdown */}
                                                 {notificationsCount > 0 && (
-                                                    <div className="p-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                                                    <div className="p-2 border-t border-slate-100 dark:border-slate-700/50">
                                                         <button
                                                             onClick={() => setShowNotificationsDropdown(false)}
-                                                            className="w-full text-sm text-slate-600 hover:text-slate-800 dark:text-slate-200 transition-colors duration-200"
+                                                            className="w-full text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 transition-colors duration-150"
                                                         >
-                                                            Fechar notificações
+                                                            Fechar
                                                         </button>
                                                     </div>
                                                 )}
@@ -465,63 +445,77 @@ export default function Layout() {
                                         )}
                                     </div>
 
-                                    {/* Botão de Logout no Header */}
+                                    {/* Separator + User avatar no header */}
                                     {isAuthenticated && (
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={logout}
-                                            aria-label="Sair da conta"
-                                            className="text-slate-500 hover:text-red-600 hover:bg-red-100 rounded-lg transition-all duration-200 p-3"
-                                        >
-                                            <LogOut className="w-5 h-5" />
-                                        </Button>
+                                        <>
+                                            <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
+                                            <button
+                                                onClick={logout}
+                                                className="hidden sm:flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 group"
+                                                aria-label="Sair da conta"
+                                            >
+                                                <div className="w-7 h-7 bg-gradient-to-br from-slate-600 to-slate-700 rounded-md flex items-center justify-center flex-shrink-0">
+                                                    <span className="text-white text-xs font-semibold">
+                                                        {user?.nome ? user.nome.charAt(0).toUpperCase() : 'U'}
+                                                    </span>
+                                                </div>
+                                                <LogOut className="w-3.5 h-3.5 text-slate-400 group-hover:text-red-500 transition-colors" />
+                                            </button>
+                                        </>
                                     )}
                                 </div>
-                            </div>
                         </div>
-                    </div>
                 </header>
 
-                {/* Container com Sidebar e Conteúdo */}
+                {/* Container com Sidebar + Conteúdo */}
                 <div className="flex flex-1 min-h-0 overflow-hidden">
-                    {/* Sidebar */}
-                    <Sidebar className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-sidebar w-64 flex-shrink-0 fixed h-[calc(100dvh-4rem)] top-16 left-0 hidden md:flex md:flex-col" role="navigation" aria-label="Menu principal">
-                        <SidebarContent className="p-4 pt-6 flex-1 overflow-y-auto">
+                    {/* Sidebar — Design moderno */}
+                    <Sidebar className="border-r border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 z-sidebar w-64 flex-shrink-0 fixed h-[calc(100dvh-3.5rem)] top-14 left-0 hidden md:flex md:flex-col" role="navigation" aria-label="Menu principal">
+                        {/* Sidebar Header com Logo */}
+                        <SidebarHeader className="px-5 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800/60">
+                            <SidebarLogo />
+                        </SidebarHeader>
+
+                        <SidebarContent className="px-3 pt-4 flex-1 overflow-y-auto">
                             {/* Menu de navegação */}
                             <SidebarGroup>
-                                <SidebarGroupLabel className="text-xs font-bold text-slate-500 uppercase tracking-wider px-3 py-2 flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    Navegação Principal
+                                <SidebarGroupLabel className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3 mb-1">
+                                    Menu
                                 </SidebarGroupLabel>
                                 <SidebarGroupContent>
-                                    <SidebarMenu className="space-y-2">
+                                    <SidebarMenu className="space-y-0.5">
                                         {NAVIGATION_ITEMS.map((item) => {
                                             const isActive = location.pathname === item.url;
                                             return (
                                                 <SidebarMenuItem key={item.title}>
                                                     <SidebarMenuButton
                                                         asChild
-                                                        className={`sidebar-transition rounded-xl group ${isActive
-                                                            ? 'nav-item-active text-blue-700 dark:text-blue-400'
-                                                            : 'text-slate-600 dark:text-slate-400 nav-item-hover hover:text-slate-900 dark:hover:text-slate-200'
+                                                        className={`rounded-xl transition-all duration-200 group ${isActive
+                                                            ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 shadow-sm shadow-blue-100/50 dark:shadow-blue-950/20'
+                                                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'
                                                             }`}
                                                     >
-                                                        <Link to={item.url} className="flex items-center gap-4 px-4 py-3">
-                                                            <div className={`p-2 rounded-lg transition-all duration-200 ${isActive
-                                                                ? 'bg-blue-500 text-white dark:bg-blue-600'
-                                                                : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'
+                                                        <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5">
+                                                            <div className={`p-1.5 rounded-lg transition-all duration-200 ${isActive
+                                                                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 group-hover:text-slate-700 dark:group-hover:text-slate-300'
                                                                 }`}>
                                                                 <item.icon className="w-4 h-4" />
                                                             </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className={`font-semibold text-sm ${isActive ? 'text-blue-700 dark:text-blue-400' : ''}`}>
-                                                                    {item.title}
-                                                                </div>
-                                                                <div className="text-xs text-slate-500 dark:text-slate-500 truncate">
-                                                                    {item.description}
-                                                                </div>
-                                                            </div>
+                                                            <span className={`text-[13px] font-medium flex-1 ${isActive ? 'font-semibold' : ''}`}>
+                                                                {item.title}
+                                                            </span>
+                                                            {item.badge && (
+                                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${isActive
+                                                                    ? 'bg-blue-600 text-white'
+                                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                                                                }`}>
+                                                                    {item.badge}
+                                                                </span>
+                                                            )}
+                                                            {isActive && (
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400"></div>
+                                                            )}
                                                         </Link>
                                                     </SidebarMenuButton>
                                                 </SidebarMenuItem>
@@ -538,7 +532,7 @@ export default function Layout() {
                             />
                         </SidebarContent>
 
-                        <SidebarFooter className="border-t border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900 sticky bottom-0">
+                        <SidebarFooter className="border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50">
                             <UserPanel
                                 user={user}
                                 isAuthenticated={isAuthenticated}
@@ -547,8 +541,6 @@ export default function Layout() {
                             />
                         </SidebarFooter>
                     </Sidebar>
-
-                    {/* Sidebar Mobile - dentro do SidebarProvider já gerencia automaticamente */}
 
                     {/* Conteúdo principal */}
                     <main className="flex flex-col flex-1 min-h-0 overflow-hidden">
@@ -559,7 +551,7 @@ export default function Layout() {
                 </div>
             </div>
 
-            {/* Assistente virtual apenas se autenticado - COMENTADO TEMPORARIAMENTE */}
+            {/* Assistente virtual — COMENTADO TEMPORARIAMENTE */}
             {/* {isAuthenticated && (
                 <VirtualAssistant
                     userType={userTypeForAssistant}
