@@ -72,20 +72,22 @@ const USER_ROLES = {
 };
 
 // --- Subcomponentes ---
-const SidebarLogo = () => (
-    <div className="flex items-center gap-3 px-2">
-        <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
-                <Wrench className="w-5 h-5 text-white" />
+const HeaderBranding = () => (
+    <div className="flex items-center gap-3">
+        <div className="relative flex-shrink-0">
+            <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+                <Wrench className="w-[18px] h-[18px] text-white" />
             </div>
-            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-900"></div>
+            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-900"></div>
         </div>
         <div>
-            <h1 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight leading-none">
+            <h1 className="text-base font-bold text-slate-900 dark:text-white tracking-tight leading-none">
                 Pista
             </h1>
-            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 tracking-widest uppercase leading-tight">
-                Automecânica
+            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
+                <span className="tracking-[0.15em]">P.I.S.T.A</span>
+                <span className="mx-1 text-slate-300 dark:text-slate-600">·</span>
+                <span className="tracking-wide">Automecânica</span>
             </p>
         </div>
     </div>
@@ -282,27 +284,10 @@ export default function Layout() {
                 {/* Header Global — Glassmorphism */}
                 <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 z-header flex-shrink-0 sticky top-0">
                     <div className="flex items-center justify-between h-14 px-4 md:px-6">
-                        {/* Esquerda: Trigger mobile + Título da página */}
+                        {/* Esquerda: Trigger mobile + Branding */}
                         <div className="flex items-center gap-3">
                             <SidebarTrigger className="md:hidden hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-lg transition-colors duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center" />
-
-                            {/* Logo mobile */}
-                            <div className="flex items-center gap-2 md:hidden">
-                                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-                                    <Wrench className="w-4 h-4 text-white" />
-                                </div>
-                                <span className="font-bold text-slate-900 dark:text-white text-base">Pista</span>
-                            </div>
-
-                            {/* Título da página - desktop */}
-                            <div className="hidden md:block">
-                                <h2 className="text-base font-semibold text-slate-900 dark:text-white leading-tight">
-                                    {PAGE_TITLES[location.pathname] || "Página"}
-                                </h2>
-                                <p className="text-xs text-slate-400 dark:text-slate-500 leading-tight">
-                                    {PAGE_SUBTITLES[location.pathname] || ""}
-                                </p>
-                            </div>
+                            <HeaderBranding />
                         </div>
 
                         {/* Direita: Ações */}
@@ -471,11 +456,6 @@ export default function Layout() {
                 <div className="flex flex-1 min-h-0 overflow-hidden">
                     {/* Sidebar — Design moderno */}
                     <Sidebar className="border-r border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 z-sidebar w-64 flex-shrink-0 fixed h-[calc(100dvh-3.5rem)] top-14 left-0 hidden md:flex md:flex-col" role="navigation" aria-label="Menu principal">
-                        {/* Sidebar Header com Logo */}
-                        <SidebarHeader className="px-5 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800/60">
-                            <SidebarLogo />
-                        </SidebarHeader>
-
                         <SidebarContent className="px-3 pt-4 flex-1 overflow-y-auto">
                             {/* Menu de navegação */}
                             <SidebarGroup>
@@ -545,6 +525,15 @@ export default function Layout() {
                     {/* Conteúdo principal */}
                     <main className="flex flex-col flex-1 min-h-0 overflow-hidden">
                         <div className="flex-1 overflow-y-auto">
+                            {/* Título da página acima do conteúdo */}
+                            <div className="px-4 md:px-6 pt-5 pb-2">
+                                <h2 className="text-lg font-semibold text-slate-900 dark:text-white leading-tight">
+                                    {PAGE_TITLES[location.pathname] || "Página"}
+                                </h2>
+                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                                    {PAGE_SUBTITLES[location.pathname] || ""}
+                                </p>
+                            </div>
                             <Outlet />
                         </div>
                     </main>
