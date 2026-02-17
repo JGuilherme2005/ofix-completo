@@ -63,10 +63,10 @@ const USER_ROLES = {
 // --- Subcomponentes ---
 const LogoIcon = () => (
     <div className="relative group">
-        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform duration-200">
+        <div className="w-12 h-12 bg-blue-700 rounded-xl flex items-center justify-center shadow-md">
             <Wrench className="w-7 h-7 text-white" />
         </div>
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-sm">
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
             <div className="w-2 h-2 bg-white rounded-full"></div>
         </div>
     </div>
@@ -98,7 +98,7 @@ const SystemStatusPanel = ({ servicos, pecas, onEstoqueBaixoClick }) => {
             </SidebarGroupLabel>
             <SidebarGroupContent>
                 <div className="px-3 py-2 space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                         <div>
                             <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Serviços Ativos</span>
                             <div className="text-xs text-slate-500 dark:text-slate-400">Em andamento</div>
@@ -109,7 +109,7 @@ const SystemStatusPanel = ({ servicos, pecas, onEstoqueBaixoClick }) => {
                     </div>
                     <div
                         onClick={() => onEstoqueBaixoClick()}
-                        className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg border border-orange-200 dark:border-orange-800 cursor-pointer hover:from-orange-100 hover:to-orange-200 dark:hover:from-orange-900/30 dark:hover:to-orange-800/30 transition-all duration-200"
+                        className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
                     >
                         <div>
                             <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Estoque Baixo</span>
@@ -128,9 +128,9 @@ const SystemStatusPanel = ({ servicos, pecas, onEstoqueBaixoClick }) => {
 };
 
 const UserPanel = ({ user, isAuthenticated, isLoadingAuth, logout }) => (
-    <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+    <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
         <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-700 rounded-full flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
                 <span className="text-white font-semibold text-sm">
                     {user?.nome ? user.nome.charAt(0).toUpperCase() : 'U'}
                 </span>
@@ -274,16 +274,16 @@ export default function Layout() {
                 } as any}
             />
 
-            <div className="h-screen w-full bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 flex flex-col">
+            <div className="h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col">
 
                 {/* Header Global Fixo */}
-                <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 shadow-sm z-30 flex-shrink-0 sticky top-0">
+                <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-30 flex-shrink-0 sticky top-0">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-4 px-6">
                             <SidebarTrigger className="md:hidden hover:bg-slate-100 p-2 rounded-lg transition-colors duration-200" />
 
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-md">
+                                <div className="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center">
                                     <Wrench className="w-4 h-4 text-white" />
                                 </div>
                                 <div className="flex items-center gap-2 md:gap-4">
@@ -336,16 +336,16 @@ export default function Layout() {
 
                                         {/* Badge de notificações */}
                                         {notificationsCount > 0 && (
-                                            <div className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5 shadow-lg">
+                                            <div className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5">
                                                 {notificationsCount > 99 ? '99+' : notificationsCount}
                                             </div>
                                         )}
 
                                         {/* Dropdown de Notificações */}
                                         {showNotificationsDropdown && (
-                                            <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 z-50">
+                                            <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 z-50">
                                                 {/* Header do Dropdown */}
-                                                <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-blue-100">
+                                                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
                                                     <h3 className="text-lg font-semibold text-slate-900">Notificações</h3>
                                                     <button
                                                         onClick={() => setShowNotificationsDropdown(false)}
@@ -483,7 +483,7 @@ export default function Layout() {
                 {/* Container com Sidebar e Conteúdo */}
                 <div className="flex flex-1 min-h-0 overflow-hidden">
                     {/* Sidebar */}
-                    <Sidebar className="border-r border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-xl z-20 w-64 flex-shrink-0 fixed h-full top-16 left-0 hidden md:flex md:flex-col">
+                    <Sidebar className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-20 w-64 flex-shrink-0 fixed h-full top-16 left-0 hidden md:flex md:flex-col">
                         <SidebarContent className="p-4 pt-6 flex-1 overflow-y-auto">
                             {/* Menu de navegação */}
                             <SidebarGroup>
@@ -506,7 +506,7 @@ export default function Layout() {
                                                     >
                                                         <Link to={item.url} className="flex items-center gap-4 px-4 py-3">
                                                             <div className={`p-2 rounded-lg transition-all duration-200 ${isActive
-                                                                ? 'bg-blue-500 text-white shadow-lg dark:bg-blue-600'
+                                                                ? 'bg-blue-500 text-white dark:bg-blue-600'
                                                                 : 'bg-slate-100 group-hover:bg-slate-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'
                                                                 }`}>
                                                                 <item.icon className="w-4 h-4" />
@@ -535,7 +535,7 @@ export default function Layout() {
                             />
                         </SidebarContent>
 
-                        <SidebarFooter className="border-t border-slate-200/60 dark:border-slate-800/60 p-4 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900 dark:to-slate-800 sticky bottom-0">
+                        <SidebarFooter className="border-t border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900 sticky bottom-0">
                             <UserPanel
                                 user={user}
                                 isAuthenticated={isAuthenticated}
@@ -549,7 +549,7 @@ export default function Layout() {
 
                     {/* Conteúdo principal */}
                     <main className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                        <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900">
+                        <div className="flex-1 overflow-y-auto">
                             <Outlet />
                         </div>
                     </main>
@@ -572,7 +572,7 @@ export default function Layout() {
             {isAuthenticated && location.pathname !== '/assistente-ia' && (
                 <Link
                     to="/assistente-ia"
-                    className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-full shadow-lg flex items-center justify-center z-40 transition-all duration-300 hover:scale-110 group"
+                    className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full shadow-md flex items-center justify-center z-40 transition-colors group"
                     aria-label="Abrir Assistente Matias"
                 >
                     <Brain className="w-6 h-6 text-white" />
@@ -588,9 +588,9 @@ export default function Layout() {
             {/* Modal de Estoque Baixo - Overlay Global */}
             {showEstoqueBaixoModal && (
                 <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg w-full max-w-2xl max-h-[80vh] overflow-hidden">
                         {/* Header do Modal */}
-                        <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-orange-50 to-orange-100">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-orange-500 rounded-lg">
                                     <AlertTriangle className="w-5 h-5 text-white" />

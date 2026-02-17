@@ -380,5 +380,5 @@ await mcp_github_github_create_pull_request({
 
 - **Architecture:** `docs/README.md`
 - **Agno Timeout Fix:** `docs/agente-matias/AGNO_TIMEOUT_FIX.md`
-- **Deploy Guide:** `docs/deployment/DEPLOY_GUIDE.md`
+- **Deploy Guide:** `docs/deployment/DEPLOY.md`
 - **Project History:** `docs/historico/HISTORICO_PROJETO.md`

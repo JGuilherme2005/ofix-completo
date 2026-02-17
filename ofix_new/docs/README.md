@@ -15,8 +15,7 @@ DocumentaÃ§Ã£o completa do Agente Matias - Assistente Virtual Inteligente
 ### ðŸš€ [deployment/](./deployment/)
 Guias de implantaÃ§Ã£o e configuraÃ§Ã£o de produÃ§Ã£o
 
-- **[DEPLOY_GUIDE.md](./deployment/DEPLOY_GUIDE.md)** - Guia oficial de deploy
-- **[DEPLOY_GRATUITO.md](./deployment/DEPLOY_GRATUITO.md)** - Alternativas gratuitas (Render, Vercel, Railway)
+- **[DEPLOY.md](./deployment/DEPLOY.md)** - Guia unificado de deploy (Render + Vercel/Netlify + Supabase)
 
 ### ðŸ“œ [historico/](./historico/)
 HistÃ³rico de desenvolvimento e decisÃµes tÃ©cnicas (consolidado)
@@ -28,7 +27,7 @@ HistÃ³rico de desenvolvimento e decisÃµes tÃ©cnicas (consolidado)
 ### Para Desenvolvedores
 1. **ComeÃ§ar desenvolvimento:** Ver [README.md](../README.md) na raiz
 2. **Entender o Agente Matias:** [DocumentaÃ§Ã£o Completa](./agente-matias/DOCUMENTACAO_COMPLETA_AGENTE_MATIAS.md)
-3. **Deploy em produÃ§Ã£o:** [Deploy Guide](./deployment/DEPLOY_GUIDE.md)
+3. **Deploy em produÃ§Ã£o:** [Deploy Guide](./deployment/DEPLOY.md)
 4. **Resolver problemas com Agno:** [Timeout Fix](./agente-matias/AGNO_TIMEOUT_FIX.md)
 
 ### Para Gestores

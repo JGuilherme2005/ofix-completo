@@ -5,6 +5,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Logger, LOG_LEVELS } from '../logger';
 
+// M6-QA-02: Mock do apiClient (flushLogs usa apiClient.post em vez de fetch)
+const mockApiClient = { post: vi.fn(() => Promise.resolve({ data: { ok: true } })) };
+vi.mock('../../services/api', () => ({ default: mockApiClient }));
+
 describe('Logger', () => {
   let logger;
   let originalFetch;
@@ -205,11 +209,11 @@ describe('Logger', () => {
 
       await logger.flushLogs();
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/logs/batch'),
+      expect(mockApiClient.post).toHaveBeenCalledWith(
+        '/logs/batch',
         expect.objectContaining({
-          method: 'POST',
-          body: expect.stringContaining('log1')
+          logs: expect.arrayContaining([{ message: 'log1' }, { message: 'log2' }]),
+          count: 2
         })
       );
 
@@ -217,15 +221,16 @@ describe('Logger', () => {
     });
 
     it('não deve fazer nada se fila estiver vazia', async () => {
+      mockApiClient.post.mockClear();
       logger.logQueue = [];
 
       await logger.flushLogs();
 
-      expect(global.fetch).not.toHaveBeenCalled();
+      expect(mockApiClient.post).not.toHaveBeenCalled();
     });
 
     it('deve recolocar logs na fila se falhar', async () => {
-      global.fetch = vi.fn(() => Promise.reject(new Error('Network error')));
+      mockApiClient.post.mockRejectedValueOnce(new Error('Network error'));
       logger.logQueue = [{ message: 'test' }];
 
       await logger.flushLogs();
