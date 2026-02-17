@@ -52,6 +52,7 @@ except Exception as _guard_err:
 from matias_agno.knowledge.base import get_knowledge_base
 from matias_agno.storage.memory import get_memory_storage
 from matias_agno.tools.simulate import simulate_vehicle_scenario
+from matias_agno.tools.search import buscar_conhecimento
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INSTRUCTIONS — agente autenticado (interno da oficina)
@@ -201,7 +202,7 @@ def create_matias_agent():
         model=_select_model(),
         knowledge=knowledge_base,
         search_knowledge=knowledge_enabled,
-        tools=[simulate_vehicle_scenario],
+        tools=[simulate_vehicle_scenario, buscar_conhecimento],
         # M3-AI-03: PromptInjectionGuardrail blocks jailbreak/injection attempts.
         pre_hooks=[_pi_guardrail] if _pi_guardrail else [],
         markdown=True,

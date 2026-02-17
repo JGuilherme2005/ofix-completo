@@ -4,6 +4,9 @@
  * getApiBaseUrl() returns the backend base URL without a trailing `/api`.
  * In local development on `localhost`, we return an empty string to use the
  * Vite proxy (`/api` -> `http://localhost:10000`).
+ *
+ * M4-FE-02 / M4-FE-06: Dead code removido (apiCall, chatWithMatias, testMatiasConnection).
+ * Todos os módulos devem usar o apiClient (axios) de services/api.js para chamadas HTTP.
  */
 
 const normalizeBaseUrl = (url) => {
@@ -28,68 +31,5 @@ export const getApiBaseUrl = () => {
   return "";
 };
 
-const API_BASE_URL = getApiBaseUrl();
-
-/**
- * Calls the backend API using either:
- * - Direct base URL: `${API_BASE_URL}/api/...`
- * - Local proxy: `/api/...`
- */
-export const apiCall = async (endpoint, options = {}) => {
-  const cleanEndpoint = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
-
-  const url = API_BASE_URL
-    ? `${API_BASE_URL}/api/${cleanEndpoint}`
-    : `/api/${cleanEndpoint}`;
-
-  const defaultOptions = {
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "User-Agent": "OFIX-Frontend/1.0",
-    },
-  };
-
-  const requestOptions = {
-    ...defaultOptions,
-    ...options,
-    headers: {
-      ...defaultOptions.headers,
-      ...options.headers,
-    },
-  };
-
-  try {
-    return await fetch(url, requestOptions);
-  } catch (error) {
-    throw new Error(`API Error: ${error.message} (URL: ${url})`);
-  }
-};
-
-export const chatWithMatias = async (message, user_id) => {
-  const response = await apiCall("agno/chat-matias", {
-    method: "POST",
-    body: JSON.stringify({ message, user_id }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errorText}`);
-  }
-
-  const data = await response.json();
-  if (!data.success) throw new Error(data.error || "Agent error");
-  return data;
-};
-
-export const testMatiasConnection = async (user_id = "connection_test") => {
-  try {
-    const data = await chatWithMatias("teste de conexao", user_id);
-    return data.success === true;
-  } catch {
-    return false;
-  }
-};
-
-export default { apiCall, chatWithMatias, testMatiasConnection, getApiBaseUrl };
+export default { getApiBaseUrl };
 

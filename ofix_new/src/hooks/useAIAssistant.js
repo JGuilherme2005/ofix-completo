@@ -90,7 +90,7 @@ export function useAIAssistant(options = {}) {
             setError(null);
 
             // Primeiro verificar se a API está funcionando (sem autenticação)
-            const healthResponse = await fetch(buildUrl('/agno/health'), {
+            const healthResponse = await fetch(buildUrl('/api/agno/health'), {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'

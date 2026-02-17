@@ -1,59 +1,47 @@
-import { getApiBaseUrl } from '../utils/api';
+import apiClient from './api';
 
 /**
  * Serviço de IA para o frontend
  * Centraliza todas as chamadas para as APIs de IA
+ * M4-FE-02: Migrado para apiClient (axios) — token, 401 e timeout centralizados.
  */
 class AIService {
   constructor() {
-    const base = getApiBaseUrl();
-    this.baseURL = base ? `${base}/api/ai` : '/api/ai';
-    this.timeout = 60000; // 1 minuto
+    this.basePath = '/ai';  // apiClient já tem baseURL = .../api
   }
 
   /**
-   * Faz requisição com timeout e tratamento de erro
+   * Faz requisição via apiClient com tratamento de erro
    */
   async request(endpoint, options = {}) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-
     try {
-      let token = null;
-      const tokenDataString = localStorage.getItem('authToken');
-      if (tokenDataString) {
-        try {
-          const tokenData = JSON.parse(tokenDataString);
-          token = tokenData?.token || null;
-        } catch (e) {
-          localStorage.removeItem('authToken');
-        }
+      const { method = 'GET', headers = {}, body, ...rest } = options;
+      const url = `${this.basePath}${endpoint}`;
+
+      const axiosConfig = {
+        url,
+        method: method.toLowerCase(),
+        headers,
+        ...rest,
+      };
+
+      // Se body é FormData, não setar Content-Type (axios faz auto)
+      if (body instanceof FormData) {
+        axiosConfig.data = body;
+        delete axiosConfig.headers['Content-Type'];
+      } else if (body) {
+        axiosConfig.data = typeof body === 'string' ? JSON.parse(body) : body;
       }
 
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
-        ...options,
-        signal: controller.signal,
-        headers: {
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          ...options.headers
-        }
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro na requisição');
-      }
-
-      return await response.json();
+      const response = await apiClient(axiosConfig);
+      return response.data;
     } catch (error) {
-      clearTimeout(timeoutId);
-      
-      if (error.name === 'AbortError') {
+      if (error.code === 'ECONNABORTED') {
         throw new Error('Timeout na requisição. Tente novamente.');
       }
-      
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      }
       throw error;
     }
   }

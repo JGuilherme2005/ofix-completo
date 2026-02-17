@@ -1,16 +1,17 @@
 /**
  * 🌐 Hook useChatAPI
  * 
- * Gerencia comunicação com API com retry logic e timeout
+ * Gerencia comunicação com API com retry logic e timeout.
+ * M4-FE-02: Migrado para apiClient (axios) — token, 401, base URL e timeout centralizados.
  */
 
 import { useState, useCallback } from 'react';
 import { AI_CONFIG } from '../constants/aiPageConfig';
 import logger from '../utils/logger';
 import { validarMensagem } from '../utils/messageValidator';
-import { getApiBaseUrl } from '../utils/api';
+import apiClient from '../services/api';
 
-export const useChatAPI = (getAuthHeaders) => {
+export const useChatAPI = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -41,38 +42,18 @@ export const useChatAPI = (getAuthHeaders) => {
     setError(null);
 
     try {
-      const API_BASE_URL = getApiBaseUrl();
-      const API_BASE = API_BASE_URL.replace('/api', '');
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(
-        () => controller.abort(),
-        AI_CONFIG.CHAT.REQUEST_TIMEOUT_MS
-      );
-
       logger.debug('Enviando mensagem para API', {
         mensagem: mensagem.substring(0, 50),
         tentativa,
         maxTentativas: AI_CONFIG.RETRY.MAX_ATTEMPTS
       });
 
-      const response = await fetch(`${API_BASE}/agno/chat-inteligente`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          message: validacao.sanitized, // Usar mensagem sanitizada
-          contexto_conversa: contexto
-        }),
-        signal: controller.signal
+      const { data } = await apiClient.post('/agno/chat-inteligente', {
+        message: validacao.sanitized,
+        contexto_conversa: contexto
+      }, {
+        timeout: AI_CONFIG.CHAT.REQUEST_TIMEOUT_MS
       });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
       
       logger.info('Mensagem enviada com sucesso', {
         tentativa,
@@ -82,10 +63,10 @@ export const useChatAPI = (getAuthHeaders) => {
       return data;
 
     } catch (err) {
-      const isTimeout = err.name === 'AbortError';
+      const isTimeout = err.code === 'ECONNABORTED';
       const errorMessage = isTimeout 
         ? 'Tempo limite excedido. Tente novamente.'
-        : err.message;
+        : (err.response?.data?.error || err.message);
 
       logger.error('Erro ao enviar mensagem', {
         error: errorMessage,
@@ -114,32 +95,22 @@ export const useChatAPI = (getAuthHeaders) => {
     } finally {
       setLoading(false);
     }
-  }, [getAuthHeaders]);
+  }, []);
 
   /**
    * Verifica status da conexão com retry
    */
   const verificarConexao = useCallback(async (tentativas = 1) => {
     try {
-      const API_BASE_URL = getApiBaseUrl();
-      const API_BASE = API_BASE_URL.replace('/api', '');
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(`${API_BASE}/agno/contexto-sistema`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-        signal: controller.signal
+      const { status } = await apiClient.get('/agno/contexto-sistema', {
+        timeout: 5000
       });
 
-      clearTimeout(timeoutId);
-
-      const isConnected = response.ok;
+      const isConnected = status >= 200 && status < 300;
       
       logger.info('Verificação de conexão', {
         isConnected,
-        status: response.status,
+        status,
         tentativa: tentativas
       });
 
@@ -159,7 +130,7 @@ export const useChatAPI = (getAuthHeaders) => {
       
       return false;
     }
-  }, [getAuthHeaders]);
+  }, []);
 
   /**
    * Carrega histórico do servidor com timeout
@@ -171,44 +142,21 @@ export const useChatAPI = (getAuthHeaders) => {
     }
 
     try {
-      const API_BASE_URL = getApiBaseUrl();
-      const API_BASE = API_BASE_URL.replace('/api', '');
+      const { data } = await apiClient.get('/agno/historico-conversa', {
+        timeout: 10000
+      });
+
+      const mensagens = data.mensagens || [];
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-      
-      const response = await fetch(
-        `${API_BASE}/agno/historico-conversa`,
-        {
-          headers: getAuthHeaders(),
-          signal: controller.signal
-        }
-      );
-
-      clearTimeout(timeoutId);
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        const mensagens = data.mensagens || [];
-        
-        logger.info('Histórico carregado do servidor', {
-          mensagensCount: mensagens.length,
-          userId
-        });
-
-        return mensagens;
-      }
-
-      logger.warn('Falha ao carregar histórico', {
-        status: response.status,
+      logger.info('Histórico carregado do servidor', {
+        mensagensCount: mensagens.length,
         userId
       });
 
-      return [];
+      return mensagens;
 
     } catch (err) {
-      const isTimeout = err.name === 'AbortError';
+      const isTimeout = err.code === 'ECONNABORTED';
       
       logger.error('Erro ao carregar histórico do servidor', {
         error: err.message,
@@ -218,7 +166,7 @@ export const useChatAPI = (getAuthHeaders) => {
       
       return [];
     }
-  }, [getAuthHeaders]);
+  }, []);
 
   /**
    * Limpa erro

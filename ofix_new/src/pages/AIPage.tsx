@@ -197,8 +197,8 @@ const AIPage = () => {
   //     try {
   //       const authHeaders = getAuthHeaders();
   //       const API_BASE_URL = getApiBaseUrl();
-  //       const API_BASE = API_BASE_URL.replace('/api', '');
-  //       const response = await fetch(`${API_BASE}/agno/historico-conversa?usuario_id=${user.id}`, {
+  //       const API_BASE = API_BASE_URL;
+  //       const response = await fetch(`${API_BASE}/api/agno/historico-conversa?usuario_id=${user.id}`, {
   //         headers: authHeaders
   //       });
   //       if (response.ok) {
@@ -263,7 +263,7 @@ const AIPage = () => {
 
       if (warm) {
         try {
-          await fetchWithTimeout(`${API_BASE}/agno/warm`, {
+          await fetchWithTimeout(`${API_BASE}/api/agno/warm`, {
             method: 'POST',
             headers: authHeaders
           }, 180000);
@@ -272,7 +272,7 @@ const AIPage = () => {
         }
       }
 
-      const response = await fetchWithTimeout(`${API_BASE}/agno/status`, {
+      const response = await fetchWithTimeout(`${API_BASE}/api/agno/status`, {
         method: 'GET',
         headers: authHeaders
       }, 10000);
@@ -291,7 +291,7 @@ const AIPage = () => {
       // Atualiza status da memoria quando o Agno estiver online (evita ficar preso em "Aguardando ativacao").
       if (agnoOnline) {
         try {
-          const memoryRes = await fetchWithTimeout(`${API_BASE}/agno/memory-status`, {
+          const memoryRes = await fetchWithTimeout(`${API_BASE}/api/agno/memory-status`, {
             method: 'GET',
             headers: authHeaders
           }, 8000);
@@ -743,9 +743,9 @@ const AIPage = () => {
       try {
         const authHeaders = getAuthHeaders();
         const API_BASE_URL = getApiBaseUrl();
-        const API_BASE = API_BASE_URL.replace('/api', '');
+        const API_BASE = API_BASE_URL;
 
-        const response = await fetch(`${API_BASE}/agno/memory-status`, {
+        const response = await fetch(`${API_BASE}/api/agno/memory-status`, {
           headers: authHeaders
         });
 
@@ -773,9 +773,9 @@ const AIPage = () => {
     try {
       const authHeaders = getAuthHeaders();
       const API_BASE_URL = getApiBaseUrl();
-      const API_BASE = API_BASE_URL.replace('/api', '');
+      const API_BASE = API_BASE_URL;
 
-      const response = await fetch(`${API_BASE}/agno/memories/${user.id}`, {
+      const response = await fetch(`${API_BASE}/api/agno/memories/${user.id}`, {
         headers: authHeaders
       });
 
@@ -807,9 +807,9 @@ const AIPage = () => {
     try {
       const authHeaders = getAuthHeaders();
       const API_BASE_URL = getApiBaseUrl();
-      const API_BASE = API_BASE_URL.replace('/api', '');
+      const API_BASE = API_BASE_URL;
 
-      const response = await fetch(`${API_BASE}/agno/memories/${user.id}`, {
+      const response = await fetch(`${API_BASE}/api/agno/memories/${user.id}`, {
         method: 'DELETE',
         headers: authHeaders
       });
@@ -897,7 +897,7 @@ const AIPage = () => {
             const authHeaders = getAuthHeaders();
 
             const API_BASE_URL = getApiBaseUrl();
-            const API_BASE = API_BASE_URL.replace('/api', '');
+            const API_BASE = API_BASE_URL;
             
             // Preparar body da requisição
             const requestBody: any = {
@@ -911,13 +911,13 @@ const AIPage = () => {
             };
             
             logger.info('🚀 Enviando requisição ao backend (seleção de cliente)', {
-              endpoint: `${API_BASE}/agno/chat-inteligente`,
+              endpoint: `${API_BASE}/api/agno/chat-inteligente`,
               contextoAtivo: contextoAtivo,
               message: novaMensagem.conteudo,
               context: 'enviarMensagem'
             });
 
-            const response = await fetch(`${API_BASE}/agno/chat-inteligente`, {
+            const response = await fetch(`${API_BASE}/api/agno/chat-inteligente`, {
               method: 'POST',
               headers: authHeaders,
               body: JSON.stringify(requestBody)
@@ -1120,7 +1120,7 @@ const AIPage = () => {
       }
 
       const API_BASE_URL = getApiBaseUrl();
-      const API_BASE = API_BASE_URL.replace('/api', '');
+      const API_BASE = API_BASE_URL;
       
       // Preparar body da requisição
       const requestBody: any = {
@@ -1141,14 +1141,14 @@ const AIPage = () => {
       }
       
       logger.info('🚀 Enviando requisição ao backend', {
-        endpoint: `${API_BASE}/agno/chat-inteligente`,
+        endpoint: `${API_BASE}/api/agno/chat-inteligente`,
         hasNLP: !!mensagemEnriquecida,
         contextoAtivo: contextoAtivo,
         message: novaMensagem.conteudo.substring(0, 50),
         context: 'enviarMensagem'
       });
 
-      const response = await fetch(`${API_BASE}/agno/chat-inteligente`, {
+      const response = await fetch(`${API_BASE}/api/agno/chat-inteligente`, {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify(requestBody)
