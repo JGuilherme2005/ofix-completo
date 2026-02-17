@@ -18,7 +18,9 @@
     "prisma:studio": "prisma studio",
     "seed": "npm run prisma:generate && prisma db seed",
     "seed:if-needed": "node scripts/seed-if-needed.mjs",
-    "start:seed": "npm run prisma:generate && prisma db seed && node src/server.js"
+    "start:seed": "npm run prisma:generate && prisma db seed && node src/server.js",
+    "test": "vitest run --config vitest.config.integration.js",
+    "test:watch": "vitest --config vitest.config.integration.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -54,6 +56,8 @@
   "devDependencies": {
     "nodemon": "^3.1.10",
     "prisma": "^6.19.2",
-    "sucrase": "^3.29.0"
+    "sucrase": "^3.29.0",
+    "supertest": "^7.2.2",
+    "vitest": "^4.0.18"
   }
 }
