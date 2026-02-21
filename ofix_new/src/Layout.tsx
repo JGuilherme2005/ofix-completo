@@ -180,6 +180,7 @@ export default function Layout() {
     const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
     const { pecas } = useEstoqueData();
     const { servicos } = useDashboardData();
+    const isAIAssistantPage = location.pathname.startsWith('/assistente-ia');
 
     // Fechar dropdown ao clicar fora
     useEffect(() => {
@@ -241,7 +242,7 @@ export default function Layout() {
             // Alt + M: Abrir Matias
             if (e.altKey && e.key.toLowerCase() === 'm') {
                 e.preventDefault();
-                if (location.pathname !== '/assistente-ia') {
+                if (!location.pathname.startsWith('/assistente-ia')) {
                     navigate('/assistente-ia');
                 }
             }
@@ -522,16 +523,18 @@ export default function Layout() {
 
                     {/* Conteúdo principal */}
                     <main className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                        <div className="flex-1 overflow-y-auto">
+                        <div className={`flex-1 ${isAIAssistantPage ? 'overflow-hidden' : 'overflow-y-auto'}`}>
                             {/* Título da página acima do conteúdo */}
-                            <div className="px-4 md:px-6 pt-5 pb-2">
-                                <h2 className="text-lg font-semibold text-slate-900 dark:text-white leading-tight">
-                                    {PAGE_TITLES[location.pathname] || "Página"}
-                                </h2>
-                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                                    {PAGE_SUBTITLES[location.pathname] || ""}
-                                </p>
-                            </div>
+                            {!isAIAssistantPage && (
+                                <div className="px-4 md:px-6 pt-5 pb-2">
+                                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white leading-tight">
+                                        {PAGE_TITLES[location.pathname] || "Página"}
+                                    </h2>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                                        {PAGE_SUBTITLES[location.pathname] || ""}
+                                    </p>
+                                </div>
+                            )}
                             <Outlet />
                         </div>
                     </main>
@@ -551,7 +554,7 @@ export default function Layout() {
             )} */}
 
             {/* Botão Flutuante Matias */}
-            {isAuthenticated && location.pathname !== '/assistente-ia' && (
+            {isAuthenticated && !location.pathname.startsWith('/assistente-ia') && (
                 <Link
                     to="/assistente-ia"
                     className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-full shadow-lg hover:shadow-xl flex items-center justify-center z-fab transition-all duration-200 group"

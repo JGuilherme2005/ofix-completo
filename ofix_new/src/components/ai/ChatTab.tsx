@@ -567,10 +567,9 @@ const ChatTab = ({
 
   return (
     <>
-      <div className="flex flex-col gap-3 min-h-0 flex-1">
+      <div className="flex flex-col gap-2 min-h-0 flex-1">
         <ChatHeaderBar
           statusConexao={connection.statusConexao}
-          memoriaAtiva={memory.memoriaAtiva}
           vozHabilitada={voice.vozHabilitada}
           falando={voice.falando}
           painelFixoDesktop={painelFixoDesktop}
@@ -585,7 +584,7 @@ const ChatTab = ({
           onReconectar={() => connection.verificarConexao({ warm: true })}
         />
 
-        <div className={`min-h-0 flex-1 ${painelFixoDesktop ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-3' : ''}`}>
+        <div className={`min-h-0 flex-1 ${painelFixoDesktop ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-2.5' : ''}`}>
           <div className="min-h-0 min-w-0 bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 flex flex-col overflow-hidden flex-1">
             <ChatMessageList
               conversas={conversas}

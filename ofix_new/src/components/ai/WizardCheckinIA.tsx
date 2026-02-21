@@ -206,35 +206,31 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
   }, [iniciarCheckin]);
 
   return (
-    <div className="h-full overflow-y-auto rounded-2xl bg-white dark:bg-slate-900">
-      <div className="rounded-t-2xl border-b border-slate-200/70 dark:border-slate-800/70 bg-gradient-to-r from-cyan-600 to-indigo-600 p-5 text-white">
-        <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15">
-            <MessageCircle className="h-6 w-6" />
+    <div className="h-full rounded-2xl bg-white dark:bg-slate-900 flex flex-col">
+      <div className="rounded-t-2xl border-b border-slate-200/70 dark:border-slate-800/70 bg-gradient-to-r from-cyan-600 to-blue-700 px-3 py-2.5 text-white">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15">
+            <MessageCircle className="h-4 w-4" />
           </div>
-          <div className="min-w-0">
-            <h2 className="text-xl font-semibold">Check-in Guiado por IA</h2>
-            <p className="text-sm text-cyan-100">
-              Coleta estruturada de contexto tecnico para reduzir retrabalho no atendimento.
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-base font-semibold">Check-in IA</h2>
+              <span className="text-xs font-medium">{checkinCompleto ? 100 : etapasProgress[etapaAtual]}%</span>
+            </div>
+            <p className="text-[11px] text-cyan-100/95 truncate">
+              Coleta estruturada para reduzir retrabalho no atendimento.
             </p>
           </div>
         </div>
-
-        <div className="mt-4">
-          <div className="mb-1.5 flex items-center justify-between text-xs text-cyan-100">
-            <span>Progresso</span>
-            <span>{checkinCompleto ? 100 : etapasProgress[etapaAtual]}%</span>
-          </div>
-          <div className="h-2 w-full rounded-full bg-white/20">
-            <div
-              className="h-2 rounded-full bg-white transition-all duration-500"
-              style={{ width: `${checkinCompleto ? 100 : etapasProgress[etapaAtual]}%` }}
-            />
-          </div>
+        <div className="mt-1.5 h-1.5 w-full rounded-full bg-white/20">
+          <div
+            className="h-1.5 rounded-full bg-white transition-all duration-500"
+            style={{ width: `${checkinCompleto ? 100 : etapasProgress[etapaAtual]}%` }}
+          />
         </div>
       </div>
 
-      <div className="space-y-4 p-4 sm:p-5">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 p-3">
         {modoLocal && (
           <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
             <WifiOff className="mt-0.5 h-4 w-4 shrink-0" />
@@ -260,7 +256,7 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
 
         <div
           ref={conversaContainerRef}
-          className="max-h-[360px] space-y-3 overflow-y-auto rounded-xl border border-slate-200/70 bg-slate-50/80 p-3 dark:border-slate-800/70 dark:bg-slate-900/40"
+          className="space-y-3 rounded-xl border border-slate-200/70 bg-slate-50/80 p-3 dark:border-slate-800/70 dark:bg-slate-900/40"
         >
           <AnimatePresence>
             {conversaHistorico.map((mensagem, index) => (
@@ -289,9 +285,9 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
         </div>
 
         {!checkinCompleto ? (
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <textarea
+            <div className="space-y-1.5">
+              <div className="flex gap-2">
+                <textarea
                 value={respostaAtual}
                 onChange={(e) => setRespostaAtual(e.target.value)}
                 onKeyDown={(e) => {
@@ -300,18 +296,18 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
                     processarResposta();
                   }
                 }}
-                rows={3}
-                placeholder="Digite sua resposta aqui..."
-                aria-label="Resposta ao wizard de check-in"
-                disabled={loading}
-                className="min-h-[84px] flex-1 resize-none rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-blue-900/40"
-              />
-              <motion.button
+                  rows={2}
+                  placeholder="Digite sua resposta aqui..."
+                  aria-label="Resposta ao wizard de check-in"
+                  disabled={loading}
+                  className="min-h-[72px] flex-1 resize-none rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-blue-900/40"
+                />
+                <motion.button
                 type="button"
                 onClick={processarResposta}
                 whileTap={{ scale: 0.98 }}
                 disabled={loading || !respostaAtual.trim()}
-                className="flex h-[84px] min-w-[112px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="flex h-[72px] min-w-[104px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
               >
                 {loading ? 'Processando...' : 'Enviar'}
                 <ArrowRight className="h-4 w-4" />

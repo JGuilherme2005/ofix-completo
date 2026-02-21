@@ -1,11 +1,10 @@
 import { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Wrench, Brain, Volume2, VolumeX, RefreshCw, PanelRightOpen } from 'lucide-react';
+import { Wrench, Volume2, VolumeX, RefreshCw, PanelRightOpen } from 'lucide-react';
 
 interface ChatHeaderBarProps {
   statusConexao: string;
-  memoriaAtiva: boolean;
   vozHabilitada: boolean;
   falando: boolean;
   painelFixoDesktop: boolean;
@@ -21,102 +20,109 @@ interface ChatHeaderBarProps {
 }
 
 export default function ChatHeaderBar({
-  statusConexao, memoriaAtiva, vozHabilitada, falando,
-  painelFixoDesktop, painelDrawerOpen, setPainelDrawerOpen, setPainelFixoDesktop,
+  statusConexao,
+  vozHabilitada,
+  falando,
+  painelFixoDesktop,
+  painelDrawerOpen,
+  setPainelDrawerOpen,
+  setPainelFixoDesktop,
   sidePanelContent,
-  getStatusIcon, getStatusText,
-  onAlternarVoz, onPararFala, onReconectar,
+  getStatusIcon,
+  getStatusText,
+  onAlternarVoz,
+  onPararFala,
+  onReconectar,
 }: ChatHeaderBarProps) {
   return (
-    <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg border-0 p-3 sm:p-4 mb-3 ring-1 ring-white/15 animate-in fade-in-0 duration-300">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm shrink-0">
-            <Wrench className="w-6 h-6 text-white" />
+    <div className="relative overflow-hidden rounded-lg border border-cyan-200/70 bg-gradient-to-r from-cyan-50/90 via-sky-50/70 to-blue-50/90 px-2 py-1.5 shadow-sm ring-1 ring-cyan-200/40 dark:border-cyan-900/40 dark:from-slate-900/70 dark:via-slate-900/55 dark:to-blue-950/35 dark:ring-cyan-900/30">
+      <div className="flex flex-wrap items-center justify-between gap-1.5">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-cyan-500/15 text-cyan-700 ring-1 ring-cyan-300/50 dark:bg-cyan-500/20 dark:text-cyan-200 dark:ring-cyan-800/40">
+            <Wrench className="h-3.5 w-3.5" />
           </div>
-          <div>
-            <h1 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-              Assistente IA Pista
-              <span className="text-xs font-normal bg-white/20 px-2 py-0.5 rounded-full">AI v2.0</span>
-            </h1>
-            <p className="text-xs sm:text-sm text-blue-100 hidden sm:block">Seu especialista em oficina mecânica</p>
-          </div>
+          <span className="hidden sm:inline text-xs font-semibold text-slate-900 dark:text-slate-100">Controles do chat</span>
+          <span className="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
+            <span className="text-slate-500 dark:text-slate-400">{getStatusIcon()}</span>
+            {getStatusText()}
+          </span>
         </div>
 
-        <div className="flex flex-wrap lg:flex-nowrap items-center justify-between sm:justify-end gap-2 sm:gap-3">
-          {memoriaAtiva && (
-            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-green-500/20 border border-green-300/30 backdrop-blur-sm">
-              <Brain className="w-4 h-4 text-green-100" />
-              <span className="text-xs font-medium text-green-100 hidden sm:inline">Memória ativa</span>
-            </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onAlternarVoz}
+            className={`h-8 w-8 border-slate-300/80 bg-white/80 hover:bg-white dark:border-slate-700 dark:bg-slate-900/70 dark:hover:bg-slate-900 ${
+              vozHabilitada ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'
+            }`}
+            title={vozHabilitada ? 'Desativar voz' : 'Ativar voz'}
+            aria-label={vozHabilitada ? 'Desativar voz' : 'Ativar voz'}
+          >
+            {vozHabilitada ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </Button>
+
+          {falando && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onPararFala}
+              className="h-8 w-8 border-red-300 bg-red-50 text-red-600 hover:bg-red-100 dark:border-red-800/60 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/60"
+              title="Parar fala"
+              aria-label="Parar fala"
+            >
+              <VolumeX className="h-4 w-4" />
+            </Button>
           )}
 
-          <div className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 bg-white/10 backdrop-blur-sm border ${
-            statusConexao === 'conectado' ? 'border-green-300/30' :
-            statusConexao === 'local' ? 'border-amber-300/30' :
-            statusConexao === 'conectando' ? 'border-yellow-300/30' :
-            statusConexao === 'erro' ? 'border-red-300/30' : 'border-white/20'
-          }`}>
-            <div className="relative">
-              <div className="text-white">{getStatusIcon()}</div>
-              {statusConexao === 'conectado' && <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse" />}
-              {statusConexao === 'local' && <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full animate-pulse" />}
-            </div>
-            <span className="text-xs sm:text-sm font-medium text-white">{getStatusText()}</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onAlternarVoz}
-              className={`flex items-center gap-2 bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/20 transition-all ${vozHabilitada ? 'text-white' : 'text-white/60'}`}
-              title={vozHabilitada ? 'Desativar voz' : 'Ativar voz'}
-              aria-label={vozHabilitada ? 'Desativar voz' : 'Ativar voz'}
-            >
-              {vozHabilitada ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            </Button>
-
-            {falando && (
-              <Button variant="outline" size="sm" onClick={onPararFala}
-                className="bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20 animate-pulse"
-                title="Parar fala"
-                aria-label="Parar fala">
-                <VolumeX className="w-4 h-4" />
+          <Sheet open={painelDrawerOpen} onOpenChange={setPainelDrawerOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className={`${painelFixoDesktop ? 'lg:hidden ' : ''}h-8 w-8 border-slate-300/80 bg-white/80 text-slate-700 hover:bg-white dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:bg-slate-900`}
+                aria-label="Abrir painel"
+              >
+                <PanelRightOpen className="h-4 w-4" />
               </Button>
-            )}
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[92vw] sm:max-w-md lg:max-w-lg">
+              <SheetHeader>
+                <SheetTitle>Painel da IA</SheetTitle>
+                <SheetDescription className="sr-only">Opcoes e informacoes do painel lateral da IA.</SheetDescription>
+              </SheetHeader>
+              <div className="mt-4 flex max-h-[calc(100vh-7rem)] flex-col gap-3 overflow-y-auto pr-1">
+                {!painelFixoDesktop && (
+                  <div className="hidden lg:flex items-center justify-between gap-3 rounded-lg border border-slate-200/70 dark:border-slate-800/70 bg-slate-50 dark:bg-slate-900/40 px-3 py-2">
+                    <div className="text-xs text-slate-600 dark:text-slate-300">Fixar painel lateral no desktop?</div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        setPainelFixoDesktop(true);
+                        setPainelDrawerOpen(false);
+                      }}
+                      className="h-8"
+                    >
+                      Fixar
+                    </Button>
+                  </div>
+                )}
+                {sidePanelContent}
+              </div>
+            </SheetContent>
+          </Sheet>
 
-            <Sheet open={painelDrawerOpen} onOpenChange={setPainelDrawerOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon"
-                  className={`${painelFixoDesktop ? 'lg:hidden ' : ''}bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20`}
-                  aria-label="Abrir painel">
-                  <PanelRightOpen className="w-4 h-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[92vw] sm:max-w-md lg:max-w-lg">
-                <SheetHeader>
-                  <SheetTitle>Painel do Matias</SheetTitle>
-                  <SheetDescription className="sr-only">Opcoes e informacoes do painel lateral do Matias.</SheetDescription>
-                </SheetHeader>
-                <div className="mt-4 flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-7rem)] pr-1">
-                  {!painelFixoDesktop && (
-                    <div className="hidden lg:flex items-center justify-between gap-3 rounded-lg border border-slate-200/70 dark:border-slate-800/70 bg-slate-50 dark:bg-slate-900/40 px-3 py-2">
-                      <div className="text-xs text-slate-600 dark:text-slate-300">Quer deixar este painel fixo ao lado no desktop?</div>
-                      <Button type="button" size="sm" variant="secondary" onClick={() => { setPainelFixoDesktop(true); setPainelDrawerOpen(false); }} className="h-8">Fixar</Button>
-                    </div>
-                  )}
-                  {sidePanelContent}
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          <Button variant="outline" size="sm" onClick={onReconectar} disabled={statusConexao === 'conectando'}
-            className="hidden sm:flex items-center gap-2 bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20 transition-all disabled:opacity-50">
-            <RefreshCw className="w-4 h-4" /> Reconectar
-          </Button>
-          <Button variant="outline" size="icon" onClick={onReconectar} disabled={statusConexao === 'conectando'}
-            className="sm:hidden bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20 transition-all disabled:opacity-50"
-            aria-label="Reconectar">
-            <RefreshCw className="w-4 h-4" />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onReconectar}
+            disabled={statusConexao === 'conectando'}
+            className="h-8 w-8 border-slate-300/80 bg-white/80 text-slate-700 hover:bg-white disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:bg-slate-900"
+            aria-label="Reconectar"
+          >
+            <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import {
   Sparkles,
@@ -7,6 +7,11 @@ import {
   ClipboardCheck,
   CalendarDays,
   Settings,
+  Brain,
+  Mic,
+  Radio,
+  UserRound,
+  Workflow,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type {
@@ -50,44 +55,44 @@ const FLOW_META: Record<
   }
 > = {
   central: {
-    title: 'Central de Orquestracao',
-    description: 'Comece por aqui para decidir o melhor fluxo antes de executar.',
-    tip: 'Dica: use esta aba para evitar abrir fluxos em ordem errada.',
+    title: 'Central de orquestracao',
+    description: 'Defina rapidamente para onde o atendimento deve seguir.',
+    tip: 'Use esta aba para escolher o fluxo certo antes de executar.',
     next: 'chat',
     secondary: 'agendamento',
   },
   chat: {
-    title: 'Conversa Operacional',
-    description: 'Conduza intencoes por linguagem natural e dispare fluxos estruturados.',
-    tip: 'Use o chat para descobrir, e tabs para executar com seguranca.',
+    title: 'Conversa operacional',
+    description: 'Descubra intencao por linguagem natural e execute com contexto.',
+    tip: 'O chat interpreta; as abas executam com previsibilidade.',
     next: 'agendamento',
     secondary: 'checkin',
   },
   diagnostico: {
-    title: 'Analise Tecnica',
-    description: 'Estruture sintomas e hipoteses para acelerar atendimento.',
-    tip: 'Finalize com check-in ou agendamento para transformar analise em acao.',
+    title: 'Analise tecnica',
+    description: 'Estruture sintomas e hipoteses para acelerar o atendimento.',
+    tip: 'Depois do diagnostico, siga para check-in ou agendamento.',
     next: 'checkin',
     secondary: 'agendamento',
   },
   checkin: {
-    title: 'Coleta Estruturada',
-    description: 'Formalize informacoes do cliente e veiculo antes da execucao.',
-    tip: 'Com check-in concluido, agende para garantir continuidade operacional.',
+    title: 'Coleta estruturada',
+    description: 'Formalize dados de cliente e veiculo antes da execucao.',
+    tip: 'Com check-in concluido, avance para agendamento.',
     next: 'agendamento',
     secondary: 'chat',
   },
   agendamento: {
-    title: 'Fechamento de Agenda',
-    description: 'Confirme data, horario e disponibilidade com previsibilidade.',
-    tip: 'Se faltarem dados, volte ao chat para completar contexto.',
+    title: 'Fechamento de agenda',
+    description: 'Confirme data e horario com previsibilidade operacional.',
+    tip: 'Se faltar contexto, volte ao chat para completar dados.',
     next: 'chat',
     secondary: 'checkin',
   },
   admin: {
     title: 'Governanca da IA',
-    description: 'Acompanhe configuracao, uso e operacao administrativa.',
-    tip: 'Valide indicadores aqui e ajuste fluxos nas abas operacionais.',
+    description: 'Acompanhe configuracao e uso administrativo da assistente.',
+    tip: 'Valide indicadores e ajuste a operacao nas abas de fluxo.',
     next: 'central',
     secondary: 'chat',
   },
@@ -114,10 +119,18 @@ const AIPageTabs = ({
   clienteSelecionado,
   setClienteSelecionado,
 }: AIPageTabsProps) => {
-  const [activeTab, setActiveTab] = useState<AITabId>('central');
+  const [activeTab, setActiveTab] = useState<AITabId>('chat');
   const [agendamentoHandoff, setAgendamentoHandoff] = useState<AgendamentoHandoff | null>(null);
 
-  const visibleTabs = TAB_CONFIG.filter(tab => !tab.adminOnly || isAdmin);
+  const visibleTabs = TAB_CONFIG.filter((tab) => !tab.adminOnly || isAdmin);
+
+  const clienteNome = useMemo(
+    () =>
+      (clienteSelecionado?.nomeCompleto as string | undefined) ||
+      (clienteSelecionado?.nome as string | undefined) ||
+      'Cliente nao selecionado',
+    [clienteSelecionado]
+  );
 
   const handleNavigateToTab = (tab: AITabId, payload?: Record<string, unknown>) => {
     if (tab === 'agendamento' && payload) {
@@ -137,51 +150,75 @@ const AIPageTabs = ({
   const currentMeta = FLOW_META[activeTab];
   const isVisibleTab = (tab?: AITabId) => Boolean(tab && visibleTabs.some((item) => item.id === tab));
   const getTabLabel = (tab: AITabId) => TAB_CONFIG.find((item) => item.id === tab)?.label || tab;
+  const getTabShortLabel = (tab: AITabId) => TAB_CONFIG.find((item) => item.id === tab)?.shortLabel || tab;
 
   return (
-    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as AITabId)} className="flex-1 min-h-0 flex flex-col">
-      <TabsList className="w-full justify-start gap-1 bg-white/85 dark:bg-slate-900/75 border border-slate-200/70 dark:border-slate-800/70 rounded-xl p-1.5 mb-3 overflow-x-auto scrollbar-none flex-shrink-0 sticky top-0 z-20 backdrop-blur">
-        {visibleTabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              className="group gap-1.5 px-3.5 py-2 text-xs sm:text-sm rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-50 data-[state=active]:to-indigo-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm dark:data-[state=active]:from-blue-950/40 dark:data-[state=active]:to-indigo-950/30 dark:data-[state=active]:text-blue-300 whitespace-nowrap transition-all border border-transparent data-[state=active]:border-blue-200/70 dark:data-[state=active]:border-blue-900/50"
-            >
-              <Icon className="w-4 h-4 flex-shrink-0 transition-transform group-data-[state=active]:scale-105" />
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.shortLabel}</span>
-            </TabsTrigger>
-          );
-        })}
-      </TabsList>
-
-      <div className="mb-3 rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/85 dark:bg-slate-900/65 p-3 ring-1 ring-slate-200/30 dark:ring-slate-800/30">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-          <div className="min-w-0">
-            <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">Fluxo atual</div>
-            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{currentMeta.title}</div>
-            <div className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">{currentMeta.description}</div>
-            <div className="text-xs text-blue-700 dark:text-blue-300 mt-1.5">{currentMeta.tip}</div>
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as AITabId)} className="flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="sticky top-0 z-20 mb-2 rounded-xl border border-cyan-200/60 dark:border-cyan-900/40 bg-white/88 dark:bg-slate-900/72 p-1.5 ring-1 ring-cyan-200/30 dark:ring-cyan-900/20 backdrop-blur">
+        <div className="flex items-center gap-1.5">
+          <div
+            className="hidden xl:inline-flex shrink-0 items-center gap-1 rounded-md border border-cyan-200/70 bg-cyan-50/80 px-2 py-1 text-[11px] font-semibold text-cyan-700 dark:border-cyan-900/50 dark:bg-cyan-950/30 dark:text-cyan-200"
+            title={currentMeta.tip}
+          >
+            <Workflow className="h-3 w-3" />
+            {currentMeta.title}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+
+          <TabsList className="h-auto min-w-0 flex-1 justify-start gap-1 bg-transparent p-0 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {visibleTabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className="group h-8 gap-1.5 px-3 py-1 text-xs sm:text-sm rounded-md data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-50 data-[state=active]:to-blue-50 data-[state=active]:text-cyan-700 data-[state=active]:shadow-sm dark:data-[state=active]:from-cyan-950/35 dark:data-[state=active]:to-blue-950/35 dark:data-[state=active]:text-cyan-300 whitespace-nowrap transition-all border border-transparent data-[state=active]:border-cyan-200/70 dark:data-[state=active]:border-cyan-900/50"
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0 transition-transform group-data-[state=active]:scale-105" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden">{tab.shortLabel}</span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+
+          <div className="hidden min-[1920px]:flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-300">
+            <span className="inline-flex items-center gap-1 rounded-md border border-slate-200/70 dark:border-slate-800/70 bg-white/85 dark:bg-slate-900/70 px-2 py-1">
+              <Radio className="h-3 w-3 text-slate-500" />
+              {connection.getStatusText()}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-md border border-slate-200/70 dark:border-slate-800/70 bg-white/85 dark:bg-slate-900/70 px-2 py-1">
+              <Mic className="h-3 w-3 text-slate-500" />
+              {voice.vozHabilitada ? 'Voz on' : 'Voz off'}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-md border border-slate-200/70 dark:border-slate-800/70 bg-white/85 dark:bg-slate-900/70 px-2 py-1">
+              <Brain className="h-3 w-3 text-slate-500" />
+              {memory.memoriaAtiva ? 'Memoria ativa' : 'Memoria pendente'}
+            </span>
+            <span className="inline-flex max-w-[16rem] items-center gap-1 rounded-md border border-slate-200/70 dark:border-slate-800/70 bg-white/85 dark:bg-slate-900/70 px-2 py-1">
+              <UserRound className="h-3 w-3 shrink-0 text-slate-500" />
+              <span className="truncate">{clienteNome}</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
             {isVisibleTab(currentMeta.next) && (
               <button
                 type="button"
                 onClick={() => setActiveTab(currentMeta.next as AITabId)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                className="h-8 px-2.5 rounded-md text-[11px] font-medium bg-cyan-600 text-white hover:bg-cyan-700 transition-colors whitespace-nowrap"
+                title={`Ir para ${getTabLabel(currentMeta.next as AITabId)}`}
               >
-                Ir para {getTabLabel(currentMeta.next as AITabId)}
+                {getTabShortLabel(currentMeta.next as AITabId)}
               </button>
             )}
             {isVisibleTab(currentMeta.secondary) && (
               <button
                 type="button"
                 onClick={() => setActiveTab(currentMeta.secondary as AITabId)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors"
+                className="hidden sm:inline-flex h-8 px-2.5 rounded-md text-[11px] font-medium border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors whitespace-nowrap"
+                title={`Ir para ${getTabLabel(currentMeta.secondary as AITabId)}`}
               >
-                Abrir {getTabLabel(currentMeta.secondary as AITabId)}
+                {getTabShortLabel(currentMeta.secondary as AITabId)}
               </button>
             )}
           </div>
@@ -201,17 +238,12 @@ const AIPageTabs = ({
         />
       </TabsContent>
 
-      <TabsContent value="central" className="flex-1 min-h-0 mt-0 data-[state=inactive]:hidden">
-        <AICentralTab
-          onOpenTab={(tab) => setActiveTab(tab)}
-          connection={connection}
-          voice={voice}
-          memory={memory}
-        />
+      <TabsContent value="central" className="flex-1 min-h-0 mt-0 data-[state=inactive]:hidden overflow-hidden">
+        <AICentralTab onOpenTab={(tab) => setActiveTab(tab)} />
       </TabsContent>
 
-      <TabsContent value="diagnostico" className="flex-1 min-h-0 overflow-y-auto mt-0 data-[state=inactive]:hidden">
-        <div className="bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 p-4 overflow-y-auto h-full">
+      <TabsContent value="diagnostico" className="flex-1 min-h-0 mt-0 data-[state=inactive]:hidden overflow-hidden">
+        <div className="bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 p-4 h-full overflow-y-auto">
           <DiagnosticPanel
             isVisible={true}
             vehicleData={null}
@@ -222,8 +254,8 @@ const AIPageTabs = ({
         </div>
       </TabsContent>
 
-      <TabsContent value="checkin" className="flex-1 min-h-0 overflow-y-auto mt-0 data-[state=inactive]:hidden">
-        <div className="bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 overflow-y-auto h-full">
+      <TabsContent value="checkin" className="flex-1 min-h-0 mt-0 data-[state=inactive]:hidden overflow-hidden">
+        <div className="bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 h-full overflow-hidden">
           <WizardCheckinIA
             onCheckinCompleto={() => {
               showToast('Check-in concluido!', 'success');
@@ -232,8 +264,8 @@ const AIPageTabs = ({
         </div>
       </TabsContent>
 
-      <TabsContent value="agendamento" className="flex-1 min-h-0 overflow-y-auto mt-0 data-[state=inactive]:hidden">
-        <div className="bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 overflow-y-auto h-full">
+      <TabsContent value="agendamento" className="flex-1 min-h-0 mt-0 data-[state=inactive]:hidden overflow-hidden">
+        <div className="bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 h-full overflow-hidden">
           <AgendamentoTab
             showToast={showToast}
             clienteSelecionado={clienteSelecionado}
@@ -243,8 +275,8 @@ const AIPageTabs = ({
       </TabsContent>
 
       {isAdmin && (
-        <TabsContent value="admin" className="flex-1 min-h-0 overflow-y-auto mt-0 data-[state=inactive]:hidden">
-          <div className="bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 overflow-y-auto h-full">
+        <TabsContent value="admin" className="flex-1 min-h-0 mt-0 data-[state=inactive]:hidden overflow-hidden">
+          <div className="bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 h-full overflow-y-auto">
             <AIAdminDashboard isOpen={true} onClose={() => setActiveTab('chat')} className="border-0 shadow-none" />
           </div>
         </TabsContent>

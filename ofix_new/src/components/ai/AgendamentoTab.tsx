@@ -206,12 +206,12 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
   };
 
   return (
-    <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
-      <div className="flex items-center gap-3 border-b border-slate-200 pb-3 dark:border-slate-700">
-        <CalendarDays className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+    <div className="flex h-full flex-col gap-2.5 p-2.5 sm:p-3">
+      <div className="flex items-center gap-2.5 rounded-xl border border-cyan-200/60 bg-cyan-50/60 px-3 py-2 dark:border-cyan-900/40 dark:bg-cyan-950/20">
+        <CalendarDays className="h-5 w-5 text-cyan-700 dark:text-cyan-300" />
         <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Agendar servico</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <h2 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100">Agendar servico</h2>
+          <p className="text-xs text-slate-600 dark:text-slate-300">
             {etapa === 'tipo' && 'Etapa 1/3 - Tipo de servico'}
             {etapa === 'data' && 'Etapa 2/3 - Data e horario'}
             {etapa === 'confirmacao' && 'Etapa 3/3 - Confirmacao'}
@@ -223,7 +223,7 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
               key={step}
               className={`h-2 rounded-full transition-all duration-300 ${
                 i <= ['tipo', 'data', 'confirmacao'].indexOf(etapa)
-                  ? 'w-8 bg-blue-500'
+                  ? 'w-7 bg-cyan-500'
                   : 'w-4 bg-slate-200 dark:bg-slate-700'
               }`}
             />
@@ -231,6 +231,7 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
         </div>
       </div>
 
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2.5">
       <Card className="border-slate-200 dark:border-slate-700">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
@@ -575,6 +576,7 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
