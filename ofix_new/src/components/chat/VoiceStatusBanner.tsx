@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Volume2 } from 'lucide-react';
 
 interface VoiceStatusBannerProps {

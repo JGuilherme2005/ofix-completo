@@ -367,7 +367,7 @@ const AssistenteVozGlobal = ({ onComandoExecutado }) => {
                 
                 <motion.button
                   onClick={cancelarComando}
-                  className="flex-1 py-3 bg-slate-50 dark:bg-slate-8000 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+                  className="flex-1 py-3 bg-slate-500 dark:bg-slate-800 hover:bg-slate-600 text-white rounded-lg shadow-sm transition-colors flex items-center justify-center space-x-2"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

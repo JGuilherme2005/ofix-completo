@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Send, Loader2, AlertCircle } from 'lucide-react';
@@ -8,7 +7,7 @@ interface ChatInputBarProps {
   mensagem: string;
   setMensagem: (v: string) => void;
   onEnviar: () => void;
-  onKeyPress: (e: any) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onValidateInput: (v: string) => void;
   carregando: boolean;
   podeInteragir: boolean;
@@ -24,7 +23,7 @@ interface ChatInputBarProps {
 }
 
 export default function ChatInputBar({
-  mensagem, setMensagem, onEnviar, onKeyPress, onValidateInput,
+  mensagem, setMensagem, onEnviar, onKeyDown, onValidateInput,
   carregando, podeInteragir, gravando, falando,
   contextoAtivo, inputWarning, inputHint, statusConexao,
   inputRef, onIniciarGravacao, onPararGravacao,
@@ -58,7 +57,7 @@ export default function ChatInputBar({
               e.target.style.height = 'auto';
               e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
             }}
-            onKeyDown={onKeyPress}
+            onKeyDown={onKeyDown}
             placeholder={getPlaceholder()}
             disabled={carregando || !podeInteragir || gravando}
             rows={1}
@@ -81,7 +80,7 @@ export default function ChatInputBar({
           variant="outline"
           size="sm"
           disabled={carregando || falando}
-          className={`rounded-xl ${gravando ? 'bg-red-50 border-red-300 text-red-700 hover:bg-red-100 animate-pulse' : falando ? 'bg-blue-50 border-blue-300 text-blue-400 cursor-not-allowed' : 'bg-slate-50 dark:bg-slate-800 border-slate-300 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800'}`}
+          className={`rounded-xl ${gravando ? 'bg-red-50 border-red-300 text-red-700 hover:bg-red-100 animate-pulse' : falando ? 'bg-blue-50 border-blue-300 text-blue-400 cursor-not-allowed' : 'bg-slate-50 dark:bg-slate-800 border-slate-300 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
           aria-label={gravando ? 'Parar gravação' : falando ? 'Aguardar o assistente terminar de falar' : 'Gravar mensagem de voz'}
           title={gravando ? 'Parar gravação (Clique ou pressione ESC)' : falando ? 'Aguarde o assistente terminar de falar' : 'Gravar mensagem de voz (Clique para começar)'}
         >

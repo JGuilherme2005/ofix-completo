@@ -1,11 +1,25 @@
 import React from 'react';
 import { Check } from 'lucide-react';
 
+interface SelectionOption {
+  label: string;
+  value?: string;
+  id?: number;
+  subtitle?: string;
+  details?: string[];
+}
+
+interface SelectionOptionsProps {
+  options: SelectionOption[];
+  onSelect: (option: SelectionOption) => void;
+  title?: string;
+}
+
 /**
  * Componente para exibir opções de seleção quando há ambiguidade
  * Permite ao usuário escolher entre múltiplas opções
  */
-const SelectionOptions = ({ options, onSelect, title }) => {
+const SelectionOptions = ({ options, onSelect, title }: SelectionOptionsProps) => {
   if (!options || options.length === 0) return null;
 
   return (

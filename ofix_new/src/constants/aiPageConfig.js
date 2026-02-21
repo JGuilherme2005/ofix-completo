@@ -78,7 +78,7 @@ export const AI_CONFIG = {
 
   // Regex Patterns
   PATTERNS: {
-    PLACA: /^[A-Z]{3}-?\d{4}$/i,
+    PLACA: /^[A-Z]{3}-?\d[A-Z0-9]\d{2}$/i, // Suporta formato antigo (ABC-1234) e Mercosul (ABC1D23)
     TELEFONE: /^\(?[1-9]{2}\)?\s?9?\d{4}-?\d{4}$/,
     CPF: /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/,
     CNPJ: /^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}$/,

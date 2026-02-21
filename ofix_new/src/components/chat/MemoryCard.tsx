@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Button } from '@/components/ui/button';
 import { Brain, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 

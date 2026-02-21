@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Bot, Loader2 } from 'lucide-react';
 import ChatMessageItem from './ChatMessageItem';
 

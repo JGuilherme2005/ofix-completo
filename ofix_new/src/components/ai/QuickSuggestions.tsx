@@ -86,7 +86,7 @@ const QuickSuggestions = ({
       case 'maintenance': return 'bg-green-500 hover:bg-green-600';
       case 'scheduling': return 'bg-purple-500 hover:bg-purple-600';
       case 'financial': return 'bg-yellow-500 hover:bg-yellow-600';
-      case 'documentation': return 'bg-slate-50 dark:bg-slate-8000 hover:bg-slate-600';
+      case 'documentation': return 'bg-slate-500 dark:bg-slate-800 hover:bg-slate-600';
       case 'customer': return 'bg-pink-500 hover:bg-pink-600';
       case 'vehicle': return 'bg-indigo-500 hover:bg-indigo-600';
       case 'analytics': return 'bg-teal-500 hover:bg-teal-600';

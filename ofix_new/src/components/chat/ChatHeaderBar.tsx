@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -99,7 +98,7 @@ export default function ChatHeaderBar({
                 </SheetHeader>
                 <div className="mt-4 flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-7rem)] pr-1">
                   {!painelFixoDesktop && (
-                    <div className="hidden lg:flex items-center justify-between gap-3 rounded-lg border border-slate-200/70 dark:border-slate-800/70 bg-slate-50 dark:bg-slate-800/80 dark:bg-slate-900/40 px-3 py-2">
+                    <div className="hidden lg:flex items-center justify-between gap-3 rounded-lg border border-slate-200/70 dark:border-slate-800/70 bg-slate-50 dark:bg-slate-900/40 px-3 py-2">
                       <div className="text-xs text-slate-600 dark:text-slate-300">Quer deixar este painel fixo ao lado no desktop?</div>
                       <Button type="button" size="sm" variant="secondary" onClick={() => { setPainelFixoDesktop(true); setPainelDrawerOpen(false); }} className="h-8">Fixar</Button>
                     </div>

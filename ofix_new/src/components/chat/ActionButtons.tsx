@@ -1,13 +1,19 @@
 import React from 'react';
 import { Phone, Calendar, Eye, Edit, Trash2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { InlineAction } from '../../types/ai.types';
+
+interface ActionButtonsProps {
+  actions: InlineAction[];
+  onAction: (action: InlineAction) => void;
+}
 
 /**
  * Componente de botões de ação inline para mensagens do chat
  * Permite executar ações diretamente das respostas do assistente
  */
-const ActionButtons = ({ actions, onAction }) => {
-  const getIcon = (type) => {
+const ActionButtons = ({ actions, onAction }: ActionButtonsProps) => {
+  const getIcon = (type: string) => {
     const icons = {
       'ver_os': <Eye className="w-3 h-3" />,
       'agendar': <Calendar className="w-3 h-3" />,
@@ -19,7 +25,7 @@ const ActionButtons = ({ actions, onAction }) => {
     return icons[type] || null;
   };
 
-  const getButtonStyle = (type) => {
+  const getButtonStyle = (type: string) => {
     const styles = {
       'ver_os': 'bg-blue-500 hover:bg-blue-600 text-white',
       'agendar': 'bg-green-500 hover:bg-green-600 text-white',
@@ -28,7 +34,7 @@ const ActionButtons = ({ actions, onAction }) => {
       'excluir': 'bg-red-500 hover:bg-red-600 text-white',
       'ver_detalhes': 'bg-cyan-500 hover:bg-cyan-600 text-white'
     };
-    return styles[type] || 'bg-slate-50 dark:bg-slate-8000 hover:bg-slate-600 text-white';
+    return styles[type] || 'bg-slate-500 dark:bg-slate-800 hover:bg-slate-600 text-white';
   };
 
   if (!actions || actions.length === 0) return null;

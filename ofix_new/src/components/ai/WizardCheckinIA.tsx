@@ -373,7 +373,7 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
               
               <motion.button
                 onClick={reiniciarCheckin}
-                className="px-6 py-3 bg-slate-50 dark:bg-slate-8000 hover:bg-slate-600 text-white rounded-lg shadow-md transition-colors flex items-center space-x-2"
+                className="px-6 py-3 bg-slate-500 dark:bg-slate-800 hover:bg-slate-600 text-white rounded-lg shadow-md transition-colors flex items-center space-x-2"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

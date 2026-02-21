@@ -6,7 +6,7 @@ import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+// Select removido — não utilizado neste componente
 import { 
   AlertTriangle, 
   CheckCircle, 
@@ -33,7 +33,6 @@ const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true })
   
   const [diagnosis, setDiagnosis] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -129,7 +128,7 @@ const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true })
       case 'high': return 'bg-orange-500';
       case 'medium': return 'bg-yellow-500';
       case 'low': return 'bg-green-500';
-      default: return 'bg-slate-50 dark:bg-slate-8000';
+      default: return 'bg-slate-500 dark:bg-slate-800';
     }
   };
 
