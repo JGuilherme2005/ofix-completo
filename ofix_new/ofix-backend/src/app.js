@@ -14,31 +14,30 @@ class Application {
   }
 
   setupMiddlewares() {
-    // Trust proxy para obter IP real (necessario para rate limiting e logs)
-    // Precisa vir antes de qualquer middleware que use req.ip.
+    // Trust proxy to get real IP (required for rate limiting and logs)
     this.server.set('trust proxy', 1);
 
-    // Middlewares de segurança (aplicados primeiro)
-    this.server.use(securityHeaders);
-    
-    // Rate limiting (apenas em produção para não atrapalhar desenvolvimento)
-    if (process.env.NODE_ENV === 'production') {
-      this.server.use(rateLimit);
-    }
-    // --- INÍCIO DA CORREÇÃO DO CORS ---
-
-    // 1. Defina quais "origens" (sites) têm permissão para acessar sua API
-    const allowedOrigins = [
-      'https://ofix.vercel.app',  // URL de produção do seu frontend (antiga)
-      'https://ofix-completo.vercel.app', // URL real do Vercel
-      'https://pista.com.br',     // Novo domínio Pista
-      'https://www.pista.com.br', // Novo domínio Pista (www)
-      'http://localhost:5173',   // URL para desenvolvimento local com Vite
-      'http://localhost:5174',   // URL para desenvolvimento local com Vite (porta alternativa)
-      'http://localhost:3000',   // Outra URL comum para desenvolvimento local
-      'http://localhost:4173',   // Vite preview
-      'http://localhost:4174'    // Vite preview alternativa
+    // CORS must run before rate limiting, otherwise blocked preflight looks like random CORS failures.
+    const defaultAllowedOrigins = [
+      'https://ofix.vercel.app',
+      'https://ofix-completo.vercel.app',
+      'https://pista.com.br',
+      'https://www.pista.com.br',
+      'https://pistabr.com.br',
+      'https://www.pistabr.com.br',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:3000',
+      'http://localhost:4173',
+      'http://localhost:4174',
     ];
+
+    const envAllowedOrigins = (process.env.CORS_ORIGIN || '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+
+    const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...envAllowedOrigins])];
 
     function isAllowedOrigin(origin) {
       if (!origin) return true;
@@ -48,87 +47,94 @@ class Application {
         const url = new URL(origin);
         const hostname = url.hostname.toLowerCase();
 
-        // Allow Vercel deployments for this project (preview + branch alias).
-        // Examples:
-        // - https://ofix-completo-xxxxxx-catgreens-projects.vercel.app
-        // - https://ofix-completo-git-branch-catgreens-projects.vercel.app
+        // Allow Vercel preview/branch deployments from this team/project.
         if (url.protocol === 'https:' && hostname.endsWith('.vercel.app')) {
           if (hostname === 'ofix-completo.vercel.app') return true;
 
           const isSameVercelTeam = hostname.endsWith('-catgreens-projects.vercel.app');
           const isOfixProject =
-            hostname.startsWith('ofix-completo-') || hostname.startsWith('ofix-completo-git-')
-            || hostname.startsWith('pista-') || hostname.startsWith('pista-git-');
+            hostname.startsWith('ofix-completo-') ||
+            hostname.startsWith('ofix-completo-git-') ||
+            hostname.startsWith('pista-') ||
+            hostname.startsWith('pista-git-');
 
           if (isSameVercelTeam && isOfixProject) return true;
         }
       } catch {
-        // Ignore invalid origin strings.
+        // Ignore malformed origin strings.
       }
 
-      // Em desenvolvimento, permite qualquer localhost
       if (process.env.NODE_ENV === 'development' && origin?.includes('localhost')) return true;
 
       return false;
     }
 
-    // 2. Crie as opções do CORS
     const corsOptions = {
       origin: (origin, callback) => {
         if (isAllowedOrigin(origin)) {
           callback(null, true);
         } else {
-          callback(new Error('Not allowed by CORS'));
+          callback(new Error(`Not allowed by CORS: ${origin || 'unknown-origin'}`));
         }
       },
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos permitidos
-      credentials: true, // Se precisar enviar cookies ou headers de autorização
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+      credentials: true,
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-Id'],
+      exposedHeaders: ['X-Request-Id', 'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'],
+      optionsSuccessStatus: 204,
     };
 
-    // 3. Use o middleware CORS com as opções configuradas
-    // For development, you can use a more permissive CORS setup
-    if (process.env.NODE_ENV === 'development') {
-      this.server.use(cors({
-        origin: true, // Allow all origins in development
-        credentials: true
-      }));
-    } else {
-      this.server.use(cors(corsOptions));
+    const activeCorsOptions = process.env.NODE_ENV === 'development'
+      ? {
+        origin: true,
+        credentials: true,
+        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-Id'],
+        optionsSuccessStatus: 204,
+      }
+      : corsOptions;
+
+    this.server.use(cors(activeCorsOptions));
+    this.server.options('*', cors(activeCorsOptions));
+
+    // Security headers
+    this.server.use(securityHeaders);
+
+    // Rate limiting in production only
+    if (process.env.NODE_ENV === 'production') {
+      this.server.use(rateLimit);
     }
 
-    // --- FIM DA CORREÇÃO DO CORS ---
-
-    // Middleware para parsing JSON com limite de tamanho (reduzido de 10mb — M1-SEC-04)
+    // Body parsing with strict payload limits
     this.server.use(express.json({ limit: '1mb' }));
     this.server.use(express.urlencoded({ extended: true, limit: '1mb' }));
-    
-    // Middleware de sanitização de entrada
+
+    // Input sanitization
     this.server.use(sanitizeInput);
 
-    // Logging de requisições (apenas em desenvolvimento)
+    // Request logging in development only
     if (process.env.NODE_ENV === 'development') {
       this.server.use((req, res, next) => {
-        console.log(`Requisição recebida: ${req.method} ${req.url}`);
+        console.log(`Request received: ${req.method} ${req.url}`);
         next();
       });
     }
   }
 
   setupRoutes() {
-    // Health check endpoint
     this.server.get('/health', (req, res) => {
-      res.json({ 
-        status: 'OK', 
+      res.json({
+        status: 'OK',
         message: 'OFIX Backend funcionando!',
         timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'development'
+        environment: process.env.NODE_ENV || 'development',
       });
     });
 
     this.server.use('/api', routes);
-    // M1-SEC-10: removed duplicate /agno mount — use /api/agno/* exclusively.
+
     this.server.get('/', (req, res) => {
-      res.json({ message: 'Bem-vindo à API OFIX!' });
+      res.json({ message: 'Bem-vindo a API OFIX!' });
     });
   }
 
@@ -140,11 +146,10 @@ class Application {
 
       const isDev = process.env.NODE_ENV === 'development';
 
-      // Only log full stack in dev; in prod, log a one-liner to avoid PII/secret leaks.
       if (isDev) {
         console.error(err.stack);
       } else {
-        console.error(`[ERROR] ${req.method} ${req.path} — ${err.message || 'unknown'}`);
+        console.error(`[ERROR] ${req.method} ${req.path} - ${err.message || 'unknown'}`);
       }
 
       const status = err.status || 500;

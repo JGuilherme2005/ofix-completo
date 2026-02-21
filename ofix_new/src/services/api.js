@@ -46,6 +46,7 @@ apiClient.interceptors.request.use(
         );
         // Opcional: Limpar localStorage se o token estiver corrompido
         localStorage.removeItem("authToken");
+        localStorage.removeItem("token");
       }
     }
     return config;
@@ -68,6 +69,7 @@ apiClient.interceptors.response.use(
           "Erro 401: Não autorizado. Limpando token e notificando AuthContext."
         );
         localStorage.removeItem("authToken");
+        localStorage.removeItem("token");
         // M4-FE-04: Dispara evento customizado em vez de hard redirect.
         // AuthContext ouve este evento e faz logout via React Router,
         // preservando o state "from" para redirect-back após re-login.

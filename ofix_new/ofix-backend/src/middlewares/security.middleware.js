@@ -1,74 +1,87 @@
 /**
- * Middleware de segurança para adicionar headers de proteção
+ * Security middleware for response hardening.
  */
 export function securityHeaders(req, res, next) {
-  // Previne ataques de clickjacking
   res.setHeader('X-Frame-Options', 'DENY');
-  
-  // Previne MIME type sniffing
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  
-  // Habilita proteção XSS no navegador
   res.setHeader('X-XSS-Protection', '1; mode=block');
-  
-  // Força HTTPS em produção
+
   if (process.env.NODE_ENV === 'production') {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
-  
-  // Remove header que expõe tecnologia do servidor
+
   res.removeHeader('X-Powered-By');
-  
-  // Content Security Policy básico
   res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;");
-  
-  // Referrer Policy
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  
+
   next();
 }
 
 /**
- * Middleware para rate limiting básico
+ * Basic in-memory rate limiting middleware.
  */
 const requestCounts = new Map();
-const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutos
-const MAX_REQUESTS = 100; // máximo de requests por IP por janela
+
+const parsedWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS);
+const parsedMaxRequests = Number(process.env.RATE_LIMIT_MAX);
+
+const RATE_LIMIT_WINDOW = Number.isFinite(parsedWindowMs) && parsedWindowMs > 0
+  ? parsedWindowMs
+  : 15 * 60 * 1000;
+
+const MAX_REQUESTS = Number.isFinite(parsedMaxRequests) && parsedMaxRequests > 0
+  ? parsedMaxRequests
+  : 300;
+
+const RATE_LIMIT_BYPASS_PATHS = new Set([
+  '/health',
+  '/api/agno/status',
+  '/api/agno/memory-status',
+  '/api/logs/batch',
+]);
 
 export function rateLimit(req, res, next) {
-  const clientIP = req.ip || req.connection.remoteAddress;
+  // Never rate-limit preflight requests, otherwise browser reports false CORS failures.
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+
+  if (RATE_LIMIT_BYPASS_PATHS.has(req.path)) {
+    return next();
+  }
+
+  const clientIP = req.ip || req.connection?.remoteAddress || 'unknown';
   const now = Date.now();
-  
-  // Limpa entradas antigas
+
+  // Cleanup old entries
   for (const [ip, data] of requestCounts.entries()) {
     if (now - data.firstRequest > RATE_LIMIT_WINDOW) {
       requestCounts.delete(ip);
     }
   }
-  
-  // Verifica rate limit para o IP atual
-  const clientData = requestCounts.get(clientIP);
-  
+
+  let clientData = requestCounts.get(clientIP);
+
   if (!clientData) {
-    requestCounts.set(clientIP, {
+    clientData = {
       count: 1,
-      firstRequest: now
-    });
+      firstRequest: now,
+    };
+    requestCounts.set(clientIP, clientData);
   } else {
-    clientData.count++;
-    
+    clientData.count += 1;
+
     if (clientData.count > MAX_REQUESTS) {
       return res.status(429).json({
-        error: 'Muitas requisições. Tente novamente em 15 minutos.',
-        retryAfter: Math.ceil((clientData.firstRequest + RATE_LIMIT_WINDOW - now) / 1000)
+        error: 'Muitas requisicoes. Tente novamente em alguns minutos.',
+        retryAfter: Math.ceil((clientData.firstRequest + RATE_LIMIT_WINDOW - now) / 1000),
       });
     }
   }
-  
-  // Adiciona headers informativos
+
   res.setHeader('X-RateLimit-Limit', MAX_REQUESTS);
-  res.setHeader('X-RateLimit-Remaining', Math.max(0, MAX_REQUESTS - (clientData?.count || 1)));
-  res.setHeader('X-RateLimit-Reset', Math.ceil((clientData?.firstRequest + RATE_LIMIT_WINDOW) / 1000));
-  
+  res.setHeader('X-RateLimit-Remaining', Math.max(0, MAX_REQUESTS - clientData.count));
+  res.setHeader('X-RateLimit-Reset', Math.ceil((clientData.firstRequest + RATE_LIMIT_WINDOW) / 1000));
+
   next();
 }
