@@ -60,10 +60,9 @@ export default function AIPage() {
   }, []);
 
   return (
-    <div className="relative h-full min-h-0 flex flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-sky-50 to-indigo-50 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 p-2 sm:p-4">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:radial-gradient(currentColor_1px,transparent_1px)] [background-size:24px_24px] text-slate-900 dark:opacity-[0.10] dark:text-white" />
-      <div className="pointer-events-none absolute -top-28 -right-24 h-80 w-80 rounded-full bg-cyan-400/20 blur-3xl dark:bg-cyan-600/20" />
-      <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-indigo-400/20 blur-3xl dark:bg-indigo-600/20" />
+    <div className="relative h-full min-h-0 flex flex-col overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-cyan-50/60 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 p-2 sm:p-4">
+      <div className="pointer-events-none absolute -top-28 -right-24 h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl dark:bg-cyan-600/16" />
+      <div className="pointer-events-none absolute -bottom-36 left-1/2 h-[28rem] w-[44rem] -translate-x-1/2 rounded-full bg-cyan-400/14 blur-3xl dark:bg-cyan-500/20" />
 
       <div className="relative mx-auto w-full max-w-screen-2xl flex flex-col min-h-0 flex-1">
         <AIPageTabs

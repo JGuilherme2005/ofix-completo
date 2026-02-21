@@ -1,51 +1,70 @@
-import { Button } from '@/components/ui/button';
+﻿import { Button } from '@/components/ui/button';
 import { Brain, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 
 interface MemoryCardProps {
   memoriaAtiva: boolean;
-  memorias: any[];
+  memorias: Array<{ memory?: string; content?: string; [key: string]: unknown }>;
   loadingMemorias: boolean;
   mostrarMemorias: boolean;
   setMostrarMemorias: (v: boolean) => void;
   onCarregar: () => void;
   onExcluir: () => void;
-  /** Se true, esconde instruções de infra (admin only) */
   isAdmin?: boolean;
 }
 
 export default function MemoryCard({
-  memoriaAtiva, memorias, loadingMemorias,
-  mostrarMemorias, setMostrarMemorias,
-  onCarregar, onExcluir,
+  memoriaAtiva,
+  memorias,
+  loadingMemorias,
+  mostrarMemorias,
+  setMostrarMemorias,
+  onCarregar,
+  onExcluir,
   isAdmin = false,
 }: MemoryCardProps) {
   return (
-    <div className="bg-white dark:bg-slate-900/60 rounded-xl shadow-sm border border-blue-200/70 dark:border-blue-900/40 overflow-hidden">
+    <div className="overflow-hidden rounded-2xl border border-cyan-200/65 bg-gradient-to-b from-white/90 to-cyan-50/55 shadow-[0_14px_32px_-22px_rgba(14,116,144,0.55)] ring-1 ring-cyan-200/35 backdrop-blur-sm dark:border-cyan-900/35 dark:from-slate-900/72 dark:to-cyan-950/24 dark:ring-cyan-900/30">
       <div className="flex items-center justify-between gap-3 p-4">
         <button
           type="button"
           onClick={() => setMostrarMemorias(!mostrarMemorias)}
           aria-expanded={mostrarMemorias}
-          className="flex items-center gap-2 text-blue-900 dark:text-blue-200 font-semibold hover:text-blue-700 dark:hover:text-blue-100 transition-colors min-w-0"
+          className="flex min-w-0 items-center gap-2 font-semibold text-cyan-900 transition-colors hover:text-cyan-700 dark:text-cyan-200 dark:hover:text-cyan-100"
         >
-          <Brain className="w-5 h-5 shrink-0" />
-          <span className="truncate">O que o Matias lembra sobre você</span>
-          {memoriaAtiva && (
-            <span className="text-xs bg-blue-100 dark:bg-blue-950/40 dark:text-blue-200 px-2 py-0.5 rounded-full shrink-0">{memorias.length}</span>
-          )}
-          {!memoriaAtiva && (
-            <span className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-200 px-2 py-0.5 rounded-full shrink-0">Aguardando ativação</span>
+          <Brain className="h-5 w-5 shrink-0" />
+          <span className="truncate">Memoria do Matias</span>
+          {memoriaAtiva ? (
+            <span className="shrink-0 rounded-full bg-cyan-100 px-2 py-0.5 text-xs text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-200">
+              {memorias.length}
+            </span>
+          ) : (
+            <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+              Aguardando ativacao
+            </span>
           )}
         </button>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="shrink-0 flex items-center gap-1.5">
           {mostrarMemorias && memoriaAtiva && (
             <>
-              <Button onClick={onCarregar} variant="ghost" size="sm" disabled={loadingMemorias} className="text-blue-600 dark:text-blue-300 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30" title="Atualizar memórias">
-                <RefreshCw className={`w-4 h-4 ${loadingMemorias ? 'animate-spin' : ''}`} />
+              <Button
+                onClick={onCarregar}
+                variant="ghost"
+                size="sm"
+                disabled={loadingMemorias}
+                className="text-cyan-700 hover:bg-cyan-100 dark:text-cyan-300 dark:hover:bg-cyan-950/35"
+                title="Atualizar memorias"
+              >
+                <RefreshCw className={`h-4 w-4 ${loadingMemorias ? 'animate-spin' : ''}`} />
               </Button>
-              <Button onClick={onExcluir} variant="ghost" size="sm" className="text-red-600 dark:text-red-300 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30" title="Esquecer minhas conversas (LGPD)">
-                <Trash2 className="w-4 h-4" />
+              <Button
+                onClick={onExcluir}
+                variant="ghost"
+                size="sm"
+                className="text-rose-600 hover:bg-rose-100 dark:text-rose-300 dark:hover:bg-rose-950/35"
+                title="Esquecer memorias"
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
             </>
           )}
@@ -53,42 +72,45 @@ export default function MemoryCard({
       </div>
 
       {mostrarMemorias && (
-        <div className="px-4 pb-4 pt-0 border-t border-blue-100/70 dark:border-blue-900/30">
+        <div className="border-t border-cyan-200/55 px-4 pb-4 pt-3 dark:border-cyan-900/35">
           {!memoriaAtiva ? (
-            <div className="mt-3 bg-yellow-50 border border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-900/30 rounded-lg p-4">
-              <p className="text-sm text-yellow-900 dark:text-yellow-200 font-medium mb-2">Sistema de memória não ativado</p>
-              {/* M5-UX-06: Só exibe instruções de infra para admin */}
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/35 dark:bg-amber-950/28">
+              <p className="mb-2 text-sm font-medium text-amber-900 dark:text-amber-200">Memoria ainda nao ativada</p>
               {isAdmin ? (
                 <>
-                  <p className="text-xs text-yellow-800 dark:text-yellow-200/90 mb-3">Configure no Render para o Matias lembrar das conversas:</p>
-                  <ol className="text-xs text-yellow-800 dark:text-yellow-200/90 space-y-1 list-decimal list-inside">
-                    <li>Backend - Environment - <code className="bg-yellow-100 dark:bg-yellow-950/40 px-1 rounded">AGNO_ENABLE_MEMORY=true</code></li>
-                    <li>Agente - Start Command - <code className="bg-yellow-100 dark:bg-yellow-950/40 px-1 rounded">python agent_with_memory.py</code></li>
-                    <li>Fazer Deploy Manual</li>
+                  <p className="mb-2 text-xs text-amber-800/95 dark:text-amber-200/90">Para ativar no ambiente:</p>
+                  <ol className="list-inside list-decimal space-y-1 text-xs text-amber-800/95 dark:text-amber-200/90">
+                    <li>
+                      Defina <code className="rounded bg-amber-100 px-1 dark:bg-amber-950/40">AGNO_ENABLE_MEMORY=true</code>
+                    </li>
+                    <li>
+                      Start command: <code className="rounded bg-amber-100 px-1 dark:bg-amber-950/40">python agent_with_memory.py</code>
+                    </li>
+                    <li>Rode deploy manual</li>
                   </ol>
                 </>
               ) : (
-                <p className="text-xs text-yellow-800 dark:text-yellow-200/90">O recurso de memória será ativado pelo administrador em breve.</p>
+                <p className="text-xs text-amber-800/95 dark:text-amber-200/90">O administrador ativara esse recurso em breve.</p>
               )}
             </div>
           ) : loadingMemorias ? (
             <div className="flex items-center justify-center py-6">
-              <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
-              <span className="ml-2 text-sm text-slate-600 dark:text-slate-300">Carregando memórias...</span>
+              <Loader2 className="h-5 w-5 animate-spin text-cyan-600" />
+              <span className="ml-2 text-sm text-slate-600 dark:text-slate-300">Carregando memorias...</span>
             </div>
           ) : memorias.length > 0 ? (
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-1 space-y-2">
               {memorias.map((memoria, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-200">
-                  <span className="text-blue-500 mt-1">•</span>
-                  <span className="break-words">{memoria.memory || memoria.content || JSON.stringify(memoria)}</span>
+                <li key={`${idx}-${memoria.memory || memoria.content || 'item'}`} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-200">
+                  <span className="mt-1 text-cyan-500">-</span>
+                  <span className="break-words">{String(memoria.memory || memoria.content || JSON.stringify(memoria))}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="text-center py-6">
-              <p className="text-sm text-slate-600 dark:text-slate-300 italic">Ainda não há memórias salvas.</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Continue conversando com o Matias.</p>
+            <div className="py-5 text-center">
+              <p className="text-sm italic text-slate-600 dark:text-slate-300">Ainda nao ha memorias salvas.</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Continue conversando para criar contexto.</p>
             </div>
           )}
         </div>

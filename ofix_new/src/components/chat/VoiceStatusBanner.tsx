@@ -1,4 +1,4 @@
-import { Volume2 } from 'lucide-react';
+﻿import { Mic, Volume2 } from 'lucide-react';
 
 interface VoiceStatusBannerProps {
   gravando: boolean;
@@ -10,18 +10,26 @@ export default function VoiceStatusBanner({ gravando, falando, modoContinuo }: V
   if (!gravando && !falando) return null;
 
   return (
-    <div className={`px-4 py-2 border-t ${gravando ? 'bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-900/40' : 'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900/40'}`} role="status" aria-live="assertive">
+    <div
+      className={`border-t px-4 py-2 ${
+        gravando
+          ? 'border-rose-200/75 bg-rose-50/90 dark:border-rose-900/40 dark:bg-rose-950/28'
+          : 'border-cyan-200/75 bg-cyan-50/90 dark:border-cyan-900/40 dark:bg-cyan-950/28'
+      }`}
+      role="status"
+      aria-live="assertive"
+    >
       <div className="flex items-center justify-center gap-2">
         {gravando ? (
           <>
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-red-700 dark:text-red-200">🎤 Gravando... Fale agora</span>
-            {modoContinuo && <span className="text-xs text-red-600 dark:text-red-200/80">(Modo contínuo)</span>}
+            <Mic className="h-4 w-4 animate-pulse text-rose-600 dark:text-rose-300" />
+            <span className="text-sm font-medium text-rose-700 dark:text-rose-200">Gravando. Fale agora.</span>
+            {modoContinuo && <span className="text-xs text-rose-600/90 dark:text-rose-200/85">(Modo continuo)</span>}
           </>
         ) : (
           <>
-            <Volume2 className="w-4 h-4 text-blue-600 animate-pulse" />
-            <span className="text-sm font-medium text-blue-700 dark:text-blue-200">🔊 Matias está falando...</span>
+            <Volume2 className="h-4 w-4 animate-pulse text-cyan-600 dark:text-cyan-300" />
+            <span className="text-sm font-medium text-cyan-700 dark:text-cyan-200">Matias esta respondendo por voz...</span>
           </>
         )}
       </div>

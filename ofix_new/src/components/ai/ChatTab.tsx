@@ -1,7 +1,7 @@
 ﻿// @ts-nocheck
 /**
- * ChatTab â€” Tab de chat extraÃ­da do AIPage
- * ContÃ©m toda a lÃ³gica de envio de mensagens, NLP, seleÃ§Ã£o, cadastro e contexto
+ * ChatTab - tab de chat extraida do AIPage.
+ * Mantem a logica de envio de mensagens, NLP, selecao, cadastro e contexto.
  */
 import { useState, useRef, useEffect, useCallback } from 'react';
 import ClienteModal from '../clientes/ClienteModal';
@@ -44,7 +44,6 @@ const ChatTab = ({
   setClienteSelecionado,
   onNavigateToTab,
 }: ChatTabProps) => {
-  // â”€â”€ Estado local (chat + contexto) â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [mensagem, setMensagem] = useState('');
   const [conversas, setConversas] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(false);
@@ -61,7 +60,6 @@ const ChatTab = ({
   const inputRef = useRef<any>(null);
   const { painelFixoDesktop, setPainelFixoDesktop, painelDrawerOpen, setPainelDrawerOpen } = useSidePanel();
 
-  // â”€â”€ Wiring: conectar STT transcript â†’ setMensagem â”€â”€
   useEffect(() => {
     voice.setOnTranscript?.((text: string, append: boolean) => {
       if (append) {
@@ -73,7 +71,6 @@ const ChatTab = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voice.setOnTranscript]);
 
-  // â”€â”€ Mensagem inicial â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (conversas.length === 0 && user) {
       const msg = {
@@ -86,16 +83,13 @@ const ChatTab = ({
     }
   }, [user, conversas.length, memory.memoriaAtiva]);
 
-  // â”€â”€ Auto-scroll â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [conversas]);
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // FUNÃ‡Ã•ES DE LOCALSTORAGE
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const getStorageKey = useCallback(() => `matias_conversas_${user?.id || 'anonymous'}`, [user]);
 
   const salvarConversasLocal = useCallback((novasConversas: any[]) => {
@@ -126,14 +120,12 @@ const ChatTab = ({
       salvarConversasLocal([msg]);
       showToast('Chat limpo! Nova conversa iniciada.', 'success');
     } catch (error) {
-      logger.error('Erro ao limpar histÃ³rico', { error: error.message });
-      showToast('Erro ao limpar histÃ³rico', 'error');
+      logger.error('Erro ao limpar historico', { error: error.message });
+      showToast('Erro ao limpar historico', 'error');
     }
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // VALIDAÃ‡ÃƒO EM TEMPO REAL
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const validarInputBusca = (valor: string) => {
     if (!valor || contextoAtivo !== 'buscar_cliente') {
       setInputWarning('');
@@ -149,26 +141,24 @@ const ChatTab = ({
     if (apenasNumeros.length === 11 && !valor.includes('.')) {
       const cpfFormatado = apenasNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
       setMensagem(cpfFormatado);
-      setInputHint('âœ… CPF detectado e formatado');
+      setInputHint('OK: CPF detectado e formatado');
       setInputWarning('');
       return true;
     }
     if (apenasNumeros.length === 10 || apenasNumeros.length === 11) {
-      setInputHint('âœ… Telefone detectado');
+      setInputHint('OK: telefone detectado');
       setInputWarning('');
       return true;
     }
     if (valor.length >= 3) {
-      setInputHint('âœ… Pronto para buscar');
+      setInputHint('OK: pronto para buscar');
       setInputWarning('');
       return true;
     }
     return true;
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // GERAR AÃ‡Ã•ES INLINE
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const gerarAcoesInline = (tipo: string, metadata: any) => {
     const actions: any[] = [];
     if (tipo === 'consulta_cliente' && metadata?.cliente_id) {
@@ -207,9 +197,26 @@ const ChatTab = ({
     });
   }, [onNavigateToTab, clienteSelecionado]);
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  const tentarFalarResposta = useCallback((responseContent: string) => {
+    if (!voice.vozHabilitada || !responseContent || !('speechSynthesis' in window)) return;
+    try {
+      const textoLimpo = responseContent
+        .replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')
+        .replace(/#{1,6}\s/g, '').replace(/```[\s\S]*?```/g, '')
+        .replace(/`([^`]+)`/g, '$1').replace(/\n{2,}/g, '. ')
+        .replace(/\n/g, ' ')
+        .replace(/[\u2022\u2713\u274C]/g, '')
+        .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+        .trim();
+      if (textoLimpo.length > 0 && textoLimpo.length < AI_CONFIG.VOICE.MAX_TEXT_LENGTH_FOR_SPEECH) {
+        voice.falarTexto(textoLimpo);
+      }
+    } catch (error) {
+      logger.error('Erro TTS', { error: error.message });
+    }
+  }, [voice]);
+
   // ENVIAR MENSAGEM
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const enviarMensagem = useCallback(async () => {
     if (!mensagem.trim() || carregando) return;
 
@@ -225,7 +232,6 @@ const ChatTab = ({
       return;
     }
 
-    // â”€â”€ Contexto de busca de cliente: seleÃ§Ã£o por nÃºmero â”€â”€
     if (contextoAtivo === 'buscar_cliente' && /^\d+$/.test(mensagem.trim())) {
       const numeroDigitado = parseInt(mensagem.trim());
       const ultimaMensagemAssistente = [...conversas].reverse().find(
@@ -296,7 +302,6 @@ const ChatTab = ({
       }
     }
 
-    // â”€â”€ ValidaÃ§Ã£o â”€â”€
     const validacao = validarMensagem(mensagem);
     if (!validacao.valid) {
       showToast(validacao.errors[0], 'error');
@@ -401,26 +406,8 @@ const ChatTab = ({
     } finally {
       setCarregando(false);
     }
-  }, [mensagem, carregando, contextoAtivo, conversas, user, connection, showToast, clienteSelecionado, salvarConversasLocal, setConversas, setMensagem, setCarregando, setInputWarning, setInputHint, setClientePrePreenchido, setClienteSelecionado, abrirAgendamentoComContexto]);
+  }, [mensagem, carregando, contextoAtivo, conversas, user, connection, showToast, clienteSelecionado, salvarConversasLocal, setConversas, setMensagem, setCarregando, setInputWarning, setInputHint, setClientePrePreenchido, setClienteSelecionado, abrirAgendamentoComContexto, tentarFalarResposta]);
 
-  /** Helper: falar resposta se voz habilitada */
-  function tentarFalarResposta(responseContent: string) {
-    if (!voice.vozHabilitada || !responseContent || !('speechSynthesis' in window)) return;
-    try {
-      const textoLimpo = responseContent
-        .replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')
-        .replace(/#{1,6}\s/g, '').replace(/```[\s\S]*?```/g, '')
-        .replace(/`([^`]+)`/g, '$1').replace(/\n{2,}/g, '. ')
-        .replace(/\n/g, ' ').replace(/[â€¢âœ…âŒðŸ“‹ðŸ”§ðŸš—ðŸ’¼ðŸ“ŠðŸ”ðŸ†•ðŸ‘¤ðŸ“…ðŸ’°ðŸ“¦]/gu, '').trim();
-      if (textoLimpo.length > 0 && textoLimpo.length < AI_CONFIG.VOICE.MAX_TEXT_LENGTH_FOR_SPEECH) {
-        voice.falarTexto(textoLimpo);
-      }
-    } catch (error) {
-      logger.error('Erro TTS', { error: error.message });
-    }
-  }
-
-  // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleKeyDown = (e: any) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensagem(); }
   };
@@ -468,7 +455,7 @@ const ChatTab = ({
       default:
         showToast(`Acao: ${action.label}`, 'info');
     }
-  }, [showToast, onNavigateToTab, clienteSelecionado, abrirAgendamentoComContexto]);
+  }, [showToast, onNavigateToTab, abrirAgendamentoComContexto]);
 
   const handleSelectOption = useCallback((option: any) => {
     if (option.value) { setMensagem(option.value); setTimeout(() => enviarMensagem(), 100); }
@@ -492,9 +479,7 @@ const ChatTab = ({
     setConversas(prev => { const n = [...prev, msg]; salvarConversasLocal(n); return n; });
   }, [salvarConversasLocal]);
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // RENDER
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const sidePanelContent = (
     <>
       <VoiceSettingsCard
@@ -523,19 +508,19 @@ const ChatTab = ({
 
       <ActionsCard onLimparHistorico={limparHistorico} />
 
-      <div className="bg-white dark:bg-slate-900/60 rounded-xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 p-4">
-        <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Fluxos guiados</div>
+      <div className="rounded-2xl border border-cyan-200/65 bg-gradient-to-b from-white/90 to-cyan-50/55 p-4 shadow-[0_14px_32px_-22px_rgba(14,116,144,0.55)] ring-1 ring-cyan-200/35 backdrop-blur-sm dark:border-cyan-900/35 dark:from-slate-900/72 dark:to-cyan-950/24 dark:ring-cyan-900/30">
+        <div className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Fluxos guiados</div>
         <div className="grid grid-cols-1 gap-2">
           <button
             type="button"
-            className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors"
+            className="rounded-xl border border-cyan-200/75 bg-white/80 px-3 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-white dark:border-cyan-900/40 dark:bg-slate-900/55 dark:text-slate-200 dark:hover:bg-slate-900"
             onClick={() => onNavigateToTab?.('checkin')}
           >
             Iniciar check-in guiado
           </button>
           <button
             type="button"
-            className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors"
+            className="rounded-xl border border-cyan-200/75 bg-white/80 px-3 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-white dark:border-cyan-900/40 dark:bg-slate-900/55 dark:text-slate-200 dark:hover:bg-slate-900"
             onClick={() =>
               onNavigateToTab?.('agendamento', {
                 clienteId: clienteSelecionado?.id,
@@ -549,7 +534,7 @@ const ChatTab = ({
           </button>
           <button
             type="button"
-            className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-xl border border-cyan-200/75 bg-white/80 px-3 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 dark:border-cyan-900/40 dark:bg-slate-900/55 dark:text-slate-200 dark:hover:bg-slate-900"
             onClick={() =>
               abrirAgendamentoComContexto(
                 mensagem.trim() || 'Solicitacao de agendamento sem detalhes adicionais.',
@@ -585,7 +570,7 @@ const ChatTab = ({
         />
 
         <div className={`min-h-0 flex-1 ${painelFixoDesktop ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-2.5' : ''}`}>
-          <div className="min-h-0 min-w-0 bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 flex flex-col overflow-hidden flex-1">
+          <div className="min-h-0 min-w-0 rounded-2xl border border-cyan-200/65 bg-gradient-to-b from-white/92 via-white/86 to-cyan-50/45 shadow-[0_16px_34px_-24px_rgba(14,116,144,0.6)] ring-1 ring-cyan-200/35 backdrop-blur-sm dark:border-cyan-900/35 dark:from-slate-900/72 dark:via-slate-900/68 dark:to-cyan-950/24 dark:ring-cyan-900/25 flex flex-col overflow-hidden flex-1">
             <ChatMessageList
               conversas={conversas}
               carregando={carregando}

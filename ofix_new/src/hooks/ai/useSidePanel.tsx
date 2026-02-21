@@ -1,25 +1,25 @@
-// @ts-nocheck
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 
 /**
- * Hook para controle do painel lateral (desktop fixo / mobile drawer).
- * Persiste preferência no localStorage.
+ * Controle do painel lateral (desktop fixo / mobile drawer).
+ * Persiste preferencia no localStorage.
  */
 export function useSidePanel() {
-  const [painelFixoDesktop, setPainelFixoDesktop] = useState(() => {
+  const [painelFixoDesktop, setPainelFixoDesktop] = useState<boolean>(() => {
     try {
       return localStorage.getItem('matias_panel_pinned') !== '0';
     } catch {
       return true;
     }
   });
+
   const [painelDrawerOpen, setPainelDrawerOpen] = useState(false);
 
   useEffect(() => {
     try {
       localStorage.setItem('matias_panel_pinned', painelFixoDesktop ? '1' : '0');
     } catch {
-      // ignore (modo privado / storage bloqueado)
+      // ignore storage failures
     }
   }, [painelFixoDesktop]);
 

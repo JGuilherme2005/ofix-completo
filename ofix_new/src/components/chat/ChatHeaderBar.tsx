@@ -1,7 +1,7 @@
-import { ReactNode } from 'react';
+﻿import { type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Wrench, Volume2, VolumeX, RefreshCw, PanelRightOpen } from 'lucide-react';
+import { Wrench, Volume2, VolumeX, RefreshCw, PanelRightOpen, PanelRightClose } from 'lucide-react';
 
 interface ChatHeaderBarProps {
   statusConexao: string;
@@ -35,14 +35,14 @@ export default function ChatHeaderBar({
   onReconectar,
 }: ChatHeaderBarProps) {
   return (
-    <div className="relative overflow-hidden rounded-lg border border-cyan-200/70 bg-gradient-to-r from-cyan-50/90 via-sky-50/70 to-blue-50/90 px-2 py-1.5 shadow-sm ring-1 ring-cyan-200/40 dark:border-cyan-900/40 dark:from-slate-900/70 dark:via-slate-900/55 dark:to-blue-950/35 dark:ring-cyan-900/30">
-      <div className="flex flex-wrap items-center justify-between gap-1.5">
+    <div className="relative overflow-hidden rounded-2xl border border-cyan-200/70 bg-gradient-to-r from-white/86 via-cyan-50/52 to-blue-50/42 px-2.5 py-2 shadow-[0_12px_32px_-22px_rgba(14,116,144,0.6)] ring-1 ring-cyan-200/35 backdrop-blur-md dark:border-cyan-900/35 dark:from-slate-900/68 dark:via-slate-900/55 dark:to-cyan-950/25 dark:ring-cyan-900/25">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-cyan-500/15 text-cyan-700 ring-1 ring-cyan-300/50 dark:bg-cyan-500/20 dark:text-cyan-200 dark:ring-cyan-800/40">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/15 text-cyan-700 ring-1 ring-cyan-300/50 dark:bg-cyan-500/20 dark:text-cyan-200 dark:ring-cyan-800/40">
             <Wrench className="h-3.5 w-3.5" />
           </div>
-          <span className="hidden sm:inline text-xs font-semibold text-slate-900 dark:text-slate-100">Controles do chat</span>
-          <span className="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
+          <span className="hidden sm:inline text-xs font-semibold text-slate-900 dark:text-slate-100">Operacao do chat</span>
+          <span className="inline-flex items-center gap-1 rounded-full border border-cyan-200/80 bg-white/75 px-2 py-0.5 text-xs text-slate-700 dark:border-cyan-900/45 dark:bg-slate-900/55 dark:text-slate-200">
             <span className="text-slate-500 dark:text-slate-400">{getStatusIcon()}</span>
             {getStatusText()}
           </span>
@@ -67,13 +67,24 @@ export default function ChatHeaderBar({
               variant="outline"
               size="icon"
               onClick={onPararFala}
-              className="h-8 w-8 border-red-300 bg-red-50 text-red-600 hover:bg-red-100 dark:border-red-800/60 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/60"
+              className="h-8 w-8 border-rose-300 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:border-rose-800/60 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-950/60"
               title="Parar fala"
               aria-label="Parar fala"
             >
               <VolumeX className="h-4 w-4" />
             </Button>
           )}
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setPainelFixoDesktop(!painelFixoDesktop)}
+            className="hidden lg:inline-flex h-8 w-8 border-slate-300/80 bg-white/80 text-slate-700 hover:bg-white dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:bg-slate-900"
+            aria-label={painelFixoDesktop ? 'Desafixar painel lateral' : 'Fixar painel lateral'}
+            title={painelFixoDesktop ? 'Desafixar painel lateral' : 'Fixar painel lateral'}
+          >
+            {painelFixoDesktop ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
+          </Button>
 
           <Sheet open={painelDrawerOpen} onOpenChange={setPainelDrawerOpen}>
             <SheetTrigger asChild>
@@ -93,7 +104,7 @@ export default function ChatHeaderBar({
               </SheetHeader>
               <div className="mt-4 flex max-h-[calc(100vh-7rem)] flex-col gap-3 overflow-y-auto pr-1">
                 {!painelFixoDesktop && (
-                  <div className="hidden lg:flex items-center justify-between gap-3 rounded-lg border border-slate-200/70 dark:border-slate-800/70 bg-slate-50 dark:bg-slate-900/40 px-3 py-2">
+                  <div className="hidden lg:flex items-center justify-between gap-3 rounded-lg border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-slate-800/70 dark:bg-slate-900/40">
                     <div className="text-xs text-slate-600 dark:text-slate-300">Fixar painel lateral no desktop?</div>
                     <Button
                       type="button"
