@@ -370,10 +370,10 @@ const ChatTab = ({
     } finally {
       setCarregando(false);
     }
-  }, [mensagem, carregando, contextoAtivo, conversas, user, connection, showToast, clienteSelecionado, salvarConversasLocal, setConversas, setMensagem, setCarregando, setInputWarning, setInputHint, setClientePrePreenchido, setClienteSelecionado, tentarFalarResposta]);
+  }, [mensagem, carregando, contextoAtivo, conversas, user, connection, showToast, clienteSelecionado, salvarConversasLocal, setConversas, setMensagem, setCarregando, setInputWarning, setInputHint, setClientePrePreenchido, setClienteSelecionado]);
 
   /** Helper: falar resposta se voz habilitada */
-  const tentarFalarResposta = useCallback((responseContent: string) => {
+  function tentarFalarResposta(responseContent: string) {
     if (!voice.vozHabilitada || !responseContent || !('speechSynthesis' in window)) return;
     try {
       const textoLimpo = responseContent
@@ -387,7 +387,7 @@ const ChatTab = ({
     } catch (error) {
       logger.error('Erro TTS', { error: error.message });
     }
-  }, [voice]);
+  }
 
   // ── Handlers ────────────────────────────────
   const handleKeyDown = (e: any) => {
