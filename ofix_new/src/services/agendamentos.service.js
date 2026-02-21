@@ -181,7 +181,7 @@ export const agendarServico = async (dadosAgendamento) => {
           numeroOs: `MAT-${Date.now()}`,
           clienteId,
           veiculoId,
-          status: 'agendado',
+          status: 'AGUARDANDO',
           dataEntrada: dataHora,
           descricaoProblema: observacoes || 'Agendamento criado via Matias IA.',
           observacoes: `[AGENDADO VIA MATIAS] ${observacoes}`,
