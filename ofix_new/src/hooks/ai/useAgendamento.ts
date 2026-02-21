@@ -69,9 +69,13 @@ export function useAgendamento({ showToast, clienteSelecionado }: UseAgendamento
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
 
   const buildDadosAgendamento = useCallback(() => {
+    const clienteAtual = (clienteSelecionado as any) || null;
+    const veiculoPreferencial = Array.isArray(clienteAtual?.veiculos) ? clienteAtual.veiculos[0] : clienteAtual?.veiculo;
+    const veiculoIdResolvido = clienteAtual?.veiculoId || veiculoPreferencial?.id || formData.veiculoId;
+
     return {
-      clienteId: (clienteSelecionado as any)?.id || formData.clienteId,
-      veiculoId: (clienteSelecionado as any)?.veiculoId || formData.veiculoId,
+      clienteId: clienteAtual?.id || formData.clienteId,
+      veiculoId: veiculoIdResolvido,
       servicoId: formData.servicoId,
       dataAgendamento: formData.dataAgendamento,
       horaAgendamento: formData.horaAgendamento,

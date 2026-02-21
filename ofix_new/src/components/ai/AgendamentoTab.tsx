@@ -137,8 +137,17 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
 
   const clienteId = clienteSelecionado?.id as string | number | undefined;
   const clienteNomeSelecionado = (clienteSelecionado?.nomeCompleto || clienteSelecionado?.nome) as string | undefined;
-  const veiculoIdSelecionado = clienteSelecionado?.veiculoId as string | number | undefined;
-  const veiculoInfoSelecionado = (clienteSelecionado?.veiculoInfo || clienteSelecionado?.veiculo) as string | undefined;
+  const veiculoPreferencial =
+    (Array.isArray(clienteSelecionado?.veiculos) ? clienteSelecionado?.veiculos?.[0] : clienteSelecionado?.veiculo) as
+      | Record<string, unknown>
+      | undefined;
+  const veiculoIdSelecionado = (clienteSelecionado?.veiculoId || veiculoPreferencial?.id) as string | number | undefined;
+  const veiculoInfoSelecionado = (
+    clienteSelecionado?.veiculoInfo ||
+    clienteSelecionado?.veiculo ||
+    [veiculoPreferencial?.marca, veiculoPreferencial?.modelo].filter(Boolean).join(' ') ||
+    veiculoPreferencial?.placa
+  ) as string | undefined;
 
   useEffect(() => {
     void carregarAgendamentos();

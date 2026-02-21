@@ -35,6 +35,24 @@ interface ChatTabProps {
   onNavigateToTab?: (tab: AITabId, payload?: Record<string, unknown>) => void;
 }
 
+const enrichClienteSelecionado = (cliente: any) => {
+  if (!cliente || typeof cliente !== 'object') return null;
+  const veiculos = Array.isArray(cliente.veiculos) ? cliente.veiculos : [];
+  const primeiroVeiculo = veiculos.find((item: any) => item && (item.id || item.modelo || item.placa));
+  const veiculoId = cliente.veiculoId || primeiroVeiculo?.id;
+  const veiculoInfo =
+    cliente.veiculoInfo ||
+    (primeiroVeiculo
+      ? [primeiroVeiculo.marca, primeiroVeiculo.modelo].filter(Boolean).join(' ') || primeiroVeiculo.placa
+      : undefined);
+
+  return {
+    ...cliente,
+    ...(veiculoId ? { veiculoId } : {}),
+    ...(veiculoInfo ? { veiculoInfo } : {}),
+  };
+};
+
 const ChatTab = ({
   user,
   showToast,
@@ -359,6 +377,13 @@ const ChatTab = ({
             if (responseContent.includes('Cliente selecionado') || responseContent.includes('cliente selecionado')) {
               setContextoAtivo('cliente_selecionado');
             }
+            if (data?.cliente) {
+              const clienteNormalizado = enrichClienteSelecionado(data.cliente);
+              if (clienteNormalizado) {
+                setClienteSelecionado(clienteNormalizado);
+                try { localStorage.setItem('clienteSelecionado', JSON.stringify(clienteNormalizado)); } catch { /* noop */ }
+              }
+            }
             const respostaAgente = {
               id: Date.now() + 1, tipo: tipoResposta, conteudo: responseContent, timestamp: new Date().toISOString(),
               metadata: { ...data.metadata, dadosExtraidos: data.dadosExtraidos, actions: data.metadata?.actions },
@@ -476,8 +501,9 @@ const ChatTab = ({
         setContextoAtivo(null);
       }
       if (tipoResposta === 'cliente_selecionado' && data.cliente) {
-        setClienteSelecionado(data.cliente);
-        try { localStorage.setItem('clienteSelecionado', JSON.stringify(data.cliente)); } catch { /* noop */ }
+        const clienteNormalizado = enrichClienteSelecionado(data.cliente);
+        setClienteSelecionado(clienteNormalizado);
+        try { localStorage.setItem('clienteSelecionado', JSON.stringify(clienteNormalizado)); } catch { /* noop */ }
         setContextoAtivo('cliente_selecionado');
       }
           tentarFalarResposta(responseContent);
