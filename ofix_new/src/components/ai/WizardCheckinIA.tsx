@@ -97,9 +97,11 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
   const [aviso, setAviso] = useState('');
   const [checkinCompleto, setCheckinCompleto] = useState(Boolean(draftRef.current?.checkinCompleto));
   const [modoLocal, setModoLocal] = useState(Boolean(draftRef.current?.modoLocal));
+  const [falhaBackendAtual, setFalhaBackendAtual] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
   const iniciarLocal = useCallback((hint?: string) => {
+    setFalhaBackendAtual(true);
     setModoLocal(true);
     setErro(hint || '');
     setEtapaAtual('aguardando_resposta');
@@ -127,6 +129,7 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
       const perguntaInicial = typeof data.proxima_pergunta === 'string' ? data.proxima_pergunta : PERGUNTA_INICIAL;
       const etapaSeguinte = (data.etapa_seguinte as EtapaCheckin) || 'aguardando_resposta';
 
+      setFalhaBackendAtual(false);
       setModoLocal(false);
       setEtapaAtual(etapaSeguinte);
       setConversaHistorico([
@@ -325,6 +328,7 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
     setRespostaAtual('');
     setCheckinCompleto(false);
     setModoLocal(false);
+    setFalhaBackendAtual(false);
     setErro('');
     setAviso('');
     try {
@@ -334,6 +338,8 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
     }
     void iniciarCheckin();
   }, [iniciarCheckin]);
+
+  const exibirAvisoModoLocal = modoLocal && falhaBackendAtual;
 
   return (
     <div className="h-full rounded-2xl bg-white dark:bg-slate-900 flex flex-col">
@@ -361,9 +367,9 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
       </div>
 
       <div className="flex-1 min-h-0 p-3 grid grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
-        {(modoLocal || erro || aviso) && (
+        {(exibirAvisoModoLocal || erro || aviso) && (
           <div className="space-y-2">
-            {modoLocal && (
+            {exibirAvisoModoLocal && (
               <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
                 <WifiOff className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>Sem dependencia de backend no momento. Fluxo local ativo para voce continuar. Sincronizando quando a conexao voltar.</span>

@@ -12,11 +12,6 @@ export default function ServiceProcedures({
   onUpdate,
   isGuest,
 }) {
-  console.log("ServiceProcedures - Props recebidas:", {
-    service,
-    procedimentos,
-  });
-
   const [searchTerm, setSearchTerm] = useState("");
   const [isApplying, setIsApplying] = useState(false);
 

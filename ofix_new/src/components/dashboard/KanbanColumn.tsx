@@ -59,10 +59,7 @@ export default function KanbanColumn({ status, config, servicos, serviceIds, cli
                                             servico={servico}
                                             cliente={cliente}
                                             veiculo={veiculo}
-                                            onClick={() => {
-                                                console.log("Service passed to onClick in KanbanColumn:", servico); // Adicionado para depuração
-                                                onServiceClick(servico);
-                                            }}
+                                            onClick={() => onServiceClick(servico)}
                                         />
                                     );
                                 })
@@ -82,3 +79,4 @@ export default function KanbanColumn({ status, config, servicos, serviceIds, cli
         </div>
     );
 }
+

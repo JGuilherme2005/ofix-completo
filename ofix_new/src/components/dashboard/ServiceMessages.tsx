@@ -15,17 +15,6 @@ export default function ServiceMessages({
   mensagens,
   isGuest,
 }) {
-  console.log("ServiceMessages - Props recebidas:", {
-    service,
-    cliente,
-    veiculo,
-    mensagens,
-  });
-  console.log(
-    "ServiceMessages - Primeira mensagem (estrutura):",
-    mensagens?.[0]
-  );
-
   const [searchTerm, setSearchTerm] = useState("");
   const [customMessage, setCustomMessage] = useState("");
 

@@ -79,6 +79,7 @@ const ChatTab = ({
   const inputRef = useRef<any>(null);
   const pendingClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previousConversationsRef = useRef<any[] | null>(null);
+  const autoSubmitPendingRef = useRef(false);
   const { painelFixoDesktop, setPainelFixoDesktop, painelDrawerOpen, setPainelDrawerOpen } = useSidePanel();
 
   useEffect(() => {
@@ -565,15 +566,30 @@ const ChatTab = ({
     }
   }, [showToast, onNavigateToTab, oferecerHandoffAgendamento]);
 
+  const agendarAutoEnvio = useCallback((texto: string) => {
+    autoSubmitPendingRef.current = true;
+    setMensagem(texto);
+  }, []);
+
   const handleSelectOption = useCallback((option: any) => {
-    if (option.value) { setMensagem(option.value); setTimeout(() => enviarMensagem(), 100); }
-    else if (option.id) { setMensagem(`Selecionado: ${option.label} (ID: ${option.id})`); setTimeout(() => enviarMensagem(), 100); }
-  }, [enviarMensagem]);
+    if (option?.value !== undefined && option?.value !== null) {
+      agendarAutoEnvio(String(option.value));
+      return;
+    }
+
+    if (option?.id !== undefined && option?.id !== null) {
+      agendarAutoEnvio(String(option.id));
+      return;
+    }
+
+    if (option?.label) {
+      agendarAutoEnvio(String(option.label));
+    }
+  }, [agendarAutoEnvio]);
 
   const handleSelectCliente = useCallback((numero: number) => {
-    setMensagem(`${numero}`);
-    setTimeout(() => enviarMensagem(), 100);
-  }, [enviarMensagem]);
+    agendarAutoEnvio(`${numero}`);
+  }, [agendarAutoEnvio]);
 
   const handleAbrirCadastro = useCallback((dados: any) => {
     setClientePrePreenchido({
@@ -586,6 +602,14 @@ const ChatTab = ({
   const handleAddMessage = useCallback((msg: any) => {
     setConversas(prev => { const n = [...prev, msg]; salvarConversasLocal(n); return n; });
   }, [salvarConversasLocal]);
+
+  useEffect(() => {
+    if (!autoSubmitPendingRef.current) return;
+    if (carregando || !mensagem.trim()) return;
+
+    autoSubmitPendingRef.current = false;
+    void enviarMensagem();
+  }, [mensagem, carregando, enviarMensagem]);
 
   // RENDER
   const sidePanelContent = (

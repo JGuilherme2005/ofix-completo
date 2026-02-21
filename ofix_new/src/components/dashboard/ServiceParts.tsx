@@ -10,9 +10,6 @@ import { updatePeca } from "../../services/pecas.service";
 import toast from "react-hot-toast";
 
 export default function ServiceParts({ service, pecas, onUpdate, isGuest }) {
-  console.log("ServiceParts - Props recebidas:", { service, pecas });
-  console.log("ServiceParts - Primeira peça (estrutura):", pecas?.[0]);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedQuantities, setSelectedQuantities] = useState({});
   const [isAdding, setIsAdding] = useState(false);

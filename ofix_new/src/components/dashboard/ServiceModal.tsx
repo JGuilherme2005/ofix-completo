@@ -35,13 +35,6 @@ export default function ServiceModal({
   const [pecas, setPecas] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Log para debugar
-  console.log("ServiceModal - Props recebidas:", {
-    isOpen,
-    service,
-    hasServiceId: service?.id,
-  });
-
   useEffect(() => {
     if (isOpen && service) {
       const loadData = async () => {
@@ -104,8 +97,6 @@ export default function ServiceModal({
       });
     }
   };
-
-  console.log("📦 Dados recebidos no modal:", { service, isOpen });
 
   // Verificação de segurança após todos os hooks
   if (!isOpen || !service || !service.id) {

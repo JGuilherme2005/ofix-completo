@@ -23,12 +23,6 @@ export default function ServiceDetails({
   onUpdate,
   isGuest,
 }) {
-  console.log("ServiceDetails - Props recebidas:", {
-    service,
-    cliente,
-    veiculo,
-  });
-
   const [formData, setFormData] = useState({
     status: service?.status || "AGUARDANDO", // Usar o valor do enum
     descricaoProblema: service?.descricaoProblema || "",
