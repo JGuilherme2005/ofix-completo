@@ -344,6 +344,7 @@ const ChatTab = ({
               message: novaMensagem.conteudo, usuario_id: user?.id,
               contexto_conversa: conversas.slice(-5).map(c => ({ tipo: c.tipo, conteudo: c.conteudo })),
               contexto_ativo: contextoAtivo,
+              cliente_selecionado: clientes[numeroDigitado - 1],
             };
             const { data } = await apiClient.post('/agno/chat-inteligente', requestBody);
             let responseContent = '';

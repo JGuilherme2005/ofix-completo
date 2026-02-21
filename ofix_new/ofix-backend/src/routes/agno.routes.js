@@ -700,8 +700,72 @@ router.post('/chat-inteligente', protectRoute, validateMessage, async (req, res)
         devLog('ðŸŽ¯ Contexto ativo:', contexto_ativo);
 
         // â­ NOVA ARQUITETURA: Usar MessageClassifier
+        const mensagemTrimmed = String(message).trim();
+        const numeroEmContextoCliente = contexto_ativo === 'buscar_cliente' && /^\d+$/.test(mensagemTrimmed);
+        let clienteSelecionadoResolvido = req.body?.cliente_selecionado || null;
+        let selectionSource = 'frontend_payload';
+
+        // Fallback sem cache: infere cliente pela ultima lista textual enviada no contexto da conversa.
+        if (numeroEmContextoCliente && (!clienteSelecionadoResolvido || !clienteSelecionadoResolvido.id)) {
+            const contextoConversa = Array.isArray(req.body?.contexto_conversa) ? req.body.contexto_conversa : [];
+            const ultimaListaClientes = [...contextoConversa].reverse().find((item) =>
+                typeof item?.conteudo === 'string' && /Clientes encontrados:/i.test(item.conteudo)
+            );
+
+            if (ultimaListaClientes?.conteudo) {
+                const numeroDigitado = Number.parseInt(mensagemTrimmed, 10);
+                const linhaSelecionada = ultimaListaClientes.conteudo
+                    .split('\n')
+                    .map((linha) => linha.trim())
+                    .find((linha) => new RegExp(`^${numeroDigitado}\\.\\s+`).test(linha));
+
+                if (linhaSelecionada) {
+                    const nomeInferido = linhaSelecionada
+                        .replace(/^\d+\.\s+/, '')
+                        .replace(/\*\*/g, '')
+                        .trim();
+
+                    if (nomeInferido) {
+                        clienteSelecionadoResolvido = await prisma.cliente.findFirst({
+                            where: {
+                                oficinaId,
+                                nomeCompleto: { contains: nomeInferido, mode: 'insensitive' }
+                            },
+                            include: { veiculos: true }
+                        });
+                        if (clienteSelecionadoResolvido?.id) {
+                            selectionSource = 'contexto_conversa';
+                        }
+                    }
+                }
+            }
+        }
+
+        if (numeroEmContextoCliente && clienteSelecionadoResolvido?.id) {
+            const veiculosTexto = Array.isArray(clienteSelecionadoResolvido.veiculos) && clienteSelecionadoResolvido.veiculos.length > 0
+                ? clienteSelecionadoResolvido.veiculos.map((v) => v?.modelo).filter(Boolean).join(', ')
+                : 'Nenhum veiculo cadastrado';
+
+            return res.json({
+                success: true,
+                response: `Cliente selecionado: ${clienteSelecionadoResolvido.nomeCompleto || clienteSelecionadoResolvido.nome || 'Cliente'}\n\n` +
+                    `Telefone: ${clienteSelecionadoResolvido.telefone || 'Nao informado'}\n` +
+                    `CPF/CNPJ: ${clienteSelecionadoResolvido.cpfCnpj || 'Nao informado'}\n` +
+                    `Veiculos: ${veiculosTexto}\n\n` +
+                    `O que deseja fazer com este cliente?\n` +
+                    `- \"agendar\" para iniciar o agendamento`,
+                tipo: 'cliente_selecionado',
+                cliente: clienteSelecionadoResolvido,
+                cliente_id: clienteSelecionadoResolvido.id,
+                metadata: {
+                    processed_by: 'BACKEND_LOCAL',
+                    selection_source: selectionSource
+                }
+            });
+        }
+
         let classification = MessageClassifier.classify(message);
-        if (contexto_ativo === 'buscar_cliente' && /^\d+$/.test(String(message).trim())) {
+        if (numeroEmContextoCliente) {
             classification = {
                 type: 'ACTION',
                 subtype: 'CONSULTA_CLIENTE',
@@ -2309,8 +2373,39 @@ router.post('/chat', protectRoute, validateMessage, async (req, res) => {
 
         // â­ NOVA ARQUITETURA MULTI-AGENTE
         // 1ï¸âƒ£ CLASSIFICA A MENSAGEM
+        const mensagemTrimmed = String(message).trim();
+        const clienteSelecionadoPayload = req.body?.cliente_selecionado;
+
+        if (
+            contexto_ativo === 'buscar_cliente' &&
+            /^\d+$/.test(mensagemTrimmed) &&
+            clienteSelecionadoPayload &&
+            clienteSelecionadoPayload.id
+        ) {
+            const veiculosTexto = Array.isArray(clienteSelecionadoPayload.veiculos) && clienteSelecionadoPayload.veiculos.length > 0
+                ? clienteSelecionadoPayload.veiculos.map((v) => v?.modelo).filter(Boolean).join(', ')
+                : 'Nenhum veiculo cadastrado';
+
+            return res.json({
+                success: true,
+                response: `Cliente selecionado: ${clienteSelecionadoPayload.nomeCompleto || clienteSelecionadoPayload.nome || 'Cliente'}\n\n` +
+                    `Telefone: ${clienteSelecionadoPayload.telefone || 'Nao informado'}\n` +
+                    `CPF/CNPJ: ${clienteSelecionadoPayload.cpfCnpj || 'Nao informado'}\n` +
+                    `Veiculos: ${veiculosTexto}\n\n` +
+                    `O que deseja fazer com este cliente?\n` +
+                    `- \"agendar\" para iniciar o agendamento`,
+                tipo: 'cliente_selecionado',
+                cliente: clienteSelecionadoPayload,
+                cliente_id: clienteSelecionadoPayload.id,
+                metadata: {
+                    processed_by: 'BACKEND_LOCAL',
+                    selection_source: 'frontend_payload'
+                }
+            });
+        }
+
         let classification = MessageClassifier.classify(message);
-        if (contexto_ativo === 'buscar_cliente' && /^\d+$/.test(String(message).trim())) {
+        if (contexto_ativo === 'buscar_cliente' && /^\d+$/.test(mensagemTrimmed)) {
             classification = {
                 type: 'ACTION',
                 subtype: 'CONSULTA_CLIENTE',
