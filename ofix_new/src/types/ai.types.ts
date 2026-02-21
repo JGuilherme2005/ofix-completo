@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
  */
 
 // Tabs
-export type AITabId = 'chat' | 'diagnostico' | 'checkin' | 'agendamento' | 'admin';
+export type AITabId = 'central' | 'chat' | 'diagnostico' | 'checkin' | 'agendamento' | 'admin';
 
 // Chat messages
 export interface ChatMessage {

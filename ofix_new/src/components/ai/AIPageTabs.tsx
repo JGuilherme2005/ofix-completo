@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import {
+  Sparkles,
   MessageCircle,
   Wrench,
   ClipboardCheck,
@@ -17,6 +18,7 @@ import type {
 } from '../../types/ai.types';
 
 import ChatTab from './ChatTab';
+import AICentralTab from './AICentralTab';
 import DiagnosticPanel from './DiagnosticPanel';
 import WizardCheckinIA from './WizardCheckinIA';
 import AgendamentoTab from './AgendamentoTab';
@@ -29,6 +31,7 @@ const TAB_CONFIG: Array<{
   icon: LucideIcon;
   adminOnly?: boolean;
 }> = [
+  { id: 'central', label: 'Central IA', shortLabel: 'Central', icon: Sparkles },
   { id: 'chat', label: 'Chat IA', shortLabel: 'Chat', icon: MessageCircle },
   { id: 'diagnostico', label: 'Diagnostico', shortLabel: 'Diag.', icon: Wrench },
   { id: 'checkin', label: 'Check-in', shortLabel: 'Check', icon: ClipboardCheck },
@@ -57,7 +60,7 @@ const AIPageTabs = ({
   clienteSelecionado,
   setClienteSelecionado,
 }: AIPageTabsProps) => {
-  const [activeTab, setActiveTab] = useState<AITabId>('chat');
+  const [activeTab, setActiveTab] = useState<AITabId>('central');
   const [agendamentoHandoff, setAgendamentoHandoff] = useState<AgendamentoHandoff | null>(null);
 
   const visibleTabs = TAB_CONFIG.filter(tab => !tab.adminOnly || isAdmin);
@@ -79,16 +82,16 @@ const AIPageTabs = ({
 
   return (
     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as AITabId)} className="flex-1 min-h-0 flex flex-col">
-      <TabsList className="w-full justify-start gap-0.5 bg-white/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 rounded-xl p-1 mb-3 overflow-x-auto scrollbar-none flex-shrink-0">
+      <TabsList className="w-full justify-start gap-1 bg-white/85 dark:bg-slate-900/75 border border-slate-200/70 dark:border-slate-800/70 rounded-xl p-1.5 mb-3 overflow-x-auto scrollbar-none flex-shrink-0 sticky top-0 z-20 backdrop-blur">
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           return (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
-              className="gap-1.5 px-3 py-2 text-xs sm:text-sm rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm dark:data-[state=active]:bg-blue-950/40 dark:data-[state=active]:text-blue-300 whitespace-nowrap transition-all"
+              className="group gap-1.5 px-3.5 py-2 text-xs sm:text-sm rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-50 data-[state=active]:to-indigo-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm dark:data-[state=active]:from-blue-950/40 dark:data-[state=active]:to-indigo-950/30 dark:data-[state=active]:text-blue-300 whitespace-nowrap transition-all border border-transparent data-[state=active]:border-blue-200/70 dark:data-[state=active]:border-blue-900/50"
             >
-              <Icon className="w-4 h-4 flex-shrink-0" />
+              <Icon className="w-4 h-4 flex-shrink-0 transition-transform group-data-[state=active]:scale-105" />
               <span className="hidden sm:inline">{tab.label}</span>
               <span className="sm:hidden">{tab.shortLabel}</span>
             </TabsTrigger>
@@ -106,6 +109,15 @@ const AIPageTabs = ({
           clienteSelecionado={clienteSelecionado}
           setClienteSelecionado={setClienteSelecionado}
           onNavigateToTab={handleNavigateToTab}
+        />
+      </TabsContent>
+
+      <TabsContent value="central" className="flex-1 min-h-0 mt-0 data-[state=inactive]:hidden">
+        <AICentralTab
+          onOpenTab={(tab) => setActiveTab(tab)}
+          connection={connection}
+          voice={voice}
+          memory={memory}
         />
       </TabsContent>
 

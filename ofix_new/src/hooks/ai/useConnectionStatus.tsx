@@ -111,7 +111,8 @@ export function useConnectionStatus({ showToast, onMemoryStatus }: ConnectionOpt
     (async () => {
       const online = await verificarConexao();
       if (!online && active) {
-        retryTimer = setTimeout(() => { if (active) verificarConexao({ warm: true }); }, 1500);
+        // Em modo local, retry simples sem warm evita erros 400 desnecessarios no console.
+        retryTimer = setTimeout(() => { if (active) verificarConexao({ silent: true }); }, 1500);
       }
     })();
 
