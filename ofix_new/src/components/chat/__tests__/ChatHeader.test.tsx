@@ -199,7 +199,7 @@ describe('ChatHeader', () => {
       render(<ChatHeader {...defaultProps} vozHabilitada={false} />);
 
       const button = screen.getByTitle('Ativar voz');
-      expect(button).toHaveClass('text-gray-600');
+      expect(button).toHaveClass('text-slate-600');
     });
   });
 

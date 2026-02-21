@@ -154,6 +154,40 @@ const AIPageTabs = ({
     handleTabChange(tab);
   };
 
+  const handleScheduleFromDiagnosis = useCallback(
+    (payload?: Record<string, unknown>) => {
+      const veiculoPreferencial =
+        (Array.isArray(clienteSelecionado?.veiculos)
+          ? clienteSelecionado?.veiculos?.[0]
+          : clienteSelecionado?.veiculo) as Record<string, unknown> | undefined;
+
+      const fallbackVehicleInfo =
+        (clienteSelecionado?.veiculoInfo as string | undefined) ||
+        (clienteSelecionado?.veiculo as string | undefined) ||
+        ([veiculoPreferencial?.marca, veiculoPreferencial?.modelo].filter(Boolean).join(' ') as string) ||
+        (veiculoPreferencial?.placa as string | undefined);
+
+      const summary = payload?.observacoes as string | undefined;
+
+      setAgendamentoHandoff({
+        origem: 'tab',
+        clienteId: (payload?.clienteId as string | number | undefined) || (clienteSelecionado?.id as string | number | undefined),
+        clienteNome:
+          (payload?.clienteNome as string | undefined) ||
+          ((clienteSelecionado?.nomeCompleto || clienteSelecionado?.nome) as string | undefined),
+        veiculoId:
+          (payload?.veiculoId as string | number | undefined) ||
+          ((clienteSelecionado?.veiculoId || veiculoPreferencial?.id) as string | number | undefined),
+        veiculoInfo: (payload?.veiculoInfo as string | undefined) || fallbackVehicleInfo,
+        observacoes: summary || 'Solicitacao gerada a partir do diagnostico da aba tecnica.',
+      });
+
+      showToast('Diagnostico enviado para o agendamento.', 'success');
+      handleTabChange('agendamento');
+    },
+    [clienteSelecionado, showToast]
+  );
+
   const currentMeta = FLOW_META[activeTab];
   const isVisibleTab = (tab?: AITabId) => Boolean(tab && visibleTabs.some((item) => item.id === tab));
   const getTabLabel = (tab: AITabId) => TAB_CONFIG.find((item) => item.id === tab)?.label || tab;
@@ -351,6 +385,13 @@ const AIPageTabs = ({
             vehicleData={null}
             onDiagnosisComplete={() => {
               showToast('Diagnostico concluido!', 'success');
+            }}
+            onScheduleFromDiagnosis={handleScheduleFromDiagnosis}
+            onGenerateBudget={() => {
+              showToast('Use o resumo do diagnostico para montar o orcamento.', 'info');
+            }}
+            onShareDiagnosis={() => {
+              showToast('Resumo do diagnostico pronto para compartilhamento.', 'success');
             }}
           />
         </div>

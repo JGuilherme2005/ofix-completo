@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -21,7 +21,14 @@ import {
 import { useToast } from '../../hooks/use-toast';
 import apiClient from '../../services/api';
 
-const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true }) => {
+const DiagnosticPanel = ({
+  onDiagnosisComplete,
+  onGenerateBudget,
+  onShareDiagnosis,
+  onScheduleFromDiagnosis,
+  vehicleData,
+  isVisible = true,
+}) => {
   const [formData, setFormData] = useState({
     symptoms: [''],
     vehicleBrand: vehicleData?.brand || '',
@@ -34,6 +41,95 @@ const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true })
   const [diagnosis, setDiagnosis] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  const diagnosisSummary = useMemo(() => {
+    if (!diagnosis) return '';
+
+    const diagnosisText =
+      typeof diagnosis?.diagnosis === 'string'
+        ? diagnosis.diagnosis
+        : diagnosis?.diagnosis?.primaryCause || diagnosis?.diagnosis?.description || '';
+
+    const actions = Array.isArray(diagnosis?.suggestedActions) ? diagnosis.suggestedActions : [];
+    const vehicle = [formData.vehicleBrand, formData.vehicleModel, formData.year].filter(Boolean).join(' ');
+    const cost =
+      typeof diagnosis?.estimatedCost === 'number'
+        ? `R$ ${diagnosis.estimatedCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+        : null;
+
+    const lines = [
+      'Resumo do Diagnostico (Matias)',
+      vehicle ? `Veiculo: ${vehicle}` : null,
+      diagnosisText ? `Analise: ${diagnosisText}` : null,
+      diagnosis?.urgencyLevel ? `Urgencia: ${diagnosis.urgencyLevel}` : null,
+      cost ? `Custo estimado: ${cost}` : null,
+      actions.length ? `Acoes recomendadas: ${actions.join(' | ')}` : null,
+    ].filter(Boolean);
+
+    return lines.join('\n');
+  }, [diagnosis, formData.vehicleBrand, formData.vehicleModel, formData.year]);
+
+  const handleGenerateBudget = () => {
+    if (!diagnosis) return;
+    if (onGenerateBudget) {
+      onGenerateBudget({ diagnosis, formData, summary: diagnosisSummary });
+      return;
+    }
+    toast({
+      title: 'Orcamento preparado',
+      description: 'Use o resumo para abrir um orcamento em segundos.',
+      variant: 'default',
+    });
+  };
+
+  const handleShareDiagnosis = async () => {
+    if (!diagnosis) return;
+
+    if (onShareDiagnosis) {
+      await onShareDiagnosis({ diagnosis, formData, summary: diagnosisSummary });
+      return;
+    }
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(diagnosisSummary);
+        toast({
+          title: 'Resumo copiado',
+          description: 'Diagnostico copiado para a area de transferencia.',
+          variant: 'default',
+        });
+      } else {
+        throw new Error('Clipboard indisponivel');
+      }
+    } catch {
+      toast({
+        title: 'Nao foi possivel compartilhar',
+        description: 'Copie manualmente o resumo do diagnostico.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleScheduleService = () => {
+    if (!diagnosis) return;
+    const payload = {
+      diagnosis,
+      formData,
+      observacoes: diagnosisSummary,
+      veiculoInfo: [formData.vehicleBrand, formData.vehicleModel, formData.year].filter(Boolean).join(' '),
+    };
+
+    if (onScheduleFromDiagnosis) {
+      onScheduleFromDiagnosis(payload);
+      return;
+    }
+
+    toast({
+      title: 'Diagnostico pronto para agendamento',
+      description: 'Abra a aba de agendamento para concluir.',
+      variant: 'default',
+    });
+  };
 
   useEffect(() => {
     if (vehicleData) {
@@ -377,13 +473,13 @@ const DiagnosticPanel = ({ onDiagnosisComplete, vehicleData, isVisible = true })
 
             {/* Botões de Ação */}
             <div className="flex gap-2 pt-4">
-              <Button variant="outline" className="flex-1">
+              <Button variant="outline" className="flex-1" onClick={handleGenerateBudget}>
                 Gerar Orçamento
               </Button>
-              <Button variant="outline" className="flex-1">
+              <Button variant="outline" className="flex-1" onClick={() => void handleShareDiagnosis()}>
                 Compartilhar Diagnóstico
               </Button>
-              <Button className="flex-1">
+              <Button className="flex-1" onClick={handleScheduleService}>
                 Agendar Serviço
               </Button>
             </div>

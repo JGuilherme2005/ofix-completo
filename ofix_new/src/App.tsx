@@ -26,8 +26,17 @@ export default function App() {
     <ErrorBoundary>
       <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
         <AuthProvider>
-          {/* O Toaster para notificações globais */}
-          <Toaster position="top-right" />
+          {/* Toaster global embaixo para não bloquear atalhos do topo */}
+          <Toaster
+            position="bottom-right"
+            gutter={8}
+            toastOptions={{
+              duration: 3500,
+              style: { maxWidth: '420px' },
+              success: { duration: 3000 },
+              error: { duration: 5000 },
+            }}
+          />
 
           <Routes>
             {/* Rotas Públicas */}
