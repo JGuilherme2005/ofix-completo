@@ -1,7 +1,3 @@
-/**
- * AIPageTabs — Sistema de abas para a página de IA
- * Organiza: Chat | Diagnóstico | Check-in | Agendamento | Admin
- */
 import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import {
@@ -12,7 +8,13 @@ import {
   Settings,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { AITabId, VoiceControlState, ConnectionStatusState, MemoryManagerState } from '../../types/ai.types';
+import type {
+  AITabId,
+  VoiceControlState,
+  ConnectionStatusState,
+  MemoryManagerState,
+  AgendamentoHandoff,
+} from '../../types/ai.types';
 
 import ChatTab from './ChatTab';
 import DiagnosticPanel from './DiagnosticPanel';
@@ -28,7 +30,7 @@ const TAB_CONFIG: Array<{
   adminOnly?: boolean;
 }> = [
   { id: 'chat', label: 'Chat IA', shortLabel: 'Chat', icon: MessageCircle },
-  { id: 'diagnostico', label: 'Diagnóstico', shortLabel: 'Diag.', icon: Wrench },
+  { id: 'diagnostico', label: 'Diagnostico', shortLabel: 'Diag.', icon: Wrench },
   { id: 'checkin', label: 'Check-in', shortLabel: 'Check', icon: ClipboardCheck },
   { id: 'agendamento', label: 'Agendamento', shortLabel: 'Agenda', icon: CalendarDays },
   { id: 'admin', label: 'Admin IA', shortLabel: 'Admin', icon: Settings, adminOnly: true },
@@ -56,12 +58,27 @@ const AIPageTabs = ({
   setClienteSelecionado,
 }: AIPageTabsProps) => {
   const [activeTab, setActiveTab] = useState<AITabId>('chat');
+  const [agendamentoHandoff, setAgendamentoHandoff] = useState<AgendamentoHandoff | null>(null);
 
   const visibleTabs = TAB_CONFIG.filter(tab => !tab.adminOnly || isAdmin);
 
+  const handleNavigateToTab = (tab: AITabId, payload?: Record<string, unknown>) => {
+    if (tab === 'agendamento' && payload) {
+      setAgendamentoHandoff({
+        origem: 'chat',
+        clienteId: payload.clienteId as string | number | undefined,
+        clienteNome: payload.clienteNome as string | undefined,
+        veiculoId: payload.veiculoId as string | number | undefined,
+        veiculoInfo: payload.veiculoInfo as string | undefined,
+        observacoes: payload.observacoes as string | undefined,
+      });
+    }
+
+    setActiveTab(tab);
+  };
+
   return (
     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as AITabId)} className="flex-1 min-h-0 flex flex-col">
-      {/* Tab list com scroll horizontal em mobile */}
       <TabsList className="w-full justify-start gap-0.5 bg-white/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 rounded-xl p-1 mb-3 overflow-x-auto scrollbar-none flex-shrink-0">
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
@@ -79,7 +96,6 @@ const AIPageTabs = ({
         })}
       </TabsList>
 
-      {/* Tab contents */}
       <TabsContent value="chat" className="flex-1 min-h-0 flex flex-col mt-0 data-[state=inactive]:hidden">
         <ChatTab
           user={user}
@@ -89,7 +105,7 @@ const AIPageTabs = ({
           connection={connection}
           clienteSelecionado={clienteSelecionado}
           setClienteSelecionado={setClienteSelecionado}
-          onNavigateToTab={(tab: string) => setActiveTab(tab as AITabId)}
+          onNavigateToTab={handleNavigateToTab}
         />
       </TabsContent>
 
@@ -99,7 +115,7 @@ const AIPageTabs = ({
             isVisible={true}
             vehicleData={null}
             onDiagnosisComplete={() => {
-              showToast('Diagnóstico concluído!', 'success');
+              showToast('Diagnostico concluido!', 'success');
             }}
           />
         </div>
@@ -109,7 +125,7 @@ const AIPageTabs = ({
         <div className="bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 overflow-y-auto h-full">
           <WizardCheckinIA
             onCheckinCompleto={() => {
-              showToast('Check-in concluído!', 'success');
+              showToast('Check-in concluido!', 'success');
             }}
           />
         </div>
@@ -120,6 +136,7 @@ const AIPageTabs = ({
           <AgendamentoTab
             showToast={showToast}
             clienteSelecionado={clienteSelecionado}
+            handoffContext={agendamentoHandoff}
           />
         </div>
       </TabsContent>

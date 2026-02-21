@@ -110,6 +110,15 @@ export interface AgendamentoFormData {
   observacoes: string;
 }
 
+export interface AgendamentoHandoff {
+  origem?: 'chat' | 'tab';
+  clienteId?: string | number;
+  clienteNome?: string;
+  veiculoId?: string | number;
+  veiculoInfo?: string;
+  observacoes?: string;
+}
+
 export interface DisponibilidadeResponse {
   disponivel: boolean;
   horarios: HorarioDisponivel[];
@@ -142,7 +151,7 @@ export interface AITabProps {
   showToast: (msg: string, type?: string) => void;
   clienteSelecionado?: Record<string, unknown> | null;
   onClienteSelecionado?: (cliente: Record<string, unknown> | null) => void;
-  onNavigateToTab?: (tab: AITabId) => void;
+  onNavigateToTab?: (tab: AITabId, payload?: Record<string, unknown>) => void;
 }
 
 // Voice state

@@ -10,6 +10,7 @@ import financeiroRouter from './financeiro.routes.js';
 import veiculosRouter from './veiculos.routes.js';
 import agnoRouter from './agno.routes.js';
 import matiasRouter from './matias.routes.js';
+import aiRouter from './ai.routes.js';
 import logsRouter from './logs.routes.js';
 import { protectRoute } from '../middlewares/auth.middleware.js';
 
@@ -29,6 +30,7 @@ router.use('/pecas', protectRoute, pecasRouter);
 router.use('/fornecedores', protectRoute, fornecedoresRouter);
 router.use('/financeiro', protectRoute, financeiroRouter);
 router.use('/veiculos', protectRoute, veiculosRouter);
+router.use('/ai', aiRouter);
 router.use('/agno', agnoRouter);
 router.use('/matias', matiasRouter);
 

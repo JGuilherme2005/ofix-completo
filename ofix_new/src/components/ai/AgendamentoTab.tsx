@@ -24,6 +24,7 @@ import {
   User,
 } from 'lucide-react';
 import { useAgendamento } from '../../hooks/ai/useAgendamento';
+import type { AgendamentoHandoff } from '../../types/ai.types';
 
 const TIPO_INFO = {
   urgente: { label: 'Urgente', desc: 'Mesmo dia', icon: '🔴', color: 'border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-800' },
@@ -32,7 +33,13 @@ const TIPO_INFO = {
   especial: { label: 'Especial', desc: 'Serviço complexo', icon: '🔵', color: 'border-blue-300 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800' },
 };
 
-const AgendamentoTab = ({ showToast, clienteSelecionado }) => {
+interface AgendamentoTabProps {
+  showToast: (msg: string, type?: string) => void;
+  clienteSelecionado?: Record<string, unknown> | null;
+  handoffContext?: AgendamentoHandoff | null;
+}
+
+const AgendamentoTab = ({ showToast, clienteSelecionado, handoffContext }: AgendamentoTabProps) => {
   const agendamento = useAgendamento({ showToast, clienteSelecionado });
 
   // Carregar agendamentos na montagem
@@ -61,6 +68,22 @@ const AgendamentoTab = ({ showToast, clienteSelecionado }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clienteSelecionado]);
+
+  // Handoff vindo do chat: preenche cliente e observacoes automaticamente.
+  useEffect(() => {
+    if (!handoffContext) return;
+    agendamento.updateForm({
+      clienteId: handoffContext.clienteId ?? agendamento.formData.clienteId,
+      clienteNome: handoffContext.clienteNome ?? agendamento.formData.clienteNome,
+      veiculoId: handoffContext.veiculoId ?? agendamento.formData.veiculoId,
+      veiculoInfo: handoffContext.veiculoInfo ?? agendamento.formData.veiculoInfo,
+      observacoes: handoffContext.observacoes ?? agendamento.formData.observacoes,
+    });
+    if (agendamento.etapa === 'tipo') {
+      agendamento.avancarEtapa();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handoffContext]);
 
   const hoje = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -101,6 +124,13 @@ const AgendamentoTab = ({ showToast, clienteSelecionado }) => {
           <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
             Cliente: {clienteNome}
           </span>
+        </div>
+      )}
+
+      {handoffContext?.origem === 'chat' && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+          Dados recebidos do chat. Revise e confirme o agendamento.
         </div>
       )}
 

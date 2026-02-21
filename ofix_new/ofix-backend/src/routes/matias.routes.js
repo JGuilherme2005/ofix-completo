@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import prisma from '../config/database.js';
 import { protectRoute } from '../middlewares/auth.middleware.js';
 import { sendSafeError } from '../lib/safe-error.js';
@@ -202,6 +202,157 @@ router.post('/agendamentos', protectRoute, async (req, res) => {
     });
   } catch (error) {
     sendSafeError(res, 500, 'Erro ao criar agendamento', error);
+  }
+});
+
+// Listar agendamentos por periodo
+router.get('/agendamentos', protectRoute, async (req, res) => {
+  try {
+    const { dataInicio, dataFim, status } = req.query;
+    const oficinaId = req.user?.oficinaId;
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
+
+    const where = { oficinaId };
+    if (dataInicio || dataFim) {
+      where.dataHora = {};
+      if (dataInicio) where.dataHora.gte = new Date(`${dataInicio}T00:00:00`);
+      if (dataFim) where.dataHora.lte = new Date(`${dataFim}T23:59:59`);
+    }
+    if (status) {
+      const normalized = String(status).toUpperCase();
+      where.status = normalized;
+    }
+
+    const agendamentos = await prisma.agendamento.findMany({
+      where,
+      include: {
+        cliente: {
+          select: { id: true, nomeCompleto: true, telefone: true }
+        }
+      },
+      orderBy: { dataHora: 'asc' }
+    });
+
+    return res.json({
+      success: true,
+      agendamentos
+    });
+  } catch (error) {
+    sendSafeError(res, 500, 'Erro ao listar agendamentos', error);
+  }
+});
+
+// Cancelar agendamento
+router.patch('/agendamentos/:agendamentoId/cancelar', protectRoute, async (req, res) => {
+  try {
+    const oficinaId = req.user?.oficinaId;
+    const { agendamentoId } = req.params;
+    const { motivo = '', canceladoPor } = req.body;
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
+
+    const existente = await prisma.agendamento.findFirst({
+      where: { id: agendamentoId, oficinaId }
+    });
+    if (!existente) return res.status(404).json({ error: 'Agendamento não encontrado' });
+
+    const observacoes = [existente.observacoes, motivo].filter(Boolean).join('\n');
+    const agendamento = await prisma.agendamento.update({
+      where: { id: agendamentoId },
+      data: {
+        status: 'CANCELED',
+        observacoes,
+        criadoPor: canceladoPor || existente.criadoPor
+      }
+    });
+
+    return res.json({ success: true, agendamento });
+  } catch (error) {
+    sendSafeError(res, 500, 'Erro ao cancelar agendamento', error);
+  }
+});
+
+// Reagendar
+router.patch('/agendamentos/:agendamentoId/reagendar', protectRoute, async (req, res) => {
+  try {
+    const oficinaId = req.user?.oficinaId;
+    const { agendamentoId } = req.params;
+    const { novaDataHora, reagendadoPor } = req.body;
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
+    if (!novaDataHora) return res.status(400).json({ error: 'novaDataHora é obrigatória' });
+
+    const existente = await prisma.agendamento.findFirst({
+      where: { id: agendamentoId, oficinaId }
+    });
+    if (!existente) return res.status(404).json({ error: 'Agendamento não encontrado' });
+
+    const agendamento = await prisma.agendamento.update({
+      where: { id: agendamentoId },
+      data: {
+        dataHora: new Date(novaDataHora),
+        status: 'CONFIRMED',
+        criadoPor: reagendadoPor || existente.criadoPor
+      }
+    });
+
+    return res.json({ success: true, agendamento });
+  } catch (error) {
+    sendSafeError(res, 500, 'Erro ao reagendar', error);
+  }
+});
+
+// Buscar proximos horarios disponiveis
+router.get('/agendamentos/proximos-horarios', protectRoute, async (req, res) => {
+  try {
+    const oficinaId = req.user?.oficinaId;
+    const { tipo = 'normal' } = req.query;
+    if (!oficinaId) return res.status(400).json({ error: 'Usuário sem oficina vinculada' });
+
+    const baseSlots = tipo === 'urgente'
+      ? ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00']
+      : ['08:00', '10:00', '13:00', '15:00'];
+
+    const hoje = new Date();
+    const limite = new Date();
+    limite.setDate(hoje.getDate() + 14);
+
+    const agendamentos = await prisma.agendamento.findMany({
+      where: {
+        oficinaId,
+        dataHora: { gte: hoje, lte: limite },
+        status: { in: ['PENDING', 'CONFIRMED'] }
+      },
+      select: { dataHora: true }
+    });
+
+    const ocupadosPorDia = new Map();
+    for (const ag of agendamentos) {
+      const data = new Date(ag.dataHora);
+      const key = data.toISOString().split('T')[0];
+      const hora = data.toTimeString().substring(0, 5);
+      const set = ocupadosPorDia.get(key) || new Set();
+      set.add(hora);
+      ocupadosPorDia.set(key, set);
+    }
+
+    let proximaDataLivre = null;
+    let horariosDisponiveis = [];
+
+    for (let i = 0; i <= 14; i += 1) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const key = d.toISOString().split('T')[0];
+      const ocupados = ocupadosPorDia.get(key) || new Set();
+      const livres = baseSlots.filter(slot => !ocupados.has(slot));
+      if (livres.length > 0) {
+        proximaDataLivre = key;
+        horariosDisponiveis = livres;
+        break;
+      }
+    }
+
+    return res.json({ horariosDisponiveis, proximaDataLivre });
+  } catch (error) {
+    sendSafeError(res, 500, 'Erro ao buscar proximos horarios', error);
   }
 });
 

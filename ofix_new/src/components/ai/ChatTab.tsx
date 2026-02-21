@@ -16,6 +16,12 @@ import ChatMessageList from '../chat/ChatMessageList';
 import QuickSuggestions from '../chat/QuickSuggestions';
 import VoiceStatusBanner from '../chat/VoiceStatusBanner';
 import ChatInputBar from '../chat/ChatInputBar';
+import ChatHeaderBar from '../chat/ChatHeaderBar';
+import VoiceSettingsCard from '../chat/VoiceSettingsCard';
+import MemoryCard from '../chat/MemoryCard';
+import ActionsCard from '../chat/ActionsCard';
+import { useSidePanel } from '../../hooks/ai';
+import type { AITabId } from '../../types/ai.types';
 
 interface ChatTabProps {
   user: any;
@@ -25,7 +31,7 @@ interface ChatTabProps {
   connection: any;
   clienteSelecionado: any;
   setClienteSelecionado: (c: any) => void;
-  onNavigateToTab?: (tab: string) => void;
+  onNavigateToTab?: (tab: AITabId, payload?: Record<string, unknown>) => void;
 }
 
 const ChatTab = ({
@@ -53,6 +59,7 @@ const ChatTab = ({
   // Refs
   const chatContainerRef = useRef<any>(null);
   const inputRef = useRef<any>(null);
+  const { painelFixoDesktop, setPainelFixoDesktop, painelDrawerOpen, setPainelDrawerOpen } = useSidePanel();
 
   // ── Wiring: conectar STT transcript → setMensagem ──
   useEffect(() => {
@@ -106,7 +113,7 @@ const ChatTab = ({
     }
   }, [user, getStorageKey]);
 
-  const _limparHistorico = () => {
+  const limparHistorico = () => {
     try {
       localStorage.removeItem(getStorageKey());
       const msg = {
@@ -410,7 +417,13 @@ const ChatTab = ({
         break;
       case 'agendar':
         if (onNavigateToTab) {
-          onNavigateToTab('agendamento');
+          onNavigateToTab('agendamento', {
+            clienteId: clienteSelecionado?.id,
+            clienteNome: action.data?.cliente || clienteSelecionado?.nomeCompleto || clienteSelecionado?.nome,
+            veiculoId: clienteSelecionado?.veiculoId,
+            veiculoInfo: clienteSelecionado?.veiculoInfo || clienteSelecionado?.veiculo,
+            observacoes: `Solicitado via chat: ${action.data?.cliente ? `agendar para ${action.data.cliente}` : 'agendar serviço'}`,
+          });
           showToast(`Agendar serviço para ${action.data?.cliente || 'cliente'}`, 'success');
         } else {
           setMensagem(`Agendar serviço para ${action.data?.cliente || 'cliente'}`);
@@ -425,7 +438,7 @@ const ChatTab = ({
       default:
         showToast(`Ação: ${action.label}`, 'info');
     }
-  }, [showToast, onNavigateToTab]);
+  }, [showToast, onNavigateToTab, clienteSelecionado]);
 
   const handleSelectOption = useCallback((option: any) => {
     if (option.value) { setMensagem(option.value); setTimeout(() => enviarMensagem(), 100); }
@@ -452,55 +465,139 @@ const ChatTab = ({
   // ════════════════════════════════════════════
   // RENDER
   // ════════════════════════════════════════════
+  const sidePanelContent = (
+    <>
+      <VoiceSettingsCard
+        mostrarConfig={voice.mostrarConfig}
+        setMostrarConfig={voice.setMostrarConfig}
+        vozesDisponiveis={voice.vozesDisponiveis}
+        vozSelecionada={voice.vozSelecionada}
+        setVozSelecionada={voice.setVozSelecionada}
+        modoContinuo={voice.modoContinuo}
+        setModoContinuo={voice.setModoContinuo}
+        configVoz={voice.configVoz}
+        setConfigVoz={voice.setConfigVoz}
+        onTestarVoz={() => voice.falarTexto('Ola, esta e a voz do Matias.')}
+      />
+
+      <MemoryCard
+        memoriaAtiva={memory.memoriaAtiva}
+        memorias={memory.memorias}
+        loadingMemorias={memory.loadingMemorias}
+        mostrarMemorias={memory.mostrarMemorias}
+        setMostrarMemorias={memory.setMostrarMemorias}
+        onCarregar={memory.carregarMemorias}
+        onExcluir={memory.excluirMemorias}
+        isAdmin={user?.role === 'admin'}
+      />
+
+      <ActionsCard onLimparHistorico={limparHistorico} />
+
+      <div className="bg-white dark:bg-slate-900/60 rounded-xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 p-4">
+        <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Fluxos guiados</div>
+        <div className="grid grid-cols-1 gap-2">
+          <button
+            type="button"
+            className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors"
+            onClick={() => onNavigateToTab?.('checkin')}
+          >
+            Iniciar check-in guiado
+          </button>
+          <button
+            type="button"
+            className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors"
+            onClick={() =>
+              onNavigateToTab?.('agendamento', {
+                clienteId: clienteSelecionado?.id,
+                clienteNome: clienteSelecionado?.nomeCompleto || clienteSelecionado?.nome,
+                veiculoId: clienteSelecionado?.veiculoId,
+                veiculoInfo: clienteSelecionado?.veiculoInfo || clienteSelecionado?.veiculo,
+              })
+            }
+          >
+            Agendar com dados atuais
+          </button>
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <>
-      <div className="min-h-0 min-w-0 bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 flex flex-col overflow-hidden flex-1">
-        <ChatMessageList
-          conversas={conversas}
-          carregando={carregando}
-          chatContainerRef={chatContainerRef}
-          formatarFonteResposta={connection.formatarFonteResposta}
-          onAction={handleAction}
-          onSelectOption={handleSelectOption}
-          onAbrirCadastro={handleAbrirCadastro}
-          onSelectCliente={handleSelectCliente}
-        />
-
-        <QuickSuggestions
-          contextoAtivo={contextoAtivo}
-          carregando={carregando}
-          inputRef={inputRef}
-          onSetContextoAtivo={setContextoAtivo}
-          setMensagem={setMensagem}
-          setInputWarning={setInputWarning}
-          setInputHint={setInputHint}
-          onAddMessage={handleAddMessage}
-        />
-
-        <VoiceStatusBanner
-          gravando={voice.gravando}
-          falando={voice.falando}
-          modoContinuo={voice.modoContinuo}
-        />
-
-        <ChatInputBar
-          mensagem={mensagem}
-          setMensagem={setMensagem}
-          onEnviar={enviarMensagem}
-          onKeyDown={handleKeyDown}
-          onValidateInput={validarInputBusca}
-          carregando={carregando}
-          podeInteragir={connection.podeInteragir}
-          gravando={voice.gravando}
-          falando={voice.falando}
-          contextoAtivo={contextoAtivo}
-          inputWarning={inputWarning}
-          inputHint={inputHint}
+      <div className="flex flex-col gap-3 min-h-0 flex-1">
+        <ChatHeaderBar
           statusConexao={connection.statusConexao}
-          inputRef={inputRef}
-          onIniciarGravacao={voice.iniciarGravacao}
-          onPararGravacao={voice.pararGravacao}
+          memoriaAtiva={memory.memoriaAtiva}
+          vozHabilitada={voice.vozHabilitada}
+          falando={voice.falando}
+          painelFixoDesktop={painelFixoDesktop}
+          painelDrawerOpen={painelDrawerOpen}
+          setPainelDrawerOpen={setPainelDrawerOpen}
+          setPainelFixoDesktop={setPainelFixoDesktop}
+          sidePanelContent={sidePanelContent}
+          getStatusIcon={connection.getStatusIcon}
+          getStatusText={connection.getStatusText}
+          onAlternarVoz={voice.alternarVoz}
+          onPararFala={voice.pararFala}
+          onReconectar={() => connection.verificarConexao({ warm: true })}
         />
+
+        <div className={`min-h-0 flex-1 ${painelFixoDesktop ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-3' : ''}`}>
+          <div className="min-h-0 min-w-0 bg-white/90 dark:bg-slate-900/60 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 ring-1 ring-slate-200/40 dark:ring-slate-800/40 flex flex-col overflow-hidden flex-1">
+            <ChatMessageList
+              conversas={conversas}
+              carregando={carregando}
+              chatContainerRef={chatContainerRef}
+              formatarFonteResposta={connection.formatarFonteResposta}
+              onAction={handleAction}
+              onSelectOption={handleSelectOption}
+              onAbrirCadastro={handleAbrirCadastro}
+              onSelectCliente={handleSelectCliente}
+            />
+
+            <QuickSuggestions
+              contextoAtivo={contextoAtivo}
+              carregando={carregando}
+              inputRef={inputRef}
+              onSetContextoAtivo={setContextoAtivo}
+              setMensagem={setMensagem}
+              setInputWarning={setInputWarning}
+              setInputHint={setInputHint}
+              onAddMessage={handleAddMessage}
+            />
+
+            <VoiceStatusBanner
+              gravando={voice.gravando}
+              falando={voice.falando}
+              modoContinuo={voice.modoContinuo}
+            />
+
+            <ChatInputBar
+              mensagem={mensagem}
+              setMensagem={setMensagem}
+              onEnviar={enviarMensagem}
+              onKeyDown={handleKeyDown}
+              onValidateInput={validarInputBusca}
+              carregando={carregando}
+              podeInteragir={connection.podeInteragir}
+              gravando={voice.gravando}
+              falando={voice.falando}
+              contextoAtivo={contextoAtivo}
+              inputWarning={inputWarning}
+              inputHint={inputHint}
+              statusConexao={connection.statusConexao}
+              inputRef={inputRef}
+              onIniciarGravacao={voice.iniciarGravacao}
+              onPararGravacao={voice.pararGravacao}
+            />
+          </div>
+
+          {painelFixoDesktop && (
+            <aside className="hidden lg:flex lg:flex-col gap-3 overflow-y-auto min-h-0 pr-1">
+              {sidePanelContent}
+            </aside>
+          )}
+        </div>
       </div>
 
       {/* Modal de cadastro de cliente */}
