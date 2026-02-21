@@ -39,6 +39,60 @@ const TAB_CONFIG: Array<{
   { id: 'admin', label: 'Admin IA', shortLabel: 'Admin', icon: Settings, adminOnly: true },
 ];
 
+const FLOW_META: Record<
+  AITabId,
+  {
+    title: string;
+    description: string;
+    tip: string;
+    next?: AITabId;
+    secondary?: AITabId;
+  }
+> = {
+  central: {
+    title: 'Central de Orquestracao',
+    description: 'Comece por aqui para decidir o melhor fluxo antes de executar.',
+    tip: 'Dica: use esta aba para evitar abrir fluxos em ordem errada.',
+    next: 'chat',
+    secondary: 'agendamento',
+  },
+  chat: {
+    title: 'Conversa Operacional',
+    description: 'Conduza intencoes por linguagem natural e dispare fluxos estruturados.',
+    tip: 'Use o chat para descobrir, e tabs para executar com seguranca.',
+    next: 'agendamento',
+    secondary: 'checkin',
+  },
+  diagnostico: {
+    title: 'Analise Tecnica',
+    description: 'Estruture sintomas e hipoteses para acelerar atendimento.',
+    tip: 'Finalize com check-in ou agendamento para transformar analise em acao.',
+    next: 'checkin',
+    secondary: 'agendamento',
+  },
+  checkin: {
+    title: 'Coleta Estruturada',
+    description: 'Formalize informacoes do cliente e veiculo antes da execucao.',
+    tip: 'Com check-in concluido, agende para garantir continuidade operacional.',
+    next: 'agendamento',
+    secondary: 'chat',
+  },
+  agendamento: {
+    title: 'Fechamento de Agenda',
+    description: 'Confirme data, horario e disponibilidade com previsibilidade.',
+    tip: 'Se faltarem dados, volte ao chat para completar contexto.',
+    next: 'chat',
+    secondary: 'checkin',
+  },
+  admin: {
+    title: 'Governanca da IA',
+    description: 'Acompanhe configuracao, uso e operacao administrativa.',
+    tip: 'Valide indicadores aqui e ajuste fluxos nas abas operacionais.',
+    next: 'central',
+    secondary: 'chat',
+  },
+};
+
 interface AIPageTabsProps {
   user: { id?: string; nome?: string; role?: string; [key: string]: unknown } | null;
   isAdmin: boolean;
@@ -80,6 +134,10 @@ const AIPageTabs = ({
     setActiveTab(tab);
   };
 
+  const currentMeta = FLOW_META[activeTab];
+  const isVisibleTab = (tab?: AITabId) => Boolean(tab && visibleTabs.some((item) => item.id === tab));
+  const getTabLabel = (tab: AITabId) => TAB_CONFIG.find((item) => item.id === tab)?.label || tab;
+
   return (
     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as AITabId)} className="flex-1 min-h-0 flex flex-col">
       <TabsList className="w-full justify-start gap-1 bg-white/85 dark:bg-slate-900/75 border border-slate-200/70 dark:border-slate-800/70 rounded-xl p-1.5 mb-3 overflow-x-auto scrollbar-none flex-shrink-0 sticky top-0 z-20 backdrop-blur">
@@ -98,6 +156,37 @@ const AIPageTabs = ({
           );
         })}
       </TabsList>
+
+      <div className="mb-3 rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/85 dark:bg-slate-900/65 p-3 ring-1 ring-slate-200/30 dark:ring-slate-800/30">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">Fluxo atual</div>
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{currentMeta.title}</div>
+            <div className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">{currentMeta.description}</div>
+            <div className="text-xs text-blue-700 dark:text-blue-300 mt-1.5">{currentMeta.tip}</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {isVisibleTab(currentMeta.next) && (
+              <button
+                type="button"
+                onClick={() => setActiveTab(currentMeta.next as AITabId)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              >
+                Ir para {getTabLabel(currentMeta.next as AITabId)}
+              </button>
+            )}
+            {isVisibleTab(currentMeta.secondary) && (
+              <button
+                type="button"
+                onClick={() => setActiveTab(currentMeta.secondary as AITabId)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors"
+              >
+                Abrir {getTabLabel(currentMeta.secondary as AITabId)}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
       <TabsContent value="chat" className="flex-1 min-h-0 flex flex-col mt-0 data-[state=inactive]:hidden">
         <ChatTab

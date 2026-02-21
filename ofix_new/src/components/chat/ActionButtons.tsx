@@ -17,6 +17,9 @@ const ActionButtons = ({ actions, onAction }: ActionButtonsProps) => {
     const icons = {
       'ver_os': <Eye className="w-3 h-3" />,
       'agendar': <Calendar className="w-3 h-3" />,
+      'abrir_agendamento': <Calendar className="w-3 h-3" />,
+      'abrir_agendamento_handoff': <Calendar className="w-3 h-3" />,
+      'agendar_no_chat': <Calendar className="w-3 h-3" />,
       'ligar': <Phone className="w-3 h-3" />,
       'editar': <Edit className="w-3 h-3" />,
       'excluir': <Trash2 className="w-3 h-3" />,
@@ -29,6 +32,9 @@ const ActionButtons = ({ actions, onAction }: ActionButtonsProps) => {
     const styles = {
       'ver_os': 'bg-blue-500 hover:bg-blue-600 text-white',
       'agendar': 'bg-green-500 hover:bg-green-600 text-white',
+      'abrir_agendamento': 'bg-green-500 hover:bg-green-600 text-white',
+      'abrir_agendamento_handoff': 'bg-green-500 hover:bg-green-600 text-white',
+      'agendar_no_chat': 'bg-green-500 hover:bg-green-600 text-white',
       'ligar': 'bg-purple-500 hover:bg-purple-600 text-white',
       'editar': 'bg-yellow-500 hover:bg-yellow-600 text-white',
       'excluir': 'bg-red-500 hover:bg-red-600 text-white',

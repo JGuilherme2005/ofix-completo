@@ -1,50 +1,94 @@
-// @ts-nocheck
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, ArrowRight, CheckCircle2, Edit3, RotateCcw } from 'lucide-react';
+import { MessageCircle, ArrowRight, CheckCircle2, RotateCcw, AlertTriangle, WifiOff } from 'lucide-react';
 import apiClient from '../../services/api';
 
-/**
- * Wizard de Check-in Guiado por IA
- * Conduz conversa estruturada para coleta de dados do veículo
- */
-const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
-  // Estados do componente
-  const [etapaAtual, setEtapaAtual] = useState('inicio');
-  const [dadosColetados, setDadosColetados] = useState(dadosIniciais);
-  const [proximaPergunta, setProximaPergunta] = useState('');
+type EtapaCheckin =
+  | 'inicio'
+  | 'aguardando_resposta'
+  | 'aguardando_resposta_problema'
+  | 'coletando_detalhes'
+  | 'verificando_manutencao'
+  | 'finalizando_checkin'
+  | 'check_in_completo';
+
+interface DadosCheckin {
+  problema_relatado?: string;
+  categoria_problema?: string;
+  detalhes_problema?: string;
+  historico_manutencao?: string;
+  observacoes_finais?: string;
+  [key: string]: unknown;
+}
+
+interface MensagemCheckin {
+  tipo: 'ia' | 'usuario';
+  conteudo: string;
+  timestamp: Date;
+}
+
+interface WizardCheckinIAProps {
+  onCheckinCompleto?: (dados: DadosCheckin) => void;
+  dadosIniciais?: DadosCheckin;
+}
+
+const PERGUNTA_INICIAL = 'Ola! Vamos iniciar o check-in. Qual problema voce esta enfrentando no veiculo?';
+
+const etapasProgress: Record<EtapaCheckin, number> = {
+  inicio: 0,
+  aguardando_resposta: 20,
+  aguardando_resposta_problema: 20,
+  coletando_detalhes: 45,
+  verificando_manutencao: 70,
+  finalizando_checkin: 90,
+  check_in_completo: 100,
+};
+
+const pushMessage = (mensagens: MensagemCheckin[], nova: MensagemCheckin) => [...mensagens, nova];
+
+export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} }: WizardCheckinIAProps) {
+  const dadosIniciaisRef = useRef<DadosCheckin>(dadosIniciais);
+  const iniciouRef = useRef(false);
+  const conversaContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const [etapaAtual, setEtapaAtual] = useState<EtapaCheckin>('inicio');
+  const [dadosColetados, setDadosColetados] = useState<DadosCheckin>(dadosIniciaisRef.current);
   const [respostaAtual, setRespostaAtual] = useState('');
-  const [conversaHistorico, setConversaHistorico] = useState<any[]>([]);
+  const [conversaHistorico, setConversaHistorico] = useState<MensagemCheckin[]>([]);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
-  const [conversaId, setConversaId] = useState<any>(null);
-
-  // Estados internos
   const [checkinCompleto, setCheckinCompleto] = useState(false);
-  const PERGUNTA_INICIAL = 'Ola! Vamos comecar o check-in do seu veiculo. Qual problema voce esta enfrentando?';
+  const [modoLocal, setModoLocal] = useState(false);
 
-  /**
-   * Inicia a conversa de check-in
-   */
-  const iniciarCheckin = useCallback(async (dadosBase = dadosIniciais) => {
+  const iniciarLocal = useCallback((hint?: string) => {
+    setModoLocal(true);
+    setErro(hint || '');
+    setEtapaAtual('aguardando_resposta');
+    setConversaHistorico([
+      {
+        tipo: 'ia',
+        conteudo: PERGUNTA_INICIAL,
+        timestamp: new Date(),
+      },
+    ]);
+  }, []);
+
+  const iniciarCheckin = useCallback(async () => {
+    setLoading(true);
+    setErro('');
+
     try {
-      setLoading(true);
-      setErro('');
-
       const response = await apiClient.post('/ai/checkin/conduzir', {
         etapaAtual: 'inicio',
-        dadosParciais: dadosBase,
+        dadosParciais: dadosIniciaisRef.current,
       });
 
       const data = response?.data || {};
-      const perguntaInicial = data.proxima_pergunta || PERGUNTA_INICIAL;
-      const etapaSeguinte = data.etapa_seguinte || 'aguardando_resposta';
-      const convId = data.conversaId || `checkin_local_${Date.now()}`;
+      const perguntaInicial = typeof data.proxima_pergunta === 'string' ? data.proxima_pergunta : PERGUNTA_INICIAL;
+      const etapaSeguinte = (data.etapa_seguinte as EtapaCheckin) || 'aguardando_resposta';
 
-      setProximaPergunta(perguntaInicial);
+      setModoLocal(false);
       setEtapaAtual(etapaSeguinte);
-      setConversaId(convId);
-
       setConversaHistorico([
         {
           tipo: 'ia',
@@ -52,378 +96,265 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
           timestamp: new Date(),
         },
       ]);
-    } catch (error) {
-      console.error('Erro ao iniciar check-in:', error);
-
-      if (error?.response?.status === 404) {
-        const perguntaInicial = PERGUNTA_INICIAL;
-        setProximaPergunta(perguntaInicial);
-        setEtapaAtual('aguardando_resposta');
-        setConversaId(`checkin_local_${Date.now()}`);
-        setConversaHistorico([
-          {
-            tipo: 'ia',
-            conteudo: perguntaInicial,
-            timestamp: new Date(),
-          },
-        ]);
-        setErro('');
-        return;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 404 || status === 429 || status >= 500) {
+        iniciarLocal('Modo local ativado para evitar interrupcao. Voce ainda pode concluir o check-in normalmente.');
+      } else {
+        setErro('Nao foi possivel iniciar o check-in agora. Tente novamente.');
       }
-
-      setErro('Nao foi possivel iniciar o check-in agora. Tente novamente em instantes.');
     } finally {
       setLoading(false);
     }
-  }, [dadosIniciais, PERGUNTA_INICIAL]);
+  }, [iniciarLocal]);
 
-  /**
-   * Inicia o check-in quando o componente é montado
-   */
   useEffect(() => {
-    iniciarCheckin(dadosIniciais);
-  }, [iniciarCheckin, dadosIniciais]);
+    if (iniciouRef.current) return;
+    iniciouRef.current = true;
+    void iniciarCheckin();
+  }, [iniciarCheckin]);
 
-  /**
-   * Processa resposta do usuário e obtém próxima pergunta
-   */
-  const processarResposta = async () => {
-    if (!respostaAtual.trim()) {
-      setErro('Por favor, digite uma resposta.');
+  useEffect(() => {
+    if (!conversaContainerRef.current) return;
+    conversaContainerRef.current.scrollTop = conversaContainerRef.current.scrollHeight;
+  }, [conversaHistorico, loading]);
+
+  const processarResposta = useCallback(() => {
+    if (!respostaAtual.trim() || loading) {
+      if (!respostaAtual.trim()) setErro('Digite uma resposta para continuar.');
       return;
     }
 
-    try {
-      setLoading(true);
-      setErro('');
+    setLoading(true);
+    setErro('');
 
-      // Adicionar resposta do usuário ao histórico
-      const novaResposta = {
-        tipo: 'usuario',
-        conteudo: respostaAtual,
-        timestamp: new Date()
-      };
+    const respostaLimpa = respostaAtual.trim();
+    const respostaLower = respostaLimpa.toLowerCase();
+    const dadosAtualizados: DadosCheckin = { ...dadosColetados };
 
-      setConversaHistorico(prev => [...prev, novaResposta]);
-
-      // Simular processamento da IA
-      const dadosAtualizados = { ...dadosColetados };
-      
-      // Lógica simples para extrair dados da resposta
-      const resposta = respostaAtual.toLowerCase();
-      
-      if (etapaAtual === 'aguardando_resposta_problema' || etapaAtual === 'aguardando_resposta') {
-        dadosAtualizados.problema_relatado = respostaAtual;
-        
-        // Detectar tipo de problema
-        if (resposta.includes('freio') || resposta.includes('freou')) {
-          dadosAtualizados.categoria_problema = 'freios';
-        } else if (resposta.includes('motor') || resposta.includes('barulho')) {
-          dadosAtualizados.categoria_problema = 'motor';
-        } else if (resposta.includes('pneu') || resposta.includes('roda')) {
-          dadosAtualizados.categoria_problema = 'pneus';
-        } else {
-          dadosAtualizados.categoria_problema = 'outros';
-        }
-      }
-
-      setDadosColetados(dadosAtualizados);
-
-      // Simular resposta da IA baseada na etapa
-      let proximaEtapa, proximaPerg;
-      
-      switch (etapaAtual) {
-        case 'aguardando_resposta_problema':
-        case 'aguardando_resposta':
-          proximaEtapa = 'coletando_detalhes';
-          proximaPerg = 'Entendi. Quando você notou esse problema pela primeira vez? Acontece sempre ou apenas em situações específicas?';
-          break;
-        case 'coletando_detalhes':
-          proximaEtapa = 'verificando_manutencao';
-          proximaPerg = 'Obrigado pelas informações. Quando foi a última manutenção do veículo? Você lembra quais serviços foram feitos?';
-          dadosAtualizados.detalhes_problema = respostaAtual;
-          break;
-        case 'verificando_manutencao':
-          proximaEtapa = 'finalizando_checkin';
-          proximaPerg = 'Perfeito! Baseado nas informações coletadas, vou preparar um resumo do check-in. Há mais alguma coisa importante que você gostaria de mencionar?';
-          dadosAtualizados.historico_manutencao = respostaAtual;
-          break;
-        case 'finalizando_checkin':
-          proximaEtapa = 'check_in_completo';
-          proximaPerg = 'Excelente! Check-in finalizado com sucesso. Todas as informações foram registradas no sistema.';
-          dadosAtualizados.observacoes_finais = respostaAtual;
-          setCheckinCompleto(true);
-          break;
-        default:
-          proximaEtapa = 'check_in_completo';
-          proximaPerg = 'Check-in finalizado!';
-          setCheckinCompleto(true);
-      }
-
-      // Adicionar resposta da IA ao histórico
-      const respostaIA = {
-        tipo: 'ia',
-        conteudo: proximaPerg,
-        timestamp: new Date()
-      };
-
-      setConversaHistorico(prev => [...prev, respostaIA]);
-      setProximaPergunta(proximaPerg);
-      setEtapaAtual(proximaEtapa);
-      setRespostaAtual('');
-
-      // Se check-in completo, chamar callback
-      if (proximaEtapa === 'check_in_completo' && onCheckinCompleto) {
-        onCheckinCompleto(dadosAtualizados);
-      }
-
-    } catch (error) {
-      console.error('Erro ao processar resposta:', error);
-      setErro('Erro ao processar resposta. Tente novamente.');
-    } finally {
-      setLoading(false);
+    if (etapaAtual === 'aguardando_resposta' || etapaAtual === 'aguardando_resposta_problema') {
+      dadosAtualizados.problema_relatado = respostaLimpa;
+      if (respostaLower.includes('freio')) dadosAtualizados.categoria_problema = 'freios';
+      else if (respostaLower.includes('motor') || respostaLower.includes('barulho')) dadosAtualizados.categoria_problema = 'motor';
+      else if (respostaLower.includes('pneu') || respostaLower.includes('roda')) dadosAtualizados.categoria_problema = 'pneus';
+      else dadosAtualizados.categoria_problema = 'outros';
     }
-  };
 
-  /**
-   * Reinicia o processo de check-in
-   */
-  const reiniciarCheckin = () => {
+    let proximaEtapa: EtapaCheckin = 'check_in_completo';
+    let proximaPergunta = 'Check-in finalizado.';
+
+    switch (etapaAtual) {
+      case 'aguardando_resposta':
+      case 'aguardando_resposta_problema':
+        proximaEtapa = 'coletando_detalhes';
+        proximaPergunta = 'Entendi. Quando isso comecou e em quais situacoes acontece com mais frequencia?';
+        break;
+      case 'coletando_detalhes':
+        proximaEtapa = 'verificando_manutencao';
+        dadosAtualizados.detalhes_problema = respostaLimpa;
+        proximaPergunta = 'Perfeito. Quando foi a ultima manutencao e o que foi feito?';
+        break;
+      case 'verificando_manutencao':
+        proximaEtapa = 'finalizando_checkin';
+        dadosAtualizados.historico_manutencao = respostaLimpa;
+        proximaPergunta = 'Otimo. Para fechar o check-in, existe mais algum detalhe importante?';
+        break;
+      case 'finalizando_checkin':
+      default:
+        proximaEtapa = 'check_in_completo';
+        dadosAtualizados.observacoes_finais = respostaLimpa;
+        proximaPergunta = 'Check-in concluido com sucesso. Resumo pronto para seguir com atendimento.';
+        break;
+    }
+
+    setDadosColetados(dadosAtualizados);
+    setConversaHistorico((prev) =>
+      pushMessage(
+        pushMessage(prev, {
+          tipo: 'usuario',
+          conteudo: respostaLimpa,
+          timestamp: new Date(),
+        }),
+        {
+          tipo: 'ia',
+          conteudo: proximaPergunta,
+          timestamp: new Date(),
+        }
+      )
+    );
+
+    setEtapaAtual(proximaEtapa);
+    setRespostaAtual('');
+
+    if (proximaEtapa === 'check_in_completo') {
+      setCheckinCompleto(true);
+      onCheckinCompleto?.(dadosAtualizados);
+    }
+
+    setLoading(false);
+  }, [dadosColetados, etapaAtual, loading, onCheckinCompleto, respostaAtual]);
+
+  const reiniciarCheckin = useCallback(() => {
     setEtapaAtual('inicio');
-    setDadosColetados(dadosIniciais);
+    setDadosColetados(dadosIniciaisRef.current);
     setConversaHistorico([]);
     setRespostaAtual('');
     setCheckinCompleto(false);
+    setModoLocal(false);
     setErro('');
-    iniciarCheckin(dadosIniciais);
-  };
-
-  /**
-   * Formata timestamp para exibição
-   */
-  const formatarTempo = (timestamp) => {
-    return timestamp.toLocaleTimeString('pt-BR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
+    void iniciarCheckin();
+  }, [iniciarCheckin]);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-6 rounded-t-lg">
-        <div className="flex items-center space-x-3">
-          <MessageCircle size={32} />
-          <div>
-            <h2 className="text-2xl font-bold">Check-in Guiado por IA</h2>
-            <p className="text-purple-100">
-              Assistente inteligente para coleta estruturada de informações
+    <div className="h-full overflow-y-auto rounded-2xl bg-white dark:bg-slate-900">
+      <div className="rounded-t-2xl border-b border-slate-200/70 dark:border-slate-800/70 bg-gradient-to-r from-cyan-600 to-indigo-600 p-5 text-white">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15">
+            <MessageCircle className="h-6 w-6" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-xl font-semibold">Check-in Guiado por IA</h2>
+            <p className="text-sm text-cyan-100">
+              Coleta estruturada de contexto tecnico para reduzir retrabalho no atendimento.
             </p>
           </div>
         </div>
-        
-        {/* Indicador de Progresso */}
+
         <div className="mt-4">
-          <div className="flex items-center justify-between text-sm mb-2">
-            <span>Progresso do Check-in</span>
-            <span>{checkinCompleto ? '100%' : getProgresso()}%</span>
+          <div className="mb-1.5 flex items-center justify-between text-xs text-cyan-100">
+            <span>Progresso</span>
+            <span>{checkinCompleto ? 100 : etapasProgress[etapaAtual]}%</span>
           </div>
-          <div className="w-full bg-purple-300 rounded-full h-2">
-            <div 
-              className="bg-white dark:bg-slate-900 rounded-full h-2 transition-all duration-500"
-              style={{ width: `${checkinCompleto ? 100 : getProgresso()}%` }}
+          <div className="h-2 w-full rounded-full bg-white/20">
+            <div
+              className="h-2 rounded-full bg-white transition-all duration-500"
+              style={{ width: `${checkinCompleto ? 100 : etapasProgress[etapaAtual]}%` }}
             />
           </div>
         </div>
       </div>
 
-      {/* Área de Conversa */}
-      <div className="p-6">
-        {/* Histórico da Conversa */}
-        <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
+      <div className="space-y-4 p-4 sm:p-5">
+        {modoLocal && (
+          <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+            <WifiOff className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>Sem dependencia de backend no momento. Fluxo local ativo para voce continuar.</span>
+          </div>
+        )}
+
+        {erro && (
+          <div className="flex items-start justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{erro}</span>
+            </div>
+            <button
+              type="button"
+              onClick={reiniciarCheckin}
+              className="rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
+            >
+              Tentar de novo
+            </button>
+          </div>
+        )}
+
+        <div
+          ref={conversaContainerRef}
+          className="max-h-[360px] space-y-3 overflow-y-auto rounded-xl border border-slate-200/70 bg-slate-50/80 p-3 dark:border-slate-800/70 dark:bg-slate-900/40"
+        >
           <AnimatePresence>
             {conversaHistorico.map((mensagem, index) => (
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
+                key={`${mensagem.timestamp.getTime()}-${index}`}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                exit={{ opacity: 0, y: -8 }}
                 className={`flex ${mensagem.tipo === 'usuario' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
-                  mensagem.tipo === 'usuario' 
-                    ? 'bg-blue-500 text-white rounded-br-none' 
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-none'
-                }`}>
-                  <p className="text-sm">{mensagem.conteudo}</p>
-                  <p className={`text-xs mt-1 ${
-                    mensagem.tipo === 'usuario' ? 'text-blue-100' : 'text-slate-500'
-                  }`}>
-                    {formatarTempo(mensagem.timestamp)}
-                  </p>
+                <div
+                  className={`max-w-[80%] rounded-xl px-3 py-2 text-sm shadow-sm ${
+                    mensagem.tipo === 'usuario'
+                      ? 'bg-blue-600 text-white'
+                      : 'border border-slate-200 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100'
+                  }`}
+                >
+                  <div>{mensagem.conteudo}</div>
+                  <div className={`mt-1 text-[11px] ${mensagem.tipo === 'usuario' ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                    {mensagem.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
                 </div>
               </motion.div>
             ))}
           </AnimatePresence>
         </div>
 
-        {/* Área de Input */}
-        {!checkinCompleto && (
-          <div className="space-y-4">
-            {erro && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3" role="alert">
-                <p className="text-red-600 text-sm">{erro}</p>
-              </div>
-            )}
-
-            <div className="flex space-x-3">
+        {!checkinCompleto ? (
+          <div className="space-y-2">
+            <div className="flex gap-2">
               <textarea
                 value={respostaAtual}
                 onChange={(e) => setRespostaAtual(e.target.value)}
-                placeholder="Digite sua resposta aqui..."
-                rows={3}
-                className="flex-1 border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                aria-label="Resposta ao wizard de check-in"
-                onKeyPress={(e) => {
+                onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     processarResposta();
                   }
                 }}
+                rows={3}
+                placeholder="Digite sua resposta aqui..."
+                aria-label="Resposta ao wizard de check-in"
                 disabled={loading}
+                className="min-h-[84px] flex-1 resize-none rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-blue-900/40"
               />
-              
               <motion.button
+                type="button"
                 onClick={processarResposta}
-                disabled={loading || !respostaAtual.trim()}
-                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 disabled:bg-slate-300 text-white rounded-lg transition-colors flex items-center space-x-2"
-                whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                disabled={loading || !respostaAtual.trim()}
+                className="flex h-[84px] min-w-[112px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
               >
-                {loading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                ) : (
-                  <>
-                    <span>Enviar</span>
-                    <ArrowRight size={18} />
-                  </>
-                )}
+                {loading ? 'Processando...' : 'Enviar'}
+                <ArrowRight className="h-4 w-4" />
               </motion.button>
             </div>
-
-            <p className="text-slate-500 text-sm text-center">
-              💡 Dica: Seja específico em suas respostas para que a IA possa ajudar melhor
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Dica: descreva sintomas, quando ocorre e manutencoes recentes para acelerar diagnostico e OS.
             </p>
           </div>
-        )}
-
-        {/* Check-in Completo */}
-        {checkinCompleto && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center space-y-6"
-          >
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <CheckCircle2 size={48} className="text-green-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-green-800 mb-2">
-                ✅ Check-in Finalizado com Sucesso!
-              </h3>
-              <p className="text-green-600">
-                Todas as informações foram coletadas e registradas no sistema.
+        ) : (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="h-5 w-5" />
+                <h3 className="text-sm font-semibold">Check-in finalizado com sucesso</h3>
+              </div>
+              <p className="mt-1 text-sm text-emerald-700/90 dark:text-emerald-300/90">
+                O resumo abaixo ja pode ser usado para abrir OS, diagnostico ou agendamento.
               </p>
             </div>
 
-            {/* Resumo dos Dados Coletados */}
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 text-left">
-              <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">
-                📋 Resumo das Informações Coletadas:
-              </h4>
-              <div className="space-y-2 text-sm">
-                {dadosColetados.problema_relatado && (
-                  <div>
-                    <span className="font-medium">Problema:</span>
-                    <span className="ml-2">{dadosColetados.problema_relatado}</span>
-                  </div>
-                )}
-                {dadosColetados.categoria_problema && (
-                  <div>
-                    <span className="font-medium">Categoria:</span>
-                    <span className="ml-2 capitalize">{dadosColetados.categoria_problema}</span>
-                  </div>
-                )}
-                {dadosColetados.detalhes_problema && (
-                  <div>
-                    <span className="font-medium">Detalhes:</span>
-                    <span className="ml-2">{dadosColetados.detalhes_problema}</span>
-                  </div>
-                )}
-                {dadosColetados.historico_manutencao && (
-                  <div>
-                    <span className="font-medium">Última Manutenção:</span>
-                    <span className="ml-2">{dadosColetados.historico_manutencao}</span>
-                  </div>
-                )}
-                {dadosColetados.observacoes_finais && (
-                  <div>
-                    <span className="font-medium">Observações:</span>
-                    <span className="ml-2">{dadosColetados.observacoes_finais}</span>
-                  </div>
-                )}
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/40">
+              <h4 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Resumo coletado</h4>
+              <div className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                {dadosColetados.problema_relatado && <div><strong>Problema:</strong> {String(dadosColetados.problema_relatado)}</div>}
+                {dadosColetados.categoria_problema && <div><strong>Categoria:</strong> {String(dadosColetados.categoria_problema)}</div>}
+                {dadosColetados.detalhes_problema && <div><strong>Detalhes:</strong> {String(dadosColetados.detalhes_problema)}</div>}
+                {dadosColetados.historico_manutencao && <div><strong>Ultima manutencao:</strong> {String(dadosColetados.historico_manutencao)}</div>}
+                {dadosColetados.observacoes_finais && <div><strong>Observacoes:</strong> {String(dadosColetados.observacoes_finais)}</div>}
               </div>
             </div>
 
-            {/* Botões de Ação */}
-            <div className="flex justify-center space-x-4">
-              <motion.button
-                className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-md transition-colors flex items-center space-x-2"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <CheckCircle2 size={20} />
-                <span>Finalizar e Criar OS</span>
-              </motion.button>
-              
-              <motion.button
-                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md transition-colors flex items-center space-x-2"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Edit3 size={20} />
-                <span>Editar Informações</span>
-              </motion.button>
-              
-              <motion.button
-                onClick={reiniciarCheckin}
-                className="px-6 py-3 bg-slate-500 dark:bg-slate-800 hover:bg-slate-600 text-white rounded-lg shadow-md transition-colors flex items-center space-x-2"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <RotateCcw size={20} />
-                <span>Novo Check-in</span>
-              </motion.button>
-            </div>
+            <button
+              type="button"
+              onClick={reiniciarCheckin}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Novo check-in
+            </button>
           </motion.div>
         )}
       </div>
     </div>
   );
-
-  /**
-   * Calcula progresso baseado na etapa atual
-   */
-  function getProgresso() {
-    const etapas = {
-      'inicio': 0,
-      'aguardando_resposta': 20,
-      'aguardando_resposta_problema': 20,
-      'coletando_detalhes': 40,
-      'verificando_manutencao': 60,
-      'finalizando_checkin': 80,
-      'check_in_completo': 100
-    };
-    return etapas[etapaAtual] || 0;
-  }
-};
-
-export default WizardCheckinIA;
+}
