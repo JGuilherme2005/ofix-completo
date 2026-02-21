@@ -14,6 +14,79 @@ export const TIPOS_AGENDAMENTO = {
 };
 
 const MATIAS_PREFIX = '/matias';
+const AGENDAMENTO_LOCAL_DRAFTS_KEY = 'matias_agendamento_drafts_v1';
+
+const buildDataHora = (dataAgendamento, horaAgendamento) => `${dataAgendamento}T${horaAgendamento}:00`;
+const isDraftId = (id) => String(id || '').startsWith('draft-');
+
+const readLocalDrafts = () => {
+  try {
+    const raw = localStorage.getItem(AGENDAMENTO_LOCAL_DRAFTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeLocalDrafts = (drafts) => {
+  try {
+    localStorage.setItem(AGENDAMENTO_LOCAL_DRAFTS_KEY, JSON.stringify(drafts));
+  } catch {
+    // ignore storage failures
+  }
+};
+
+const addLocalDraft = (dadosAgendamento) => {
+  const draft = {
+    id: `draft-${Date.now()}`,
+    servicoId: null,
+    clienteId: dadosAgendamento.clienteId || null,
+    veiculoId: dadosAgendamento.veiculoId || null,
+    clienteNome: dadosAgendamento.clienteNome || 'Cliente nao identificado',
+    veiculoInfo: dadosAgendamento.veiculoInfo || '',
+    dataHora: buildDataHora(dadosAgendamento.dataAgendamento, dadosAgendamento.horaAgendamento),
+    tipo: String(dadosAgendamento.tipo || 'normal').toLowerCase(),
+    status: 'rascunho',
+    observacoes: dadosAgendamento.observacoes || '',
+    criadoPor: 'matias_ia_draft',
+    createdAt: new Date().toISOString(),
+  };
+
+  const drafts = readLocalDrafts();
+  writeLocalDrafts([draft, ...drafts]);
+  return draft;
+};
+
+const removeLocalDraft = (agendamentoId) => {
+  const draftId = String(agendamentoId);
+  const drafts = readLocalDrafts();
+  const nextDrafts = drafts.filter((draft) => String(draft.id) !== draftId);
+  if (nextDrafts.length === drafts.length) return false;
+  writeLocalDrafts(nextDrafts);
+  return true;
+};
+
+const updateLocalDraftDataHora = (agendamentoId, novaData, novaHora) => {
+  const draftId = String(agendamentoId);
+  const drafts = readLocalDrafts();
+  let changed = false;
+  const updated = drafts.map((draft) => {
+    if (String(draft.id) !== draftId) return draft;
+    changed = true;
+    return {
+      ...draft,
+      dataHora: buildDataHora(novaData, novaHora),
+      updatedAt: new Date().toISOString(),
+    };
+  });
+
+  if (changed) writeLocalDrafts(updated);
+  return changed;
+};
+
+const canCreateFullAgendamento = (clienteId, veiculoId) => Boolean(clienteId && veiculoId);
 
 function normalizeStatus(status) {
   const value = String(status || '').toUpperCase();
@@ -21,6 +94,7 @@ function normalizeStatus(status) {
   if (value === 'CANCELED' || value === 'CANCELADO') return 'cancelado';
   if (value === 'COMPLETED') return 'realizado';
   if (value === 'PENDING') return 'pendente';
+  if (value === 'DRAFT' || value === 'RASCUNHO') return 'rascunho';
   return String(status || 'pendente').toLowerCase();
 }
 
@@ -65,7 +139,9 @@ export const agendarServico = async (dadosAgendamento) => {
   try {
     const {
       clienteId,
+      clienteNome = '',
       veiculoId,
+      veiculoInfo = '',
       servicoId,
       dataAgendamento,
       horaAgendamento,
@@ -74,35 +150,73 @@ export const agendarServico = async (dadosAgendamento) => {
       prioridade = 'normal',
     } = dadosAgendamento;
 
-    const novoServico = await servicosService.createServico({
-      clienteId,
-      veiculoId,
-      servicoId,
-      status: 'agendado',
-      dataAgendamento: `${dataAgendamento}T${horaAgendamento}:00`,
-      observacoes: `[AGENDADO VIA MATIAS] ${observacoes}`,
-      prioridade,
-      origem: 'matias_ia',
-    });
+    const dataHora = buildDataHora(dataAgendamento, horaAgendamento);
 
-    const agendamento = await apiClient.post(`${MATIAS_PREFIX}/agendamentos`, {
-      servicoId: novoServico.id,
+    if (!canCreateFullAgendamento(clienteId, veiculoId)) {
+      const draft = addLocalDraft({
+        clienteId,
+        clienteNome,
+        veiculoId,
+        veiculoInfo,
+        dataAgendamento,
+        horaAgendamento,
+        tipo,
+        observacoes,
+      });
+
+      return {
+        sucesso: true,
+        rascunho: true,
+        agendamentoId: draft.id,
+        dataHora,
+        tipo,
+        mensagem: 'Agendamento salvo como rascunho. Selecione cliente e veiculo para confirmar.',
+      };
+    }
+
+    let servicoIdFinal = servicoId;
+    if (!servicoIdFinal) {
+      try {
+        const novoServico = await servicosService.createServico({
+          numeroOs: `MAT-${Date.now()}`,
+          clienteId,
+          veiculoId,
+          status: 'agendado',
+          dataEntrada: dataHora,
+          descricaoProblema: observacoes || 'Agendamento criado via Matias IA.',
+          observacoes: `[AGENDADO VIA MATIAS] ${observacoes}`,
+          prioridade,
+          origem: 'matias_ia',
+        });
+        servicoIdFinal = novoServico?.id;
+      } catch (serviceError) {
+        // Continue sem OS para nao bloquear o agendamento.
+        console.warn('Falha ao criar OS para agendamento via Matias:', serviceError);
+      }
+    }
+
+    const payload = {
       clienteId,
       veiculoId,
-      dataHora: `${dataAgendamento}T${horaAgendamento}:00`,
+      dataHora,
       tipo,
       status: 'CONFIRMED',
       observacoes,
       criadoPor: 'matias_ia',
-    });
+    };
+    if (servicoIdFinal) payload.servicoId = servicoIdFinal;
+
+    const agendamento = await apiClient.post(`${MATIAS_PREFIX}/agendamentos`, payload);
 
     return {
       sucesso: true,
-      servicoId: novoServico.id,
+      servicoId: servicoIdFinal,
       agendamentoId: agendamento.data?.agendamento?.id || agendamento.data?.id,
-      dataHora: `${dataAgendamento}T${horaAgendamento}:00`,
+      dataHora,
       tipo,
-      mensagem: `Agendamento realizado com sucesso! OS #${novoServico.id} criada.`,
+      mensagem: servicoIdFinal
+        ? `Agendamento realizado com sucesso! OS #${servicoIdFinal} criada.`
+        : 'Agendamento realizado com sucesso!',
     };
   } catch (error) {
     console.error('Erro ao agendar servico:', error);
@@ -115,6 +229,8 @@ export const agendarServico = async (dadosAgendamento) => {
 };
 
 export const buscarAgendamentosProximos = async (dias = 7) => {
+  const localDrafts = readLocalDrafts().map((draft) => normalizeAgendamento(draft));
+
   try {
     const dataInicio = new Date();
     const dataFim = new Date();
@@ -130,14 +246,25 @@ export const buscarAgendamentosProximos = async (dias = 7) => {
 
     const payload = response.data;
     const lista = Array.isArray(payload) ? payload : payload?.agendamentos || [];
-    return lista.map(normalizeAgendamento);
+    const remotos = lista.map(normalizeAgendamento);
+    return [...localDrafts, ...remotos].sort(
+      (a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
+    );
   } catch (error) {
     console.error('Erro ao buscar agendamentos:', error);
-    return [];
+    return localDrafts;
   }
 };
 
 export const cancelarAgendamento = async (agendamentoId, motivo = '') => {
+  if (isDraftId(agendamentoId)) {
+    const removed = removeLocalDraft(agendamentoId);
+    return {
+      sucesso: removed,
+      mensagem: removed ? 'Rascunho removido com sucesso.' : 'Rascunho nao encontrado.',
+    };
+  }
+
   try {
     await apiClient.patch(`${MATIAS_PREFIX}/agendamentos/${agendamentoId}/cancelar`, {
       motivo: `[CANCELADO VIA MATIAS] ${motivo}`,
@@ -159,6 +286,14 @@ export const cancelarAgendamento = async (agendamentoId, motivo = '') => {
 };
 
 export const reagendarServico = async (agendamentoId, novaData, novaHora) => {
+  if (isDraftId(agendamentoId)) {
+    const updated = updateLocalDraftDataHora(agendamentoId, novaData, novaHora);
+    return {
+      sucesso: updated,
+      mensagem: updated ? 'Rascunho reagendado com sucesso!' : 'Rascunho nao encontrado.',
+    };
+  }
+
   try {
     await apiClient.patch(`${MATIAS_PREFIX}/agendamentos/${agendamentoId}/reagendar`, {
       novaDataHora: `${novaData}T${novaHora}:00`,

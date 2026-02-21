@@ -75,13 +75,13 @@ const parseComandoLivre = (text: string): Partial<AgendamentoFormData> => {
   else if (/cambio|eletric|motor completo|retifica|complex/.test(lower)) patch.tipo = 'especial';
   else patch.tipo = 'normal';
 
-  if (/amanh/.test(lower)) {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    patch.dataAgendamento = toInputDate(d);
-  } else if (/depois de amanh/.test(lower)) {
+  if (/depois de amanh/.test(lower)) {
     const d = new Date();
     d.setDate(d.getDate() + 2);
+    patch.dataAgendamento = toInputDate(d);
+  } else if (/amanh/.test(lower)) {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
     patch.dataAgendamento = toInputDate(d);
   } else {
     const dateMatch = lower.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
@@ -621,7 +621,7 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
                       </span>
                       <div className="min-w-0">
                         <div className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
-                          {ag.clienteNome || `OS #${ag.servicoId}`}
+                          {ag.clienteNome || (ag.servicoId ? `OS #${ag.servicoId}` : 'Agendamento rascunho')}
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
                           {new Date(ag.dataHora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
@@ -638,12 +638,14 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                             : ag.status === 'cancelado'
                               ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                              : ag.status === 'rascunho'
+                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
                               : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                         }`}
                       >
                         {cancelamentoPendente ? 'cancelando...' : ag.status}
                       </Badge>
-                      {ag.status === 'confirmado' && (
+                      {(ag.status === 'confirmado' || ag.status === 'rascunho') && (
                         <Button
                           variant="ghost"
                           size="icon"

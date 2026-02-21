@@ -93,7 +93,7 @@ export interface Agendamento {
   veiculoInfo?: string;
   dataHora: string;
   tipo: TipoAgendamento;
-  status: 'confirmado' | 'cancelado' | 'realizado' | 'pendente';
+  status: 'confirmado' | 'cancelado' | 'realizado' | 'pendente' | 'rascunho';
   observacoes?: string;
   criadoPor?: string;
 }
