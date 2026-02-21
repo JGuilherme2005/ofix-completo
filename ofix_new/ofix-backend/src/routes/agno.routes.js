@@ -700,7 +700,17 @@ router.post('/chat-inteligente', protectRoute, validateMessage, async (req, res)
         devLog('ðŸŽ¯ Contexto ativo:', contexto_ativo);
 
         // â­ NOVA ARQUITETURA: Usar MessageClassifier
-        const classification = MessageClassifier.classify(message);
+        let classification = MessageClassifier.classify(message);
+        if (contexto_ativo === 'buscar_cliente' && /^\d+$/.test(String(message).trim())) {
+            classification = {
+                type: 'ACTION',
+                subtype: 'CONSULTA_CLIENTE',
+                confidence: 1,
+                processor: 'BACKEND_LOCAL',
+                reason: 'Client selection by index in buscar_cliente context',
+                requiresDB: true
+            };
+        }
         devLog('ðŸŽ¯ [CLASSIFIER] Resultado:', {
             processor: classification.processor,
             type: classification.type,
@@ -2299,7 +2309,17 @@ router.post('/chat', protectRoute, validateMessage, async (req, res) => {
 
         // â­ NOVA ARQUITETURA MULTI-AGENTE
         // 1ï¸âƒ£ CLASSIFICA A MENSAGEM
-        const classification = MessageClassifier.classify(message);
+        let classification = MessageClassifier.classify(message);
+        if (contexto_ativo === 'buscar_cliente' && /^\d+$/.test(String(message).trim())) {
+            classification = {
+                type: 'ACTION',
+                subtype: 'CONSULTA_CLIENTE',
+                confidence: 1,
+                processor: 'BACKEND_LOCAL',
+                reason: 'Client selection by index in buscar_cliente context',
+                requiresDB: true
+            };
+        }
         devLog('ðŸŽ¯ [CLASSIFIER] Resultado:', {
             processor: classification.processor,
             type: classification.type,
