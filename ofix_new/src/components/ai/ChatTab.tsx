@@ -79,7 +79,7 @@ const ChatTab = ({
       const msg = {
         id: Date.now(),
         tipo: 'sistema',
-        conteudo: `OlÃ¡ ${user?.nome || 'usuÃ¡rio'}! ðŸ‘‹\n\n**Bem-vindo ao Assistente IA do Pista!**\n\nSou especializado em:\n\nðŸ”§ DiagnÃ³sticos automotivos\nðŸš— GestÃ£o de peÃ§as e estoque\nðŸ’¼ Suporte comercial\nðŸ“Š AnÃ¡lise de dados\nðŸ“… Agendamento de serviÃ§os\n\n${memory.memoriaAtiva ? 'ðŸ§  **MemÃ³ria ativa** â€” Vou lembrar das nossas conversas!' : ''}\n\nComo posso ajudÃ¡-lo hoje?`,
+        conteudo: `Ola ${user?.nome || 'usuario'}!\n\n**Bem-vindo ao Assistente IA do Pista!**\n\nSou especializado em:\n\n- Diagnosticos automotivos\n- Gestao de pecas e estoque\n- Suporte comercial\n- Analise de dados\n- Agendamento de servicos\n\n${memory.memoriaAtiva ? '**Memoria ativa** - Vou lembrar das nossas conversas!' : ''}\n\nComo posso ajudar hoje?`,
         timestamp: new Date().toISOString(),
       };
       setConversas([msg]);
@@ -119,7 +119,7 @@ const ChatTab = ({
       const msg = {
         id: Date.now(),
         tipo: 'sistema',
-        conteudo: `OlÃ¡ ${user?.nome || 'usuÃ¡rio'}! ðŸ‘‹\n\n**Nova conversa iniciada!**\n\nComo posso ajudÃ¡-lo hoje?`,
+        conteudo: `Ola ${user?.nome || 'usuario'}!\n\n**Nova conversa iniciada!**\n\nComo posso ajudar hoje?`,
         timestamp: new Date().toISOString(),
       };
       setConversas([msg]);
@@ -173,23 +173,23 @@ const ChatTab = ({
     const actions: any[] = [];
     if (tipo === 'consulta_cliente' && metadata?.cliente_id) {
       actions.push(
-        { type: 'agendar', label: 'ðŸ“… Agendar serviÃ§o', data: { cliente: metadata.cliente_nome } },
-        { type: 'ver_detalhes', label: 'ðŸ‘ï¸ Ver detalhes', data: { cliente_id: metadata.cliente_id } }
+        { type: 'agendar', label: 'Agendar servico', data: { cliente: metadata.cliente_nome } },
+        { type: 'ver_detalhes', label: 'Ver detalhes', data: { cliente_id: metadata.cliente_id } }
       );
       if (metadata.telefone) {
-        actions.push({ type: 'ligar', label: 'ðŸ“ž Ligar', data: { telefone: metadata.telefone } });
+        actions.push({ type: 'ligar', label: 'Ligar', data: { telefone: metadata.telefone } });
       }
     }
     if (metadata?.os_id) {
       actions.push(
-        { type: 'ver_os', label: 'ðŸ“‹ Ver OS', data: { os_id: metadata.os_id } },
-        { type: 'editar', label: 'âœï¸ Editar', data: { os_id: metadata.os_id } }
+        { type: 'ver_os', label: 'Ver OS', data: { os_id: metadata.os_id } },
+        { type: 'editar', label: 'Editar', data: { os_id: metadata.os_id } }
       );
     }
     if (tipo === 'confirmacao' && metadata?.agendamento_id) {
       actions.push(
-        { type: 'ver_detalhes', label: 'ðŸ‘ï¸ Ver agendamento', data: { agendamento_id: metadata.agendamento_id } },
-        { type: 'editar', label: 'ðŸ”„ Reagendar', data: { agendamento_id: metadata.agendamento_id } }
+        { type: 'ver_detalhes', label: 'Ver agendamento', data: { agendamento_id: metadata.agendamento_id } },
+        { type: 'editar', label: 'Reagendar', data: { agendamento_id: metadata.agendamento_id } }
       );
     }
     return actions.length > 0 ? actions : null;
@@ -280,14 +280,14 @@ const ChatTab = ({
             if (data.success && contextoAtivo && !responseContent.includes('Cliente selecionado')) { setContextoAtivo(null); }
                 tentarFalarResposta(responseContent);
           } catch (error) {
-            logger.error('Erro ao enviar seleÃ§Ã£o de cliente', { error: error.message });
-            showToast('Erro ao processar seleÃ§Ã£o de cliente. Tente novamente.', 'error');
-            setConversas(prev => [...prev, { id: Date.now() + 1, tipo: 'erro', conteudo: 'Desculpe, ocorreu um erro ao processar sua seleÃ§Ã£o.', timestamp: new Date().toISOString() }]);
+            logger.error('Erro ao enviar selecao de cliente', { error: error.message });
+            showToast('Erro ao processar selecao de cliente. Tente novamente.', 'error');
+            setConversas(prev => [...prev, { id: Date.now() + 1, tipo: 'erro', conteudo: 'Desculpe, ocorreu um erro ao processar sua selecao.', timestamp: new Date().toISOString() }]);
           } finally { setCarregando(false); }
           return;
         } else {
           setConversas(prev => {
-            const n = [...prev, { id: Date.now(), tipo: 'erro', conteudo: `âŒ NÃºmero invÃ¡lido: ${numeroDigitado}\n\nEscolha entre 1 e ${clientes ? clientes.length : 'N/A'}.`, timestamp: new Date().toISOString() }];
+            const n = [...prev, { id: Date.now(), tipo: 'erro', conteudo: `Numero invalido: ${numeroDigitado}\n\nEscolha entre 1 e ${clientes ? clientes.length : 'N/A'}.`, timestamp: new Date().toISOString() }];
             salvarConversasLocal(n); return n;
           });
           setMensagem('');
@@ -342,16 +342,16 @@ const ChatTab = ({
         responseContent = data.message; tipoResposta = data.success ? 'agente' : 'erro';
       } else { responseContent = 'Resposta recebida do agente.'; }
 
-      // Tratamento: cliente nÃ£o encontrado â†’ oferecer cadastro
+      // Tratamento: cliente nao encontrado -> oferecer cadastro
       if (contextoAtivo === 'buscar_cliente' && !data.success && data.tipo === 'erro') {
-        responseContent = `ðŸ” NÃ£o encontrei "${novaMensagem.conteudo}" no sistema.\n\nðŸ†• Quer cadastrar este cliente agora?`;
+        responseContent = `Nao encontrei "${novaMensagem.conteudo}" no sistema.\n\nQuer cadastrar este cliente agora?`;
         tipoResposta = 'cadastro';
         data.metadata = {
           ...data.metadata,
           dadosExtraidos: { nome: novaMensagem.conteudo },
           actions: [
             { type: 'cadastrar_cliente', label: 'Sim, cadastrar', data: { nome: novaMensagem.conteudo } },
-            { type: 'tentar_novamente', label: 'NÃ£o, outro nome', data: {} },
+            { type: 'tentar_novamente', label: 'Nao, outro nome', data: {} },
           ],
         };
       }
@@ -466,7 +466,7 @@ const ChatTab = ({
         window.open(`tel:${action.data?.telefone}`, '_self');
         break;
       default:
-        showToast(`AÃ§Ã£o: ${action.label}`, 'info');
+        showToast(`Acao: ${action.label}`, 'info');
     }
   }, [showToast, onNavigateToTab, clienteSelecionado, abrirAgendamentoComContexto]);
 
@@ -653,7 +653,7 @@ const ChatTab = ({
           setClientePrePreenchido(null);
           const msg = {
             id: Date.now(), tipo: 'sucesso',
-            conteudo: `âœ… Cliente **${clienteData.nomeCompleto}** cadastrado com sucesso!`,
+            conteudo: `Cliente **${clienteData.nomeCompleto}** cadastrado com sucesso!`,
             timestamp: new Date().toISOString(),
           };
           setConversas(prev => { const n = [...prev, msg]; salvarConversasLocal(n); return n; });
