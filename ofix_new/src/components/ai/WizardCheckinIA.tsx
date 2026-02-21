@@ -21,46 +21,68 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
 
   // Estados internos
   const [checkinCompleto, setCheckinCompleto] = useState(false);
+  const PERGUNTA_INICIAL = 'Ola! Vamos comecar o check-in do seu veiculo. Qual problema voce esta enfrentando?';
 
   /**
    * Inicia a conversa de check-in
    */
-  const iniciarCheckin = useCallback(async () => {
+  const iniciarCheckin = useCallback(async (dadosBase = dadosIniciais) => {
     try {
       setLoading(true);
       setErro('');
 
       const response = await apiClient.post('/ai/checkin/conduzir', {
-          etapaAtual: 'inicio',
-          dadosParciais: dadosColetados
-        });
+        etapaAtual: 'inicio',
+        dadosParciais: dadosBase,
+      });
 
-      const data = response.data;
-      setProximaPergunta(data.proxima_pergunta);
-      setEtapaAtual(data.etapa_seguinte);
-      setConversaId(data.conversaId);
+      const data = response?.data || {};
+      const perguntaInicial = data.proxima_pergunta || PERGUNTA_INICIAL;
+      const etapaSeguinte = data.etapa_seguinte || 'aguardando_resposta';
+      const convId = data.conversaId || `checkin_local_${Date.now()}`;
 
-      // Adicionar primeira pergunta ao histórico
-      setConversaHistorico([{
-        tipo: 'ia',
-        conteudo: proximaPergunta || 'Olá! Vamos começar o check-in do seu veículo. Qual problema você está enfrentando?',
-        timestamp: new Date()
-      }]);
+      setProximaPergunta(perguntaInicial);
+      setEtapaAtual(etapaSeguinte);
+      setConversaId(convId);
 
+      setConversaHistorico([
+        {
+          tipo: 'ia',
+          conteudo: perguntaInicial,
+          timestamp: new Date(),
+        },
+      ]);
     } catch (error) {
       console.error('Erro ao iniciar check-in:', error);
-      setErro(error.message);
+
+      if (error?.response?.status === 404) {
+        const perguntaInicial = PERGUNTA_INICIAL;
+        setProximaPergunta(perguntaInicial);
+        setEtapaAtual('aguardando_resposta');
+        setConversaId(`checkin_local_${Date.now()}`);
+        setConversaHistorico([
+          {
+            tipo: 'ia',
+            conteudo: perguntaInicial,
+            timestamp: new Date(),
+          },
+        ]);
+        setErro('');
+        return;
+      }
+
+      setErro('Nao foi possivel iniciar o check-in agora. Tente novamente em instantes.');
     } finally {
       setLoading(false);
     }
-  }, [dadosColetados, proximaPergunta]);
+  }, [dadosIniciais, PERGUNTA_INICIAL]);
 
   /**
    * Inicia o check-in quando o componente é montado
    */
   useEffect(() => {
-    iniciarCheckin();
-  }, [iniciarCheckin]);
+    iniciarCheckin(dadosIniciais);
+  }, [iniciarCheckin, dadosIniciais]);
 
   /**
    * Processa resposta do usuário e obtém próxima pergunta
@@ -173,7 +195,7 @@ const WizardCheckinIA = ({ onCheckinCompleto, dadosIniciais = {} }) => {
     setRespostaAtual('');
     setCheckinCompleto(false);
     setErro('');
-    iniciarCheckin();
+    iniciarCheckin(dadosIniciais);
   };
 
   /**
