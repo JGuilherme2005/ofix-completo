@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, ArrowRight, CheckCircle2, RotateCcw, AlertTriangle, WifiOff } from 'lucide-react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { MessageCircle, ArrowRight, CheckCircle2, RotateCcw, AlertTriangle, WifiOff, SkipForward } from 'lucide-react';
 import apiClient from '../../services/api';
 
 type EtapaCheckin =
@@ -94,8 +94,10 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
   );
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
+  const [aviso, setAviso] = useState('');
   const [checkinCompleto, setCheckinCompleto] = useState(Boolean(draftRef.current?.checkinCompleto));
   const [modoLocal, setModoLocal] = useState(Boolean(draftRef.current?.modoLocal));
+  const shouldReduceMotion = useReducedMotion();
 
   const iniciarLocal = useCallback((hint?: string) => {
     setModoLocal(true);
@@ -113,6 +115,7 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
   const iniciarCheckin = useCallback(async () => {
     setLoading(true);
     setErro('');
+    setAviso('');
 
     try {
       const response = await apiClient.post('/ai/checkin/conduzir', {
@@ -253,6 +256,68 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
     setLoading(false);
   }, [dadosColetados, etapaAtual, loading, onCheckinCompleto, respostaAtual]);
 
+  const pularEtapaAtual = useCallback(() => {
+    if (loading || checkinCompleto) return;
+    if (etapaAtual === 'inicio' || etapaAtual === 'check_in_completo') return;
+
+    const dadosAtualizados: DadosCheckin = { ...dadosColetados };
+    const marcador = '[Etapa pulada pelo usuario]';
+
+    let proximaEtapa: EtapaCheckin = 'check_in_completo';
+    let proximaPergunta = 'Check-in finalizado.';
+
+    switch (etapaAtual) {
+      case 'aguardando_resposta':
+      case 'aguardando_resposta_problema':
+        dadosAtualizados.problema_relatado = dadosAtualizados.problema_relatado || 'Nao informado';
+        dadosAtualizados.categoria_problema = dadosAtualizados.categoria_problema || 'outros';
+        proximaEtapa = 'coletando_detalhes';
+        proximaPergunta = 'Etapa pulada. Me diga rapidamente quando isso comecou e em quais situacoes acontece.';
+        break;
+      case 'coletando_detalhes':
+        dadosAtualizados.detalhes_problema = dadosAtualizados.detalhes_problema || 'Nao informado';
+        proximaEtapa = 'verificando_manutencao';
+        proximaPergunta = 'Etapa pulada. Quando foi a ultima manutencao e o que foi feito?';
+        break;
+      case 'verificando_manutencao':
+        dadosAtualizados.historico_manutencao = dadosAtualizados.historico_manutencao || 'Nao informado';
+        proximaEtapa = 'finalizando_checkin';
+        proximaPergunta = 'Etapa pulada. Para fechar, existe mais algum detalhe importante?';
+        break;
+      case 'finalizando_checkin':
+      default:
+        dadosAtualizados.observacoes_finais = dadosAtualizados.observacoes_finais || 'Nao informado';
+        proximaEtapa = 'check_in_completo';
+        proximaPergunta = 'Check-in concluido com etapas puladas. Revise o resumo antes de seguir.';
+        break;
+    }
+
+    setAviso('Etapa pulada. Revise os dados finais para manter qualidade do atendimento.');
+    setDadosColetados(dadosAtualizados);
+    setConversaHistorico((prev) =>
+      pushMessage(
+        pushMessage(prev, {
+          tipo: 'usuario',
+          conteudo: marcador,
+          timestamp: new Date(),
+        }),
+        {
+          tipo: 'ia',
+          conteudo: proximaPergunta,
+          timestamp: new Date(),
+        }
+      )
+    );
+
+    setEtapaAtual(proximaEtapa);
+    setRespostaAtual('');
+
+    if (proximaEtapa === 'check_in_completo') {
+      setCheckinCompleto(true);
+      onCheckinCompleto?.(dadosAtualizados);
+    }
+  }, [checkinCompleto, dadosColetados, etapaAtual, loading, onCheckinCompleto]);
+
   const reiniciarCheckin = useCallback(() => {
     setEtapaAtual('inicio');
     setDadosColetados(dadosIniciaisRef.current);
@@ -261,6 +326,7 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
     setCheckinCompleto(false);
     setModoLocal(false);
     setErro('');
+    setAviso('');
     try {
       localStorage.removeItem(CHECKIN_DRAFT_KEY);
     } catch {
@@ -295,12 +361,19 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
       </div>
 
       <div className="flex-1 min-h-0 p-3 grid grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
-        {(modoLocal || erro) && (
+        {(modoLocal || erro || aviso) && (
           <div className="space-y-2">
             {modoLocal && (
               <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
                 <WifiOff className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>Sem dependencia de backend no momento. Fluxo local ativo para voce continuar. Sincronizando quando a conexao voltar.</span>
+              </div>
+            )}
+
+            {aviso && (
+              <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{aviso}</span>
               </div>
             )}
 
@@ -330,9 +403,9 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
             {conversaHistorico.map((mensagem, index) => (
               <motion.div
                 key={`${mensagem.timestamp.getTime()}-${index}`}
-                initial={{ opacity: 0, y: 8 }}
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
+                exit={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -8 }}
                 className={`flex ${mensagem.tipo === 'usuario' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
@@ -373,7 +446,7 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
               <motion.button
                 type="button"
                 onClick={processarResposta}
-                whileTap={{ scale: 0.98 }}
+                whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
                 disabled={loading || !respostaAtual.trim()}
                 className="flex h-[72px] min-w-[104px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
               >
@@ -381,12 +454,27 @@ export default function WizardCheckinIA({ onCheckinCompleto, dadosIniciais = {} 
                 <ArrowRight className="h-4 w-4" />
               </motion.button>
             </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={pularEtapaAtual}
+                disabled={loading}
+                className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200 dark:hover:bg-amber-950/40"
+              >
+                <SkipForward className="h-3.5 w-3.5" />
+                Pular etapa
+              </button>
+            </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Dica: descreva sintomas, quando ocorre e manutencoes recentes para acelerar diagnostico e OS.
             </p>
           </div>
         ) : (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 rounded-xl border border-slate-200/70 bg-white/90 p-3 dark:border-slate-800/70 dark:bg-slate-900/55">
+          <motion.div
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-3 rounded-xl border border-slate-200/70 bg-white/90 p-3 dark:border-slate-800/70 dark:bg-slate-900/55"
+          >
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
               <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
                 <CheckCircle2 className="h-5 w-5" />

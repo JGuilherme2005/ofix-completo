@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import {
   Sparkles,
@@ -16,6 +16,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import toast from 'react-hot-toast';
 import type {
   AITabId,
   VoiceControlState,
@@ -126,6 +127,7 @@ const AIPageTabs = ({
   const [agendamentoHandoff, setAgendamentoHandoff] = useState<AgendamentoHandoff | null>(null);
   const [topExpanded, setTopExpanded] = useState(false);
   const topShellRef = useRef<HTMLDivElement | null>(null);
+  const pendingMemoryClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const visibleTabs = TAB_CONFIG.filter((tab) => !tab.adminOnly || isAdmin);
 
@@ -172,13 +174,59 @@ const AIPageTabs = ({
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [topExpanded]);
 
+  const cancelarLimpezaMemoria = useCallback(() => {
+    if (!pendingMemoryClearRef.current) return;
+    clearTimeout(pendingMemoryClearRef.current);
+    pendingMemoryClearRef.current = null;
+    showToast('Limpeza de memoria cancelada.', 'info');
+  }, [showToast]);
+
+  const executarLimpezaMemoria = useCallback(async () => {
+    pendingMemoryClearRef.current = null;
+    await memory.excluirMemorias({ skipConfirm: true });
+  }, [memory]);
+
   const limparMemoria = () => {
     const confirmed = window.confirm('Limpar memoria do Matias para este usuario?');
     if (!confirmed) return;
-    memory.excluirMemorias();
-    showToast('Memoria do Matias limpa.', 'success');
+
+    if (pendingMemoryClearRef.current) {
+      clearTimeout(pendingMemoryClearRef.current);
+      pendingMemoryClearRef.current = null;
+    }
+
+    pendingMemoryClearRef.current = setTimeout(() => {
+      void executarLimpezaMemoria();
+    }, 5000);
+
+    toast.custom(
+      (t) => (
+        <div className="pointer-events-auto flex items-center gap-3 rounded-xl border border-cyan-200/80 bg-white px-3 py-2 shadow-lg dark:border-cyan-900/45 dark:bg-slate-900">
+          <span className="text-xs text-slate-700 dark:text-slate-200">Memoria sera limpa em 5s.</span>
+          <button
+            type="button"
+            onClick={() => {
+              cancelarLimpezaMemoria();
+              toast.dismiss(t.id);
+            }}
+            className="rounded-md border border-cyan-300/80 bg-cyan-50 px-2 py-1 text-xs font-semibold text-cyan-800 hover:bg-cyan-100 dark:border-cyan-800/60 dark:bg-cyan-950/35 dark:text-cyan-200"
+          >
+            Desfazer
+          </button>
+        </div>
+      ),
+      { duration: 5000 }
+    );
     setTopExpanded(false);
   };
+
+  useEffect(() => {
+    return () => {
+      if (pendingMemoryClearRef.current) {
+        clearTimeout(pendingMemoryClearRef.current);
+      }
+    };
+  }, []);
 
   const handleTabChange = (tab: AITabId) => {
     setActiveTab(tab);

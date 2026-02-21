@@ -64,7 +64,7 @@ export default function ChatInputBar({
   };
 
   return (
-    <div className="relative border-t border-cyan-200/50 bg-gradient-to-r from-white/88 via-cyan-50/45 to-blue-50/40 p-3 sm:p-4 backdrop-blur-md dark:border-cyan-900/35 dark:from-slate-900/65 dark:via-slate-900/55 dark:to-cyan-950/28">
+    <div className="sticky bottom-0 z-20 relative shrink-0 border-t border-cyan-200/70 bg-gradient-to-r from-white/92 via-cyan-50/50 to-blue-50/45 p-3 sm:p-4 backdrop-blur-md dark:border-cyan-900/40 dark:from-slate-900/72 dark:via-slate-900/60 dark:to-cyan-950/32">
       <div className="pointer-events-none absolute -bottom-20 -inset-x-10 h-32 bg-cyan-400/8 blur-3xl dark:bg-cyan-500/10" />
 
       <div className="relative flex items-end gap-2.5 sm:gap-3">
@@ -83,7 +83,7 @@ export default function ChatInputBar({
             disabled={carregando || !podeInteragir || gravando}
             rows={1}
             aria-label="Mensagem para o assistente Matias"
-            className="min-h-[44px] max-h-[120px] resize-none rounded-2xl border-cyan-200/70 bg-white/90 text-[15px] leading-6 text-slate-800 shadow-[0_10px_24px_-16px_rgba(14,116,144,0.6)] focus-visible:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-300/35 dark:border-cyan-900/40 dark:bg-slate-950/55 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:ring-cyan-800/35"
+            className="min-h-[44px] max-h-[120px] resize-none rounded-2xl border-cyan-200/70 bg-white/90 text-[15px] leading-6 text-slate-800 shadow-[0_10px_24px_-16px_rgba(14,116,144,0.6)] focus-visible:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-300/35 disabled:opacity-100 disabled:bg-slate-100 dark:border-cyan-900/40 dark:bg-slate-950/55 dark:text-slate-100 dark:placeholder:text-slate-500 dark:disabled:bg-slate-900 dark:focus-visible:ring-cyan-800/35"
           />
 
           <div className={`mt-1 text-[11px] ${mensagem.length > AI_CONFIG.CHAT.MAX_MESSAGE_LENGTH ? 'text-red-600 dark:text-red-300' : 'text-slate-500 dark:text-slate-400'}`}>

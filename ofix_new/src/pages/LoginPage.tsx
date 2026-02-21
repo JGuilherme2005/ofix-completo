@@ -62,21 +62,21 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 p-4">
-      <Card className="w-full max-w-md shadow-2xl">
+      <Card className="w-full max-w-md border-slate-200/80 bg-white/95 text-slate-900 shadow-2xl backdrop-blur-sm dark:border-slate-800/80 dark:bg-slate-900/95 dark:text-slate-100">
         <CardHeader className="text-center">
                     <div className="mx-auto mb-4 h-16 w-16 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg">
             <Wrench className="w-8 h-8 text-white" />
           </div>
           <CardTitle className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Bem-vindo ao Pista</CardTitle>
           <p className="text-xs font-medium text-blue-600 tracking-wide mt-1">Plataforma Inteligente para Simplificar a Tarefa da Automecânica</p>
-          <CardDescription className="text-slate-600 mt-2">
+          <CardDescription className="mt-2 text-slate-600 dark:text-slate-300">
             Acesse sua conta para gerenciar sua oficina.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-slate-800 dark:text-slate-200">Email</Label>
               <Input
                 ref={emailInputRef}
                 id="email"
@@ -87,14 +87,14 @@ export default function LoginPage() {
                 onChange={handleEmailChange}
                 placeholder="seu@email.com"
                 required
-                className={`text-base ${emailError ? 'border-red-500' : ''}`}
+                className={`text-base border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 ${emailError ? 'border-red-500' : ''}`}
               />
               {emailError && (
                 <p className="text-sm text-red-600" role="alert">{emailError}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password" className="text-slate-800 dark:text-slate-200">Senha</Label>
               <Input
                 id="password"
                 type="password"
@@ -104,7 +104,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Sua senha"
                 required
-                className="text-base"
+                className="text-base border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
               />
             </div>
             <Button type="submit" className="w-full text-base py-3 bg-blue-600 hover:bg-blue-700" disabled={isLoading}>

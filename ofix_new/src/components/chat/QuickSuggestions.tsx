@@ -90,7 +90,7 @@ export default function QuickSuggestions({
   onAddMessage,
 }: QuickSuggestionsProps) {
   return (
-    <div className="border-t border-cyan-200/55 bg-gradient-to-r from-white/80 via-cyan-50/45 to-blue-50/35 px-4 py-2.5 dark:border-cyan-900/35 dark:from-slate-900/58 dark:via-slate-900/45 dark:to-cyan-950/22 sm:px-5">
+    <div className="shrink-0 border-t border-cyan-200/55 bg-gradient-to-r from-white/80 via-cyan-50/45 to-blue-50/35 px-4 py-2.5 dark:border-cyan-900/35 dark:from-slate-900/58 dark:via-slate-900/45 dark:to-cyan-950/22 sm:px-5">
       <div className="mb-2 flex items-center justify-between gap-3">
         <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
           Atalhos operacionais
@@ -134,7 +134,7 @@ export default function QuickSuggestions({
                 logger.info('Contexto ativado', { contexto: sug.command });
               }}
               disabled={carregando}
-              className={`flex flex-none items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-sm active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:scale-100 ${QUICK_SUGGESTION_CLASS[sug.color]}`}
+              className={`flex flex-none items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-all duration-200 motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 hover:shadow-sm active:scale-[0.98] motion-reduce:active:scale-100 disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:scale-100 ${QUICK_SUGGESTION_CLASS[sug.color]}`}
             >
               <Icon className="h-3.5 w-3.5" />
               <span className="whitespace-nowrap">{sug.text}</span>

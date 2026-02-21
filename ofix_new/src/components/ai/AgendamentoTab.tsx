@@ -5,6 +5,8 @@ import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
+import { Skeleton } from '../ui/skeleton';
+import toast from 'react-hot-toast';
 import {
   Calendar,
   Clock,
@@ -117,8 +119,10 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
     loadingAgendamentos,
     erro,
     sucesso,
+    syncStatus,
     verificarHorarios,
     carregarAgendamentos,
+    sincronizarPendencia,
     confirmarAgendamento,
     cancelar,
     avancarEtapa,
@@ -128,6 +132,8 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
 
   const [comandoLivre, setComandoLivre] = useState('');
   const handoffAplicadoRef = useRef<string | null>(null);
+  const cancelTimersRef = useRef<Map<string | number, ReturnType<typeof setTimeout>>>(new Map());
+  const [cancelamentosPendentes, setCancelamentosPendentes] = useState<Array<string | number>>([]);
 
   const clienteId = clienteSelecionado?.id as string | number | undefined;
   const clienteNomeSelecionado = (clienteSelecionado?.nomeCompleto || clienteSelecionado?.nome) as string | undefined;
@@ -173,6 +179,54 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
 
     handoffAplicadoRef.current = chaveHandoff;
   }, [handoffContext, etapa, updateForm, avancarEtapa]);
+
+  useEffect(() => {
+    return () => {
+      cancelTimersRef.current.forEach((timer) => clearTimeout(timer));
+      cancelTimersRef.current.clear();
+    };
+  }, []);
+
+  const removerCancelamentoPendente = (id: string | number) => {
+    setCancelamentosPendentes((prev) => prev.filter((item) => item !== id));
+    const timer = cancelTimersRef.current.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      cancelTimersRef.current.delete(id);
+    }
+  };
+
+  const solicitarCancelamento = (id: string | number) => {
+    if (cancelTimersRef.current.has(id)) return;
+
+    setCancelamentosPendentes((prev) => [...prev, id]);
+    const timer = setTimeout(() => {
+      cancelTimersRef.current.delete(id);
+      setCancelamentosPendentes((prev) => prev.filter((item) => item !== id));
+      void cancelar(id, 'Cancelado pelo usuario');
+    }, 5000);
+    cancelTimersRef.current.set(id, timer);
+
+    toast.custom(
+      (t) => (
+        <div className="pointer-events-auto flex items-center gap-3 rounded-xl border border-cyan-200/80 bg-white px-3 py-2 shadow-lg dark:border-cyan-900/45 dark:bg-slate-900">
+          <span className="text-xs text-slate-700 dark:text-slate-200">Cancelamento agendado em 5s.</span>
+          <button
+            type="button"
+            onClick={() => {
+              removerCancelamentoPendente(id);
+              toast.dismiss(t.id);
+              showToast('Cancelamento desfeito.', 'success');
+            }}
+            className="rounded-md border border-cyan-300/80 bg-cyan-50 px-2 py-1 text-xs font-semibold text-cyan-800 hover:bg-cyan-100 dark:border-cyan-800/60 dark:bg-cyan-950/35 dark:text-cyan-200"
+          >
+            Desfazer
+          </button>
+        </div>
+      ),
+      { duration: 5000 }
+    );
+  };
 
   const hoje = useMemo(() => new Date().toISOString().split('T')[0], []);
   const clienteNome =
@@ -279,6 +333,18 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
         </div>
       )}
 
+      {syncStatus === 'syncing' && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Sincronizando agendamento salvo localmente...</span>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => void sincronizarPendencia()}>
+            Sincronizar agora
+          </Button>
+        </div>
+      )}
+
       {erro && (
         <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
           <AlertCircle className="h-4 w-4 shrink-0" />
@@ -370,21 +436,25 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
             </div>
 
             {loading ? (
-              <div className="flex items-center justify-center gap-2 py-8 text-slate-500">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span className="text-sm">Verificando disponibilidade...</span>
+              <div className="space-y-2 py-2">
+                <Skeleton className="h-4 w-40" />
+                <div className="space-y-2">
+                  {Array.from({ length: 5 }).map((_, idx) => (
+                    <Skeleton key={`horario-skeleton-${idx}`} className="h-10 w-full rounded-lg" />
+                  ))}
+                </div>
               </div>
             ) : formData.dataAgendamento && horarios.length > 0 ? (
               <div>
                 <Label className="mb-2 block">Horarios disponiveis</Label>
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
                   {horarios.map((h) => (
                     <button
                       key={h.hora}
                       type="button"
                       disabled={!h.disponivel}
                       onClick={() => updateForm({ horaAgendamento: h.hora })}
-                      className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all ${
+                      className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition-all ${
                         formData.horaAgendamento === h.hora
                           ? 'border-blue-500 bg-blue-500 text-white shadow-sm'
                           : h.disponivel
@@ -514,9 +584,21 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
         </CardHeader>
         <CardContent>
           {loadingAgendamentos ? (
-            <div className="flex items-center justify-center gap-2 py-6 text-slate-500">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span className="text-sm">Carregando...</span>
+            <div className="space-y-2 py-2">
+              {Array.from({ length: 4 }).map((_, idx) => (
+                <div key={`ag-skeleton-${idx}`} className="rounded-lg border border-slate-200/70 p-3 dark:border-slate-700/70">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-7 w-7 rounded-full" />
+                      <div className="space-y-1.5">
+                        <Skeleton className="h-3.5 w-32" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : agendamentos.length === 0 ? (
             <div className="py-8 text-center text-slate-400 dark:text-slate-500">
@@ -525,53 +607,58 @@ export default function AgendamentoTab({ showToast, clienteSelecionado, handoffC
             </div>
           ) : (
             <div className="space-y-2">
-              {agendamentos.slice(0, 5).map((ag) => (
-                <div
-                  key={ag.id}
-                  className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50"
-                >
-                  <div className="min-w-0 flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-300 bg-white text-[11px] font-semibold text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
-                      {TIPO_INFO[ag.tipo]?.icon || 'A'}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
-                        {ag.clienteNome || `OS #${ag.servicoId}`}
-                      </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {new Date(ag.dataHora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                        {' - '}
-                        {new Date(ag.dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+              {agendamentos.slice(0, 5).map((ag) => {
+                const cancelamentoPendente = cancelamentosPendentes.includes(ag.id);
+
+                return (
+                  <div
+                    key={ag.id}
+                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50"
+                  >
+                    <div className="min-w-0 flex items-center gap-3">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-300 bg-white text-[11px] font-semibold text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
+                        {TIPO_INFO[ag.tipo]?.icon || 'A'}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                          {ag.clienteNome || `OS #${ag.servicoId}`}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          {new Date(ag.dataHora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                          {' - '}
+                          {new Date(ag.dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1">
-                    <Badge
-                      variant="secondary"
-                      className={`text-xs ${
-                        ag.status === 'confirmado'
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                          : ag.status === 'cancelado'
-                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                      }`}
-                    >
-                      {ag.status}
-                    </Badge>
-                    {ag.status === 'confirmado' && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
-                        title="Cancelar"
-                        onClick={() => cancelar(ag.id, 'Cancelado pelo usuario')}
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Badge
+                        variant="secondary"
+                        className={`text-xs ${
+                          ag.status === 'confirmado'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                            : ag.status === 'cancelado'
+                              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                        }`}
                       >
-                        <XCircle className="h-4 w-4" />
-                      </Button>
-                    )}
+                        {cancelamentoPendente ? 'cancelando...' : ag.status}
+                      </Badge>
+                      {ag.status === 'confirmado' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={cancelamentoPendente}
+                          className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600 disabled:opacity-60 dark:hover:bg-red-950/30"
+                          title={cancelamentoPendente ? 'Cancelamento pendente' : 'Cancelar'}
+                          onClick={() => solicitarCancelamento(ag.id)}
+                        >
+                          {cancelamentoPendente ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

@@ -1,5 +1,5 @@
 ﻿// @ts-nocheck
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import logger from '../../utils/logger';
 import apiClient from '../../services/api';
@@ -16,6 +16,7 @@ interface ConnectionOptions {
 export function useConnectionStatus({ showToast, onMemoryStatus }: ConnectionOptions) {
   const [statusConexao, setStatusConexao] = useState('desconectado');
   const podeInteragir = statusConexao === 'conectado' || statusConexao === 'local';
+  const lastFallbackToastAtRef = useRef(0);
 
   const verificarConexao = useCallback(async ({ warm = false, silent = false } = {}) => {
     try {
@@ -44,11 +45,13 @@ export function useConnectionStatus({ showToast, onMemoryStatus }: ConnectionOpt
       return agnoOnline;
     } catch (error) {
       logger.error('Erro ao verificar conexão', { error: error.message, context: 'verificarConexao' });
+      setStatusConexao('local');
       if (!silent) {
-        setStatusConexao('erro');
-        showToast('Erro ao conectar com o agente', 'error');
-      } else {
-        setStatusConexao('local');
+        const now = Date.now();
+        if (now - lastFallbackToastAtRef.current > 12000) {
+          lastFallbackToastAtRef.current = now;
+          showToast('Agente indisponivel. Modo local ativado.', 'info');
+        }
       }
       return false;
     }

@@ -5,6 +5,7 @@
  */
 import { useState, useRef, useEffect, useCallback } from 'react';
 import ClienteModal from '../clientes/ClienteModal';
+import toast from 'react-hot-toast';
 
 import logger from '../../utils/logger';
 import { validarMensagem } from '../../utils/messageValidator';
@@ -58,6 +59,8 @@ const ChatTab = ({
   // Refs
   const chatContainerRef = useRef<any>(null);
   const inputRef = useRef<any>(null);
+  const pendingClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previousConversationsRef = useRef<any[] | null>(null);
   const { painelFixoDesktop, setPainelFixoDesktop, painelDrawerOpen, setPainelDrawerOpen } = useSidePanel();
 
   useEffect(() => {
@@ -89,6 +92,14 @@ const ChatTab = ({
     }
   }, [conversas]);
 
+  useEffect(() => {
+    return () => {
+      if (pendingClearTimerRef.current) {
+        clearTimeout(pendingClearTimerRef.current);
+      }
+    };
+  }, []);
+
   // FUNÃ‡Ã•ES DE LOCALSTORAGE
   const getStorageKey = useCallback(() => `matias_conversas_${user?.id || 'anonymous'}`, [user]);
 
@@ -107,7 +118,16 @@ const ChatTab = ({
     }
   }, [user, getStorageKey]);
 
-  const limparHistorico = () => {
+  const restaurarHistorico = useCallback(() => {
+    if (!previousConversationsRef.current) return;
+    const previous = previousConversationsRef.current;
+    setConversas(previous);
+    salvarConversasLocal(previous);
+    previousConversationsRef.current = null;
+    showToast('Limpeza de conversa desfeita.', 'success');
+  }, [salvarConversasLocal, showToast]);
+
+  const confirmarLimpezaHistorico = useCallback(() => {
     try {
       localStorage.removeItem(getStorageKey());
       const msg = {
@@ -118,12 +138,50 @@ const ChatTab = ({
       };
       setConversas([msg]);
       salvarConversasLocal([msg]);
-      showToast('Chat limpo! Nova conversa iniciada.', 'success');
+      showToast('Conversa limpa com sucesso.', 'success');
     } catch (error) {
       logger.error('Erro ao limpar historico', { error: error.message });
       showToast('Erro ao limpar historico', 'error');
+    } finally {
+      pendingClearTimerRef.current = null;
+      previousConversationsRef.current = null;
     }
-  };
+  }, [getStorageKey, salvarConversasLocal, showToast, user]);
+
+  const limparHistorico = useCallback(() => {
+    if (pendingClearTimerRef.current) {
+      clearTimeout(pendingClearTimerRef.current);
+      pendingClearTimerRef.current = null;
+    }
+
+    previousConversationsRef.current = [...conversas];
+    pendingClearTimerRef.current = setTimeout(() => {
+      confirmarLimpezaHistorico();
+    }, 5000);
+
+    toast.custom(
+      (t) => (
+        <div className="pointer-events-auto flex items-center gap-3 rounded-xl border border-cyan-200/80 bg-white px-3 py-2 shadow-lg dark:border-cyan-900/45 dark:bg-slate-900">
+          <span className="text-xs text-slate-700 dark:text-slate-200">Conversa sera limpa em 5s.</span>
+          <button
+            type="button"
+            onClick={() => {
+              if (pendingClearTimerRef.current) {
+                clearTimeout(pendingClearTimerRef.current);
+                pendingClearTimerRef.current = null;
+              }
+              restaurarHistorico();
+              toast.dismiss(t.id);
+            }}
+            className="rounded-md border border-cyan-300/80 bg-cyan-50 px-2 py-1 text-xs font-semibold text-cyan-800 hover:bg-cyan-100 dark:border-cyan-800/60 dark:bg-cyan-950/35 dark:text-cyan-200"
+          >
+            Desfazer
+          </button>
+        </div>
+      ),
+      { duration: 5000 }
+    );
+  }, [conversas, confirmarLimpezaHistorico, restaurarHistorico]);
 
   // VALIDAÃ‡ÃƒO EM TEMPO REAL
   const validarInputBusca = (valor: string) => {
@@ -197,6 +255,29 @@ const ChatTab = ({
     });
   }, [onNavigateToTab, clienteSelecionado]);
 
+  const oferecerHandoffAgendamento = useCallback((observacoes: string, clienteNomeHint?: string) => {
+    toast.custom(
+      (t) => (
+        <div className="pointer-events-auto flex items-center gap-3 rounded-xl border border-cyan-200/80 bg-white px-3 py-2 shadow-lg dark:border-cyan-900/45 dark:bg-slate-900">
+          <div className="text-xs text-slate-700 dark:text-slate-200">
+            Handoff pronto para agendamento.
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              abrirAgendamentoComContexto(observacoes, clienteNomeHint);
+              toast.dismiss(t.id);
+            }}
+            className="rounded-md bg-gradient-to-r from-cyan-600 to-blue-600 px-2.5 py-1 text-xs font-semibold text-white hover:from-cyan-500 hover:to-blue-500"
+          >
+            Abrir Agendamento
+          </button>
+        </div>
+      ),
+      { duration: 7000 }
+    );
+  }, [abrirAgendamentoComContexto]);
+
   const tentarFalarResposta = useCallback((responseContent: string) => {
     if (!voice.vozHabilitada || !responseContent || !('speechSynthesis' in window)) return;
     try {
@@ -223,12 +304,12 @@ const ChatTab = ({
     const comandoAgendar = mensagem.trim().match(/^\/agendar\b(.*)$/i);
     if (comandoAgendar) {
       const observacoes = comandoAgendar[1]?.trim() || 'Solicitacao de agendamento via comando rapido.';
-      abrirAgendamentoComContexto(
+      oferecerHandoffAgendamento(
         observacoes,
         clienteSelecionado?.nomeCompleto || clienteSelecionado?.nome
       );
       setMensagem('');
-      showToast('Fluxo de agendamento aberto com texto do chat.', 'success');
+      showToast('Handoff preparado. Confirme no CTA para abrir agendamento.', 'info');
       return;
     }
 
@@ -406,7 +487,7 @@ const ChatTab = ({
     } finally {
       setCarregando(false);
     }
-  }, [mensagem, carregando, contextoAtivo, conversas, user, connection, showToast, clienteSelecionado, salvarConversasLocal, setConversas, setMensagem, setCarregando, setInputWarning, setInputHint, setClientePrePreenchido, setClienteSelecionado, abrirAgendamentoComContexto, tentarFalarResposta]);
+  }, [mensagem, carregando, contextoAtivo, conversas, user, connection, showToast, clienteSelecionado, salvarConversasLocal, setConversas, setMensagem, setCarregando, setInputWarning, setInputHint, setClientePrePreenchido, setClienteSelecionado, oferecerHandoffAgendamento, tentarFalarResposta]);
 
   const handleKeyDown = (e: any) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensagem(); }
@@ -426,13 +507,13 @@ const ChatTab = ({
         if (inputRef.current) { inputRef.current.placeholder = 'Digite outro nome, CPF ou telefone...'; inputRef.current.focus(); }
         setContextoAtivo('buscar_cliente');
         break;
-            case 'agendar':
+      case 'agendar':
         if (onNavigateToTab) {
-          abrirAgendamentoComContexto(
+          oferecerHandoffAgendamento(
             `Solicitado via chat: ${action.data?.cliente ? `agendar para ${action.data.cliente}` : 'agendar servico'}`,
             action.data?.cliente
           );
-          showToast(`Agendar servico para ${action.data?.cliente || 'cliente'}`, 'success');
+          showToast(`Handoff pronto para ${action.data?.cliente || 'cliente'}.`, 'info');
         } else {
           setMensagem(`Agendar servico para ${action.data?.cliente || 'cliente'}`);
         }
@@ -440,11 +521,11 @@ const ChatTab = ({
       case 'abrir_agendamento':
       case 'abrir_agendamento_handoff':
       case 'agendar_no_chat':
-        abrirAgendamentoComContexto(
+        oferecerHandoffAgendamento(
           action.data?.observacoes || 'Solicitacao disparada por acao do chat.',
           action.data?.clienteNome || action.data?.cliente
         );
-        showToast('Agendamento aberto com dados da conversa.', 'success');
+        showToast('Handoff criado. Use o CTA para abrir agendamento.', 'info');
         break;
       case 'ver_os':
         showToast(`Abrindo OS #${action.data?.os_id}`, 'info');
@@ -455,7 +536,7 @@ const ChatTab = ({
       default:
         showToast(`Acao: ${action.label}`, 'info');
     }
-  }, [showToast, onNavigateToTab, abrirAgendamentoComContexto]);
+  }, [showToast, onNavigateToTab, oferecerHandoffAgendamento]);
 
   const handleSelectOption = useCallback((option: any) => {
     if (option.value) { setMensagem(option.value); setTimeout(() => enviarMensagem(), 100); }
@@ -569,7 +650,7 @@ const ChatTab = ({
           onReconectar={() => connection.verificarConexao({ warm: true })}
         />
 
-        <div className={`min-h-0 flex-1 ${painelFixoDesktop ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-2.5' : ''}`}>
+        <div className={`min-h-0 flex-1 flex flex-col ${painelFixoDesktop ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-2.5' : ''}`}>
           <div className="min-h-0 min-w-0 rounded-2xl border border-cyan-200/65 bg-gradient-to-b from-white/92 via-white/86 to-cyan-50/45 shadow-[0_16px_34px_-24px_rgba(14,116,144,0.6)] ring-1 ring-cyan-200/35 backdrop-blur-sm dark:border-cyan-900/35 dark:from-slate-900/72 dark:via-slate-900/68 dark:to-cyan-950/24 dark:ring-cyan-900/25 flex flex-col overflow-hidden flex-1">
             <ChatMessageList
               conversas={conversas}

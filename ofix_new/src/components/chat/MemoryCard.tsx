@@ -1,5 +1,6 @@
 ﻿import { Button } from '@/components/ui/button';
-import { Brain, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Brain, RefreshCw, Trash2 } from 'lucide-react';
 
 interface MemoryCardProps {
   memoriaAtiva: boolean;
@@ -94,9 +95,12 @@ export default function MemoryCard({
               )}
             </div>
           ) : loadingMemorias ? (
-            <div className="flex items-center justify-center py-6">
-              <Loader2 className="h-5 w-5 animate-spin text-cyan-600" />
-              <span className="ml-2 text-sm text-slate-600 dark:text-slate-300">Carregando memorias...</span>
+            <div className="space-y-2 py-3">
+              {Array.from({ length: 3 }).map((_, idx) => (
+                <div key={`memory-skeleton-${idx}`} className="rounded-lg border border-cyan-200/55 p-3 dark:border-cyan-900/35">
+                  <Skeleton className="h-3.5 w-4/5" />
+                </div>
+              ))}
             </div>
           ) : memorias.length > 0 ? (
             <ul className="mt-1 space-y-2">

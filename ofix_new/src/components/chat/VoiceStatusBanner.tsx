@@ -15,7 +15,7 @@ export default function VoiceStatusBanner({ gravando, falando, modoContinuo }: V
         gravando
           ? 'border-rose-200/75 bg-rose-50/90 dark:border-rose-900/40 dark:bg-rose-950/28'
           : 'border-cyan-200/75 bg-cyan-50/90 dark:border-cyan-900/40 dark:bg-cyan-950/28'
-      }`}
+      } shrink-0`}
       role="status"
       aria-live="assertive"
     >

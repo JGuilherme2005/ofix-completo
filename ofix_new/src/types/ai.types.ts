@@ -202,5 +202,5 @@ export interface MemoryManagerState {
   setMostrarMemorias: (v: boolean) => void;
   setMemoriaAtiva: (v: boolean) => void;
   carregarMemorias: () => void;
-  excluirMemorias: () => void;
+  excluirMemorias: (opts?: { skipConfirm?: boolean }) => Promise<boolean> | void;
 }
